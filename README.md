@@ -1,0 +1,1 @@
+# AI_solutions_architect_course
