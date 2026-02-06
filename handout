@@ -1,7 +1,6 @@
-# FROM INPUT TO IMPACT
+# Stop wasting tokens: Prompting that Works
 ## Quick Reference Card - Effective Prompting for GenAI Tools
-
-Workshop Data & AI Ethics | Deloitte
+### Data & AI Ethics | Deloitte
 
 ---
 
@@ -17,14 +16,14 @@ Prima di scrivere il prompt, chiediti:
 
 ---
 
-## 2. Checklist del Prompt Efficace
+## 2. Checklist del prompt efficace
 
-- [ ] **CONTESTO** definito → "Sei un [ruolo] che deve [obiettivo]..."
-- [ ] **DESTINATARIO** specificato → "...per [chi, con che background]..."
-- [ ] **FORMATO** richiesto → "Formato: [email/tabella/bullet/paragrafi]"
-- [ ] **LUNGHEZZA** indicata → "Max [N] parole / [N] punti"
-- [ ] **TONO** esplicitato → "Tono: [formale/tecnico/divulgativo/diretto]"
-- [ ] **ESCLUSIONI** indicate → "Non includere: [cosa evitare]"
+- **CONTESTO** definito → "Sei un [ruolo] che deve [obiettivo]..."
+- **DESTINATARIO** specificato → "...per [chi, con che background]..."
+- **FORMATO** richiesto → "Formato: [email/tabella/bullet/paragrafi]"
+- **LUNGHEZZA** indicata → "Max [N] parole / [N] punti"
+- **TONO** esplicitato → "Tono: [formale/tecnico/divulgativo/diretto]"
+- **ESCLUSIONI** indicate → "Non includere: [cosa evitare]"
 
 ---
 
@@ -40,7 +39,7 @@ Prima di scrivere il prompt, chiediti:
 
 ---
 
-## 4. Comandi di Iterazione Rapida
+## 4. Comandi di iterazione rapida
 
 | Obiettivo | Prompt da usare |
 |-----------|-----------------|
@@ -54,9 +53,9 @@ Prima di scrivere il prompt, chiediti:
 
 ---
 
-## 5. Template per Task Comuni
+## 5. Template per task comuni
 
-### 5.1 Review di Documenti
+### 5.1 Review di documenti
 ```
 Analizza questo [tipo documento] dal punto di vista di [prospettiva/framework].
 
@@ -72,7 +71,7 @@ Focus particolare su: [area specifica]
 Max [N] punti per categoria
 ```
 
-### 5.2 Preparazione Meeting Cliente
+### 5.2 Preparazione meeting cliente
 ```
 Devo prepararmi per un meeting con [ruolo cliente] di [tipo azienda] sul tema [argomento].
 
@@ -86,7 +85,7 @@ Genera:
 Tono: [formale/consulenziale/tecnico]
 ```
 
-### 5.3 Sintesi Normativa
+### 5.3 Sintesi normativa
 ```
 Sintetizza [normativa/regolamento] per un pubblico di [ruolo/background].
 
@@ -118,7 +117,7 @@ Procedi così:
 Formato: report strutturato con sezioni chiare
 ```
 
-### 5.5 Email a Cliente
+### 5.5 Email a cliente
 ```
 Scrivi un'email a [ruolo cliente] di [azienda] riguardo [argomento].
 
@@ -131,7 +130,7 @@ Includi: [es. prossimi step, CTA chiara]
 Non includere: [es. dettagli tecnici eccessivi]
 ```
 
-### 5.6 Creazione Checklist
+### 5.6 Creazione checklist
 ```
 Crea una checklist per [scopo] da usare in [contesto].
 
@@ -163,7 +162,7 @@ Tono: oggettivo, orientato alla decisione
 
 ---
 
-## 6. Cosa l'AI Fa Bene vs Dove Verificare
+## 6. Cosa l'AI fa bene vs dove verificare
 
 | ✅ Affidabile | ⚠️ Verificare sempre |
 |---------------|----------------------|
@@ -192,7 +191,7 @@ Tono: oggettivo, orientato alla decisione
 
 ---
 
-## 8. Errori Comuni da Evitare
+## 8. Errori comuni da evitare
 
 | ❌ Evita | ✅ Invece |
 |---------|----------|
@@ -205,7 +204,7 @@ Tono: oggettivo, orientato alla decisione
 
 ---
 
-## 9. Limiti da Ricordare
+## 9. Limiti da ricordare
 
 **L'AI può sbagliare su:**
 - Citazioni specifiche (leggi, sentenze, paper) → VERIFICARE
@@ -225,69 +224,7 @@ Tono: oggettivo, orientato alla decisione
 
 ---
 
-## 10. Risorse per Approfondire
-
-**Guide ufficiali (gratuite):**
-- Anthropic: docs.anthropic.com/claude/docs/prompt-engineering
-- OpenAI: platform.openai.com/docs/guides/prompt-engineering
-- Google: ai.google.dev/docs/prompt_best_practices
-
-**Corso rapido (1h, gratuito):**
-- DeepLearning.AI: "Prompt Engineering for Developers"
-
-**Newsletter consigliate:**
-- The Batch (DeepLearning.AI) - settimanale, accessibile
-- One Useful Thing (Ethan Mollick) - uso pratico AI nel lavoro
-
----
-
-## 11. I Miei Prompt Efficaci
-
-*Spazio per annotare i prompt che funzionano nel tuo lavoro.*
-
----
-
-**Task:** _______________________________________________
-
-**Prompt:**
-```
-```
-
-**Note:** _______________________________________________
-
----
-
-**Task:** _______________________________________________
-
-**Prompt:**
-```
-```
-
-**Note:** _______________________________________________
-
----
-
-**Task:** _______________________________________________
-
-**Prompt:**
-```
-```
-
-**Note:** _______________________________________________
-
----
-
-**Task:** _______________________________________________
-
-**Prompt:**
-```
-```
-
-**Note:** _______________________________________________
-
----
-
-## Quick Recap - I 3 Messaggi Chiave
+## 10. Quick Recap - I 3 Messaggi Chiave
 
 1. **Più contesto = output migliore.** Sempre.
 
@@ -296,6 +233,3 @@ Tono: oggettivo, orientato alla decisione
 3. **Verificate i fatti critici.** L'AI è un collaboratore veloce che richiede supervisione.
 
 ---
-
-*Workshop Data & AI Ethics | Deloitte*
-*[Data] | [Tuo Nome]*
