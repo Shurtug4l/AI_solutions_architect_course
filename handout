@@ -1,0 +1,301 @@
+# FROM INPUT TO IMPACT
+## Quick Reference Card - Effective Prompting for GenAI Tools
+
+Workshop Data & AI Ethics | Deloitte
+
+---
+
+## 1. Il Framework in 30 Secondi
+
+Prima di scrivere il prompt, chiediti:
+
+1. **CHI?** → Che ruolo deve assumere l'AI? Per chi è l'output?
+2. **COSA?** → Qual è esattamente il task?
+3. **COME?** → Formato, lunghezza, tono?
+4. **VINCOLI?** → Cosa includere/escludere?
+5. **PRONTO A ITERARE?** → Il primo output è una bozza
+
+---
+
+## 2. Checklist del Prompt Efficace
+
+- [ ] **CONTESTO** definito → "Sei un [ruolo] che deve [obiettivo]..."
+- [ ] **DESTINATARIO** specificato → "...per [chi, con che background]..."
+- [ ] **FORMATO** richiesto → "Formato: [email/tabella/bullet/paragrafi]"
+- [ ] **LUNGHEZZA** indicata → "Max [N] parole / [N] punti"
+- [ ] **TONO** esplicitato → "Tono: [formale/tecnico/divulgativo/diretto]"
+- [ ] **ESCLUSIONI** indicate → "Non includere: [cosa evitare]"
+
+---
+
+## 3. Le 5 Tecniche Fondamentali
+
+| Tecnica | Quando usarla | Formula |
+|---------|---------------|---------|
+| **Contesto e Ruolo** | Sempre | "Sei un [ruolo] che deve [task] per [destinatario]..." |
+| **Formato e Struttura** | Sempre | "Formato: [X]. Lunghezza: [Y]. Tono: [Z]." |
+| **Esempi (Few-shot)** | Task ripetitivi, format specifici | "Ecco un esempio: [...]. Applica lo stesso approccio a: [...]" |
+| **Step-by-step** | Analisi complesse | "Ragiona step by step: prima [A], poi [B], infine [C]" |
+| **Iterazione** | Sempre (mindset) | "Espandi / Sintetizza / Riformula / Quali punti deboli?" |
+
+---
+
+## 4. Comandi di Iterazione Rapida
+
+| Obiettivo | Prompt da usare |
+|-----------|-----------------|
+| Più dettaglio | "Espandi il punto [N] con un esempio concreto" |
+| Meno dettaglio | "Sintetizza in metà delle parole, mantieni solo i messaggi chiave" |
+| Altro tono | "Riformula per un pubblico [meno tecnico / più senior / ...]" |
+| Verifica qualità | "Quali sono i punti deboli di questa analisi?" |
+| Alternative | "Dammi 3 approcci alternativi a questo problema" |
+| Obiezioni | "Quali obiezioni potrebbe sollevare [stakeholder]? Come rispondere?" |
+| Concretezza | "Aggiungi un esempio reale per ogni punto" |
+
+---
+
+## 5. Template per Task Comuni
+
+### 5.1 Review di Documenti
+```
+Analizza questo [tipo documento] dal punto di vista di [prospettiva/framework].
+
+Contesto: [breve descrizione della situazione]
+
+Identifica:
+1. Punti di forza
+2. Gap o rischi
+3. Suggerimenti di miglioramento concreti
+
+Formato: tabella con queste 3 colonne
+Focus particolare su: [area specifica]
+Max [N] punti per categoria
+```
+
+### 5.2 Preparazione Meeting Cliente
+```
+Devo prepararmi per un meeting con [ruolo cliente] di [tipo azienda] sul tema [argomento].
+
+Il cliente ha [background/preoccupazioni note].
+
+Genera:
+1. 5 domande che probabilmente mi farà + risposta concisa per ognuna
+2. 3 domande che dovrei fare io per approfondire le sue esigenze
+3. 2-3 potenziali obiezioni e come gestirle
+
+Tono: [formale/consulenziale/tecnico]
+```
+
+### 5.3 Sintesi Normativa
+```
+Sintetizza [normativa/regolamento] per un pubblico di [ruolo/background].
+
+Struttura:
+1. Scopo della norma (max 3 frasi)
+2. A chi si applica
+3. Obblighi principali (max 5-7)
+4. Sanzioni previste
+5. Implicazioni specifiche per [settore/use case]
+
+Max [N] pagine
+Tono: chiaro, accessibile a non-giuristi
+```
+
+### 5.4 Risk Assessment AI
+```
+Conduci un risk assessment etico per questo use case di AI:
+[Descrizione dell'use case]
+
+Contesto aziendale: [settore, dimensione, maturità AI]
+
+Procedi così:
+1. Identifica tutti gli stakeholder coinvolti
+2. Per ogni stakeholder, elenca impatti potenziali (positivi e negativi)
+3. Valuta i rischi secondo [framework: ALTAI / NIST AI RMF / interno]
+4. Proponi misure di mitigazione per i rischi prioritari
+5. Raccomandazione finale: procedere / procedere con cautele / non procedere
+
+Formato: report strutturato con sezioni chiare
+```
+
+### 5.5 Email a Cliente
+```
+Scrivi un'email a [ruolo cliente] di [azienda] riguardo [argomento].
+
+Contesto: [situazione, cosa è successo, cosa serve comunicare]
+Obiettivo dell'email: [informare / richiedere / proporre / ...]
+Tono: [formale / cordiale-professionale / urgente]
+Max [N] parole
+
+Includi: [es. prossimi step, CTA chiara]
+Non includere: [es. dettagli tecnici eccessivi]
+```
+
+### 5.6 Creazione Checklist
+```
+Crea una checklist per [scopo] da usare in [contesto].
+
+Chi la userà: [ruolo, background, livello di esperienza]
+Quando verrà usata: [fase progetto, situazione specifica]
+
+Aree da coprire: [elenco aree]
+Formato: tabella con colonne [Area | Domanda | Sì/No/NA | Note]
+Max [N] domande totali
+
+Includi: indicatori di "red flag" per ogni domanda critica
+```
+
+### 5.7 Comparazione/Benchmarking
+```
+Confronta [Opzione A] vs [Opzione B] vs [Opzione C] rispetto a [criterio/obiettivo].
+
+Contesto: [situazione decisionale, vincoli, priorità]
+
+Per ogni opzione analizza:
+- Pro
+- Contro
+- Rischi specifici
+- Fit con [requisiti specifici]
+
+Formato: tabella comparativa + raccomandazione finale motivata
+Tono: oggettivo, orientato alla decisione
+```
+
+---
+
+## 6. Cosa l'AI Fa Bene vs Dove Verificare
+
+| ✅ Affidabile | ⚠️ Verificare sempre |
+|---------------|----------------------|
+| Strutturare contenuti | Citazioni specifiche (leggi, sentenze, paper) |
+| Brainstorming e ideazione | Numeri e statistiche precise |
+| Prime bozze | Eventi recenti (dopo training cutoff) |
+| Ragionamento logico | Nomi, date, riferimenti precisi |
+| Sintesi concettuali | Info su persone/aziende poco note |
+| Riformulazione e editing | Link e URL |
+
+**Regola d'oro:** Usate l'AI per accelerare, verificate i fatti critici.
+
+---
+
+## 7. Tool Selection
+
+| Task | Tool consigliato | Note |
+|------|------------------|------|
+| Scrittura/editing italiano | Claude | Migliore per tono e sfumature |
+| Analisi dati (Excel, CSV) | ChatGPT | Advanced Data Analysis |
+| Documenti molto lunghi | Claude o Gemini | Context window ampia |
+| Ricerca web integrata | Tutti | Attivare la funzione |
+| Generazione immagini | ChatGPT o Gemini | Claude non genera immagini |
+| Ragionamento complesso | Claude Opus o ChatGPT o1 | Modelli premium |
+| **Dati confidenziali clienti** | **SOLO Solaria** | Mai tool pubblici |
+
+---
+
+## 8. Errori Comuni da Evitare
+
+| ❌ Evita | ✅ Invece |
+|---------|----------|
+| "Parlami di X" | Specifica contesto, formato, destinatario, lunghezza |
+| Assumere che l'AI conosca il contesto | Esplicita tutto ciò che è rilevante |
+| Accettare il primo output | Itera: "Migliora [aspetto specifico]" |
+| Fidarsi ciecamente di citazioni/numeri | Verifica sempre i fatti critici |
+| Prompt gigante tutto-in-uno | Dividi in step progressivi |
+| Ripartire da zero ogni volta | Salva e riusa i prompt efficaci |
+
+---
+
+## 9. Limiti da Ricordare
+
+**L'AI può sbagliare su:**
+- Citazioni specifiche (leggi, sentenze, paper) → VERIFICARE
+- Numeri e statistiche precise → VERIFICARE
+- Eventi recenti → USARE WEB SEARCH
+- Informazioni su persone/aziende poco note → VERIFICARE
+
+**L'AI non può:**
+- Accedere a internet (se web search non attivo)
+- Ricordare conversazioni precedenti (nuova chat = reset)
+- Garantire accuratezza al 100%
+
+**Per dati confidenziali:**
+- MAI inserire dati clienti in tool pubblici (Claude.ai, ChatGPT, Gemini)
+- Usare SOLO Solaria per informazioni sensibili
+- Nel dubbio → non inserire
+
+---
+
+## 10. Risorse per Approfondire
+
+**Guide ufficiali (gratuite):**
+- Anthropic: docs.anthropic.com/claude/docs/prompt-engineering
+- OpenAI: platform.openai.com/docs/guides/prompt-engineering
+- Google: ai.google.dev/docs/prompt_best_practices
+
+**Corso rapido (1h, gratuito):**
+- DeepLearning.AI: "Prompt Engineering for Developers"
+
+**Newsletter consigliate:**
+- The Batch (DeepLearning.AI) - settimanale, accessibile
+- One Useful Thing (Ethan Mollick) - uso pratico AI nel lavoro
+
+---
+
+## 11. I Miei Prompt Efficaci
+
+*Spazio per annotare i prompt che funzionano nel tuo lavoro.*
+
+---
+
+**Task:** _______________________________________________
+
+**Prompt:**
+```
+```
+
+**Note:** _______________________________________________
+
+---
+
+**Task:** _______________________________________________
+
+**Prompt:**
+```
+```
+
+**Note:** _______________________________________________
+
+---
+
+**Task:** _______________________________________________
+
+**Prompt:**
+```
+```
+
+**Note:** _______________________________________________
+
+---
+
+**Task:** _______________________________________________
+
+**Prompt:**
+```
+```
+
+**Note:** _______________________________________________
+
+---
+
+## Quick Recap - I 3 Messaggi Chiave
+
+1. **Più contesto = output migliore.** Sempre.
+
+2. **Iterate, non accettate il primo output.** È una bozza, non il deliverable.
+
+3. **Verificate i fatti critici.** L'AI è un collaboratore veloce che richiede supervisione.
+
+---
+
+*Workshop Data & AI Ethics | Deloitte*
+*[Data] | [Tuo Nome]*
