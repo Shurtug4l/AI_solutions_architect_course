@@ -3,7 +3,7 @@
 PROGETTO: Sistema di monitoraggio ordini e magazzino — LogiServe S.r.l.
 ================================================================================
 
-Simone La Porta — 2026-04-21
+Simone La Porta - 2026-04-21
 
 TESTO DEL PROBLEMA
 ------------------
