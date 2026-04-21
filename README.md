@@ -1,4 +1,4 @@
-# AI Solutions Architecture
+# AI Solutions Architect Master
 
 Repository con progetti, esercizi e materiale pratico sviluppato durante il Master in **AI Solutions Architecture**.
 
