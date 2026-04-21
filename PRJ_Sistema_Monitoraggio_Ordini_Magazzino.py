@@ -3,6 +3,8 @@
 PROGETTO: Sistema di monitoraggio ordini e magazzino — LogiServe S.r.l.
 ================================================================================
 
+Simone La Porta — 2026-04-21
+
 TESTO DEL PROBLEMA
 ------------------
 LogiServe S.r.l. è una piccola azienda B2B che distribuisce componenti elettrici
@@ -33,19 +35,17 @@ SCELTE TECNICHE E ALGORITMICHE
 -------------------------------
 - Struttura a classi: ho diviso il codice in 6 classi con responsabilità separate
   (Logger, DataManager, Warehouse, OrderManager, ReportGenerator, CLI) perché così
-  è più facile trovare i bug e modificare una parte senza rompere le altre.
+  è più facile identificare bug e modificare una parte senza influenzare le altre.
 - JSON per la persistenza: è leggibile anche con un editor di testo, facile da
   caricare in Python con json.load(), e funziona bene con liste di dizionari.
-- CSV per il log: ogni riga è un evento, è semplice da aprire in Excel e si può
-  aggiungere in fondo senza rileggere tutto (modalità append).
+- CSV per il log: ogni riga è un evento, è semplice da aprire in Excel e si possono
+  aggiungere dati in fondo senza rileggere tutto (modalità append).
 - Dizionari Python per i dati in memoria: ho usato list[dict] per prodotti e ordini,
   così ogni campo ha un nome descrittivo invece di un indice numerico.
 - Per l'evasione ho usato min(quantita_da_evadere, giacenza_disponibile) per evitare
   di portare la giacenza sotto zero in caso di scorta insufficiente.
 - Lo stato dell'ordine viene determinato "al peggio": se anche una sola riga è parziale,
   tutto l'ordine diventa parziale; se una riga è indisponibile, diventa in_attesa.
-- Per filtrare le date ho usato il confronto diretto tra stringhe in formato YYYY-MM-DD:
-  funziona perché l'ordine lessicografico coincide con quello cronologico per quel formato.
 
 CONCLUSIONI
 -----------
