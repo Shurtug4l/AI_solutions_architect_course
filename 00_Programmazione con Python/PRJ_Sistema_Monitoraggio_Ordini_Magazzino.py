@@ -1,61 +1,84 @@
 """
 ================================================================================
-PROGETTO: Sistema di monitoraggio ordini e magazzino — LogiServe S.r.l.
+PROJECT: Warehouse & Order Monitoring System — LogiServe S.r.l.
 ================================================================================
 
-Simone La Porta - 2026-04-21
+Author  : Simone La Porta
+Date    : 2026-04-21
+Python  : 3.10+
+Deps    : standard library only (csv, json, pathlib, datetime)
 
-TESTO DEL PROBLEMA
-------------------
-LogiServe S.r.l. è una piccola azienda B2B che distribuisce componenti elettrici
-a officine e rivenditori. Il gestionale attuale è un foglio Excel condiviso che
-crea problemi di sincronizzazione e nessuna traccia delle operazioni.
-Si chiede di realizzare un'applicazione a riga di comando in Python che permetta di:
-  - registrare nuovi ordini verificando la disponibilità dei prodotti
-  - evadere gli ordini aggiornando automaticamente le giacenze
-  - visualizzare lo stato del magazzino con filtri
-  - generare un report giornaliero (TXT + CSV)
-  - mantenere un log di tutte le operazioni con timestamp
-  - salvare i dati su file in modo che sopravvivano al riavvio del programma
+OVERVIEW
+--------
+LogiServe S.r.l. is a small B2B company distributing electrical components to
+workshops and resellers across northern Italy. The existing workflow relies on a
+shared Excel spreadsheet, which causes synchronisation issues among staff and
+provides no audit trail for stock movements or order changes.
 
-ANALISI PRELIMINARE
--------------------
-Il primo passo è stato capire quali dati gestire e come collegarli tra loro.
-Servono due entità principali: i Prodotti (con codice, nome, giacenza, ecc.)
-e gli Ordini (con cliente, priorità, righe prodotto, stato).
-Un ordine può essere in vari stati: nuovo, evaso, parziale, in_attesa, annullato.
-Il passaggio di stato dipende dalla disponibilità in magazzino al momento dell'evasione.
-Ho scelto di separare la fase di registrazione (che non tocca le giacenze) da quella
-di evasione (che le scarica), in modo da poter registrare ordini anche se il magazzino
-non ha ancora tutto il necessario.
-Ho anche identificato il bisogno di un sistema di log separato dai dati principali,
-così da poter ricostruire la cronologia delle operazioni indipendentemente dagli ordini.
+This project replaces that spreadsheet with a command-line application that:
+  - registers incoming customer orders and checks product availability upfront
+  - fulfils orders by deducting the appropriate quantities from warehouse stock
+  - supports partial fulfilment when stock is insufficient for a given line
+  - exposes filtered views of the product catalogue and order history
+  - generates a daily summary report in both TXT and CSV formats
+  - persists all state to JSON files so data survives process restarts
+  - maintains a full CSV audit log of every operation, with timestamps
 
-SCELTE TECNICHE E ALGORITMICHE
--------------------------------
-- Struttura a classi: ho diviso il codice in 6 classi con responsabilità separate
-  (Logger, DataManager, Warehouse, OrderManager, ReportGenerator, CLI) perché così
-  è più facile identificare bug e modificare una parte senza influenzare le altre.
-- JSON per la persistenza: è leggibile anche con un editor di testo, facile da
-  caricare in Python con json.load(), e funziona bene con liste di dizionari.
-- CSV per il log: ogni riga è un evento, è semplice da aprire in Excel e si possono
-  aggiungere dati in fondo senza rileggere tutto (modalità append).
-- Dizionari Python per i dati in memoria: ho usato list[dict] per prodotti e ordini,
-  così ogni campo ha un nome descrittivo invece di un indice numerico.
-- Per l'evasione ho usato min(quantita_da_evadere, giacenza_disponibile) per evitare
-  di portare la giacenza sotto zero in caso di scorta insufficiente.
-- Lo stato dell'ordine viene determinato "al peggio": se anche una sola riga è parziale,
-  tutto l'ordine diventa parziale; se una riga è indisponibile, diventa in_attesa.
+HOW TO RUN
+----------
+  python PRJ_Sistema_Monitoraggio_Ordini_Magazzino.py
 
-CONCLUSIONI
------------
-Il sistema funziona correttamente per tutti i casi d'uso previsti. Il punto più
-delicato è stato la gestione degli stati dell'ordine durante l'evasione parziale,
-risolto aggiornando le quantità riga per riga e decidendo lo stato finale solo alla fine.
-Un limite attuale è che non c'è autenticazione: chiunque avvii il programma può fare
-tutto. Inoltre i file JSON non sono protetti da scritture concorrenti, quindi il sistema
-regge per un singolo utente alla volta, non per un team. Come miglioramento futuro
-si potrebbe usare un database SQLite invece di JSON, che gestisce meglio questi casi.
+No external packages are required — only the Python standard library is used.
+On first run, the data/ directory is created automatically and seeded with
+sample products and orders, so all features can be explored immediately without
+manual setup.
+
+DATA MODEL
+----------
+Two entities drive the system:
+
+  Product   code, name, category, stock, reorder_point, unit, unit_price
+  Order     order_id, date, customer, priority, status, lines[], notes
+
+Each order line links a product code to a requested quantity and the quantity
+actually fulfilled at dispatch time. Order status is derived from line-level
+availability:
+
+  new         registered, not yet dispatched (all lines available)
+  partial     at least one line could not be fully covered
+  on_hold     at least one line has zero stock available
+  fulfilled   all lines have been fully dispatched
+  cancelled   manually cancelled before fulfilment
+
+DESIGN NOTES
+------------
+The codebase is structured around six classes with clear, single responsibilities:
+
+  Logger           append-only CSV audit trail
+  DataManager      JSON read/write — the only layer that touches disk
+  Warehouse        in-memory product catalogue and stock mutations
+  OrderManager     order lifecycle: register → fulfil → cancel
+  ReportGenerator  daily summary in TXT and CSV formats
+  CLI              interactive menu loop; delegates all logic to the above
+
+JSON was chosen for persistence because the files stay human-readable in a text
+editor and map directly to Python lists of dicts without requiring a schema or
+migration system. If concurrency or data volume became a concern, DataManager
+provides a clean abstraction boundary for swapping in SQLite with minimal
+changes to the rest of the code.
+
+Stock deduction uses min(requested, available) to guarantee quantities never go
+negative, even under insufficient stock. Order status is evaluated
+pessimistically: a single short line pulls the entire order to "partial" or
+"on_hold", making it immediately visible to operators which orders need
+attention without having to inspect individual lines.
+
+KNOWN LIMITATIONS
+-----------------
+  - Single-user only: concurrent writes to the JSON files are not safe.
+  - No authentication: anyone who can start the process has full access.
+  - No undo for stock deductions beyond entering a manual adjustment.
+
 ================================================================================
 """
 
@@ -66,1182 +89,1113 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
 
-# Cartelle e file usati per salvare i dati
 DATA_DIR = Path("data")
 REPORTS_DIR = Path("reports")
-PRODOTTI_FILE = DATA_DIR / "prodotti.json"
-ORDINI_FILE = DATA_DIR / "ordini.json"
-LOG_FILE = DATA_DIR / "log_operazioni.csv"
+PRODUCTS_FILE = DATA_DIR / "products.json"
+ORDERS_FILE = DATA_DIR / "orders.json"
+LOG_FILE = DATA_DIR / "operations_log.csv"
 
-# Valori ammessi per la priorità di un ordine
-PRIORITA_VALIDE = ["bassa", "normale", "alta", "urgente"]
-
-# Tutti i possibili stati di un ordine
-STATI_ORDINE = ["nuovo", "evaso", "parziale", "annullato", "in_attesa"]
-
-# Operatore di default quando l'azione viene fatta dal sistema automaticamente
-OPERATORE_DEFAULT = "sistema"
+VALID_PRIORITIES = ["low", "normal", "high", "urgent"]
+ORDER_STATUSES = ["new", "fulfilled", "partial", "cancelled", "on_hold"]
+DEFAULT_OPERATOR = "system"
 
 
-# Dati di esempio per popolare il sistema alla prima esecuzione.
-# Senza questi dati, il programma partirebbe completamente vuoto e sarebbe
-# difficile testarlo. Ho scelto 8 prodotti reali del settore elettrico.
-PRODOTTI_INIZIALI: list[dict[str, Any]] = [
+# Sample data loaded on first run so the application can be tested immediately.
+INITIAL_PRODUCTS: list[dict[str, Any]] = [
     {
-        "codice": "P001",
-        "nome": "Interruttore magnetotermico 16A",
-        "categoria": "Protezione",
-        "giacenza": 120,
-        "punto_riordino": 30,   # sotto questa soglia il sistema avvisa di riordinare
-        "unita_misura": "pz",
-        "prezzo_unitario": 8.50
+        "code": "P001",
+        "name": "Miniature circuit breaker 16A",
+        "category": "Protection",
+        "stock": 120,
+        "reorder_point": 30,
+        "unit": "pcs",
+        "unit_price": 8.50
     },
     {
-        "codice": "P002",
-        "nome": "Cavo elettrico 2.5mm² (matassa 100m)",
-        "categoria": "Cablaggio",
-        "giacenza": 45,
-        "punto_riordino": 15,
-        "unita_misura": "matassa",
-        "prezzo_unitario": 42.00
+        "code": "P002",
+        "name": "Electrical cable 2.5mm² (100m coil)",
+        "category": "Wiring",
+        "stock": 45,
+        "reorder_point": 15,
+        "unit": "coil",
+        "unit_price": 42.00
     },
     {
-        "codice": "P003",
-        "nome": "Presa industriale 32A IP44",
-        "categoria": "Connettori",
-        "giacenza": 60,
-        "punto_riordino": 20,
-        "unita_misura": "pz",
-        "prezzo_unitario": 15.90
+        "code": "P003",
+        "name": "Industrial socket 32A IP44",
+        "category": "Connectors",
+        "stock": 60,
+        "reorder_point": 20,
+        "unit": "pcs",
+        "unit_price": 15.90
     },
     {
-        "codice": "P004",
-        "nome": "Quadro elettrico 24 moduli",
-        "categoria": "Quadri",
-        "giacenza": 18,
-        "punto_riordino": 10,
-        "unita_misura": "pz",
-        "prezzo_unitario": 35.00
+        "code": "P004",
+        "name": "Electrical enclosure 24 modules",
+        "category": "Enclosures",
+        "stock": 18,
+        "reorder_point": 10,
+        "unit": "pcs",
+        "unit_price": 35.00
     },
     {
-        "codice": "P005",
-        "nome": "Interruttore differenziale 25A 30mA",
-        "categoria": "Protezione",
-        "giacenza": 85,
-        "punto_riordino": 25,
-        "unita_misura": "pz",
-        "prezzo_unitario": 22.00
+        "code": "P005",
+        "name": "Residual current device 25A 30mA",
+        "category": "Protection",
+        "stock": 85,
+        "reorder_point": 25,
+        "unit": "pcs",
+        "unit_price": 22.00
     },
     {
-        "codice": "P006",
-        "nome": "Morsetto a vite 4mm² (conf. 100pz)",
-        "categoria": "Connettori",
-        "giacenza": 32,
-        "punto_riordino": 10,
-        "unita_misura": "conf",
-        "prezzo_unitario": 18.50
+        "code": "P006",
+        "name": "Screw terminal 4mm² (box of 100)",
+        "category": "Connectors",
+        "stock": 32,
+        "reorder_point": 10,
+        "unit": "box",
+        "unit_price": 18.50
     },
     {
-        "codice": "P007",
-        "nome": "Canalina PVC 40x25mm (barra 2m)",
-        "categoria": "Cablaggio",
-        "giacenza": 200,
-        "punto_riordino": 50,
-        "unita_misura": "barra",
-        "prezzo_unitario": 3.20
+        "code": "P007",
+        "name": "PVC cable duct 40x25mm (2m bar)",
+        "category": "Wiring",
+        "stock": 200,
+        "reorder_point": 50,
+        "unit": "bar",
+        "unit_price": 3.20
     },
     {
-        "codice": "P008",
-        "nome": "Trasformatore 230V/24V 60VA",
-        "categoria": "Trasformatori",
-        "giacenza": 12,
-        "punto_riordino": 8,
-        "unita_misura": "pz",
-        "prezzo_unitario": 28.00
+        "code": "P008",
+        "name": "Transformer 230V/24V 60VA",
+        "category": "Transformers",
+        "stock": 12,
+        "reorder_point": 8,
+        "unit": "pcs",
+        "unit_price": 28.00
     },
 ]
 
-# Tre ordini di esempio in stati diversi per poter testare subito i vari flussi
-ORDINI_INIZIALI: list[dict[str, Any]] = [
+# Three sample orders in different states so all menu paths can be tested immediately.
+INITIAL_ORDERS: list[dict[str, Any]] = [
     {
-        "id_ordine": "ORD-2026-001",
-        "data": "2026-04-18",
-        "cliente": "Officina Rossi & Figli",
-        "priorita": "normale",
-        "stato": "evaso",
-        "righe": [
-            {"codice": "P001", "quantita_richiesta": 20, "quantita_evasa": 20},
-            {"codice": "P003", "quantita_richiesta": 10, "quantita_evasa": 10},
+        "order_id": "ORD-2026-001",
+        "date": "2026-04-18",
+        "customer": "Officina Rossi & Figli",
+        "priority": "normal",
+        "status": "fulfilled",
+        "lines": [
+            {"code": "P001", "quantity_requested": 20, "quantity_fulfilled": 20},
+            {"code": "P003", "quantity_requested": 10, "quantity_fulfilled": 10},
         ],
-        "note": ""
+        "notes": ""
     },
     {
-        "id_ordine": "ORD-2026-002",
-        "data": "2026-04-19",
-        "cliente": "Elettroforniture Bianchi",
-        "priorita": "alta",
-        "stato": "parziale",   # P002 non era disponibile per intero
-        "righe": [
-            {"codice": "P002", "quantita_richiesta": 20, "quantita_evasa": 15},
-            {"codice": "P005", "quantita_richiesta": 30, "quantita_evasa": 30},
+        "order_id": "ORD-2026-002",
+        "date": "2026-04-19",
+        "customer": "Elettroforniture Bianchi",
+        "priority": "high",
+        "status": "partial",
+        "lines": [
+            {"code": "P002", "quantity_requested": 20, "quantity_fulfilled": 15},
+            {"code": "P005", "quantity_requested": 30, "quantity_fulfilled": 30},
         ],
-        "note": "P002 evaso parzialmente per scorta insufficiente"
+        "notes": "P002 partially fulfilled — insufficient stock at time of dispatch"
     },
     {
-        "id_ordine": "ORD-2026-003",
-        "data": "2026-04-20",
-        "cliente": "Rivendita Verdi S.n.c.",
-        "priorita": "urgente",
-        "stato": "nuovo",   # ancora da evadere, utile per testare il flusso
-        "righe": [
-            {"codice": "P004", "quantita_richiesta": 5, "quantita_evasa": 0},
-            {"codice": "P008", "quantita_richiesta": 3, "quantita_evasa": 0},
+        "order_id": "ORD-2026-003",
+        "date": "2026-04-20",
+        "customer": "Rivendita Verdi S.n.c.",
+        "priority": "urgent",
+        "status": "new",
+        "lines": [
+            {"code": "P004", "quantity_requested": 5, "quantity_fulfilled": 0},
+            {"code": "P008", "quantity_requested": 3, "quantity_fulfilled": 0},
         ],
-        "note": ""
+        "notes": ""
     },
 ]
 
 
 # ==============================================================================
-# CLASSE Logger
+# Logger
 # ==============================================================================
-# Si occupa di scrivere ogni operazione su un file CSV con data, ora e operatore.
-# Ho scelto il CSV perché è facile da aprire in Excel per fare analisi successive.
 
 class Logger:
+    """Appends every system operation to a CSV file for auditing purposes."""
 
     def __init__(self, log_path: Path):
         self.log_path = log_path
         self._init_file()
 
     def _init_file(self):
-        """Crea la cartella e il file CSV se non esistono ancora."""
-        # mkdir con parents=True crea anche le cartelle intermedie se mancano
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         if not self.log_path.exists():
             with open(self.log_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
-                writer.writerow(["timestamp", "operatore", "operazione", "risorsa", "dettaglio"])
+                writer.writerow(["timestamp", "operator", "operation", "resource", "detail"])
 
-    def log(self, operazione: str, risorsa: str, dettaglio: str = "", operatore: str = OPERATORE_DEFAULT):
-        """Aggiunge una riga al log. Uso la modalità 'a' (append) per non sovrascrivere le righe precedenti."""
+    def log(self, operation: str, resource: str, detail: str = "", operator: str = DEFAULT_OPERATOR):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(self.log_path, "a", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow([timestamp, operatore, operazione, risorsa, dettaglio])
+        try:
+            with open(self.log_path, "a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow([timestamp, operator, operation, resource, detail])
+        except OSError:
+            # A log write failure should never crash the application.
+            pass
 
-    def get_log_oggi(self) -> list[dict[str, Any]]:
-        """Restituisce solo le voci di oggi filtrando per prefisso della data nel timestamp."""
-        oggi = date.today().strftime("%Y-%m-%d")
-        entries = []
+    def get_today_log(self) -> list[dict[str, Any]]:
+        """Returns all log entries recorded today."""
+        today = date.today().strftime("%Y-%m-%d")
+        entries: list[dict[str, Any]] = []
         try:
             with open(self.log_path, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    # il timestamp ha formato "2026-04-21 14:30:00", quindi basta
-                    # controllare se inizia con la data di oggi
-                    if row["timestamp"].startswith(oggi):
+                    if row["timestamp"].startswith(today):
                         entries.append(dict(row))
         except FileNotFoundError:
-            pass  # se il file non esiste ancora restituisce lista vuota
+            pass
         return entries
 
 
 # ==============================================================================
-# CLASSE DataManager
+# DataManager
 # ==============================================================================
-# Gestisce il salvataggio e il caricamento dei file JSON.
-# Ho separato questa logica dalle altre classi così se in futuro volessi usare
-# un database invece di JSON, cambierei solo questa classe.
 
 class DataManager:
+    """
+    Handles all JSON persistence. Isolating I/O here means the storage backend
+    can be swapped (e.g., SQLite) without touching any other class.
+    """
 
     def __init__(self, logger: Logger):
         self.logger = logger
-        # Creo le cartelle necessarie all'avvio se non esistono
         DATA_DIR.mkdir(exist_ok=True)
         REPORTS_DIR.mkdir(exist_ok=True)
 
-    def carica_prodotti(self) -> list[dict[str, Any]]:
-        """Se il file prodotti non esiste (prima esecuzione), lo crea con i dati iniziali."""
-        if not PRODOTTI_FILE.exists():
-            self._salva_json(PRODOTTI_FILE, PRODOTTI_INIZIALI)
-            self.logger.log("INIT", "prodotti.json", f"Creati {len(PRODOTTI_INIZIALI)} prodotti iniziali")
-        return self._carica_json(PRODOTTI_FILE)
+    def load_products(self) -> list[dict[str, Any]]:
+        if not PRODUCTS_FILE.exists():
+            self._save_json(PRODUCTS_FILE, INITIAL_PRODUCTS)
+            self.logger.log("INIT", "products.json", f"Seeded {len(INITIAL_PRODUCTS)} products")
+        return self._load_json(PRODUCTS_FILE)
 
-    def salva_prodotti(self, prodotti: list[dict[str, Any]]):
-        self._salva_json(PRODOTTI_FILE, prodotti)
-        self.logger.log("SALVATAGGIO", "prodotti.json", f"{len(prodotti)} prodotti salvati")
+    def save_products(self, products: list[dict[str, Any]]):
+        self._save_json(PRODUCTS_FILE, products)
+        self.logger.log("SAVE", "products.json", f"{len(products)} products written")
 
-    def carica_ordini(self) -> list[dict[str, Any]]:
-        """Se il file ordini non esiste (prima esecuzione), lo crea con gli ordini di esempio."""
-        if not ORDINI_FILE.exists():
-            self._salva_json(ORDINI_FILE, ORDINI_INIZIALI)
-            self.logger.log("INIT", "ordini.json", f"Creati {len(ORDINI_INIZIALI)} ordini iniziali")
-        return self._carica_json(ORDINI_FILE)
+    def load_orders(self) -> list[dict[str, Any]]:
+        if not ORDERS_FILE.exists():
+            self._save_json(ORDERS_FILE, INITIAL_ORDERS)
+            self.logger.log("INIT", "orders.json", f"Seeded {len(INITIAL_ORDERS)} orders")
+        return self._load_json(ORDERS_FILE)
 
-    def salva_ordini(self, ordini: list[dict[str, Any]]):
-        self._salva_json(ORDINI_FILE, ordini)
-        self.logger.log("SALVATAGGIO", "ordini.json", f"{len(ordini)} ordini salvati")
+    def save_orders(self, orders: list[dict[str, Any]]):
+        self._save_json(ORDERS_FILE, orders)
+        self.logger.log("SAVE", "orders.json", f"{len(orders)} orders written")
 
     @staticmethod
-    def _carica_json(path: Path) -> list[dict[str, Any]]:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+    def _load_json(path: Path) -> list[dict[str, Any]]:
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Data file not found: {path}")
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Corrupted data file {path}: {exc}") from exc
+        except PermissionError:
+            raise PermissionError(f"No read permission for {path}")
 
     @staticmethod
-    def _salva_json(path: Path, data: Any):
-        # ensure_ascii=False serve per salvare correttamente i caratteri accentati (è, à, ...)
-        # indent=2 rende il file leggibile anche aprendolo con un editor di testo
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+    def _save_json(path: Path, data: Any):
+        # ensure_ascii=False preserves non-ASCII characters (e.g., accented letters).
+        # indent=2 keeps files readable in a plain text editor.
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except PermissionError:
+            raise PermissionError(f"No write permission for {path}")
+        except OSError as exc:
+            raise OSError(f"Failed to write {path}: {exc}") from exc
 
 
 # ==============================================================================
-# CLASSE Warehouse
+# Warehouse
 # ==============================================================================
-# Gestisce il catalogo prodotti e le giacenze. I prodotti vengono tenuti in
-# memoria durante l'esecuzione e salvati su file solo quando serve.
 
 class Warehouse:
+    """In-memory product catalogue. Stock mutations are persisted on demand via save()."""
 
     def __init__(self, data_manager: DataManager, logger: Logger):
         self.dm = data_manager
         self.logger = logger
-        # Carico i prodotti in memoria all'avvio: così non devo rileggere il file
-        # ogni volta che cerco un prodotto
-        self.prodotti: list[dict[str, Any]] = self.dm.carica_prodotti()
+        self.products: list[dict[str, Any]] = self.dm.load_products()
 
-    def salva(self):
-        """Salva lo stato attuale dei prodotti su file."""
-        self.dm.salva_prodotti(self.prodotti)
+    def save(self):
+        self.dm.save_products(self.products)
 
-    def get_prodotto(self, codice: str) -> Optional[dict[str, Any]]:
-        """Cerca un prodotto per codice. Restituisce None se non esiste."""
-        for p in self.prodotti:
-            # upper() su entrambi per non distinguere tra "p001" e "P001"
-            if p["codice"].upper() == codice.upper():
+    def get_product(self, code: str) -> Optional[dict[str, Any]]:
+        for p in self.products:
+            if p["code"].upper() == code.upper():
                 return p
         return None
 
-    def get_prodotti_filtrati(
+    def get_filtered_products(
         self,
-        codice: str = "",
-        categoria: str = "",
-        sotto_riordino: bool = False
+        code: str = "",
+        category: str = "",
+        below_reorder: bool = False
     ) -> list[dict[str, Any]]:
+        """Returns products matching all provided filters; empty/False filters are ignored."""
+        results = self.products
+
+        if code:
+            results = [p for p in results if code.upper() in p["code"].upper()]
+        if category:
+            results = [p for p in results if category.lower() in p["category"].lower()]
+        if below_reorder:
+            results = [p for p in results if p["stock"] <= p["reorder_point"]]
+
+        return results
+
+    def update_stock(self, code: str, delta: int, operator: str = DEFAULT_OPERATOR) -> bool:
         """
-        Restituisce i prodotti che corrispondono ai filtri indicati.
-        Se un filtro è vuoto/False viene ignorato.
+        Adjusts stock by delta (positive = receipt, negative = dispatch).
+        A reorder alert is logged whenever stock falls to or below the reorder point.
         """
-        risultati = self.prodotti
+        product = self.get_product(code)
+        if not product:
+            return False
 
-        if codice:
-            risultati = [p for p in risultati if codice.upper() in p["codice"].upper()]
-
-        if categoria:
-            risultati = [p for p in risultati if categoria.lower() in p["categoria"].lower()]
-
-        # questo filtro mostra solo i prodotti che hanno bisogno di essere riordinati
-        if sotto_riordino:
-            risultati = [p for p in risultati if p["giacenza"] <= p["punto_riordino"]]
-
-        return risultati
-
-    def aggiorna_giacenza(self, codice: str, delta: int, operatore: str = OPERATORE_DEFAULT) -> bool:
-        """
-        Modifica la giacenza di un prodotto aggiungendo delta (positivo = carico, negativo = scarico).
-        Registra anche un alert nel log se la giacenza scende sotto il punto di riordino.
-        """
-        prodotto = self.get_prodotto(codice)
-        if not prodotto:
-            return False  # prodotto non trovato
-
-        giacenza_precedente = prodotto["giacenza"]
-        prodotto["giacenza"] += delta
+        previous = product["stock"]
+        product["stock"] += delta
 
         self.logger.log(
-            "AGGIORNAMENTO_GIACENZA",
-            codice,
-            f"{giacenza_precedente} → {prodotto['giacenza']} (delta: {delta:+d})",
-            operatore
+            "STOCK_UPDATE",
+            code,
+            f"{previous} → {product['stock']} (delta: {delta:+d})",
+            operator
         )
 
-        # Controllo soglia: se dopo l'aggiornamento siamo sotto il punto di riordino, avviso
-        if prodotto["giacenza"] <= prodotto["punto_riordino"]:
+        if product["stock"] <= product["reorder_point"]:
             self.logger.log(
-                "ALERT_RIORDINO",
-                codice,
-                f"Giacenza {prodotto['giacenza']} <= punto riordino {prodotto['punto_riordino']}",
-                operatore
+                "REORDER_ALERT",
+                code,
+                f"Stock {product['stock']} <= reorder point {product['reorder_point']}",
+                operator
             )
 
         return True
 
-    def aggiungi_prodotto(self, prodotto: dict[str, Any], operatore: str = OPERATORE_DEFAULT):
-        """Aggiunge un nuovo prodotto al catalogo, normalizzando il codice in maiuscolo."""
-        codice = prodotto["codice"].upper()
-        prodotto["codice"] = codice
-        self.prodotti.append(prodotto)
-        self.logger.log("NUOVO_PRODOTTO", codice, prodotto["nome"], operatore)
+    def add_product(self, product: dict[str, Any], operator: str = DEFAULT_OPERATOR):
+        product["code"] = product["code"].upper()
+        self.products.append(product)
+        self.logger.log("NEW_PRODUCT", product["code"], product["name"], operator)
 
-    def categorie(self) -> list[str]:
-        """Restituisce l'elenco delle categorie presenti, senza duplicati e in ordine alfabetico."""
-        return sorted(set(p["categoria"] for p in self.prodotti))
+    def categories(self) -> list[str]:
+        return sorted(set(p["category"] for p in self.products))
 
-    def prodotti_sotto_riordino(self) -> list[dict[str, Any]]:
-        """Restituisce tutti i prodotti con giacenza uguale o inferiore al punto di riordino."""
-        return [p for p in self.prodotti if p["giacenza"] <= p["punto_riordino"]]
+    def products_below_reorder(self) -> list[dict[str, Any]]:
+        return [p for p in self.products if p["stock"] <= p["reorder_point"]]
 
 
 # ==============================================================================
-# CLASSE OrderManager
+# OrderManager
 # ==============================================================================
-# Si occupa di creare, evadere e annullare gli ordini.
-# La logica più complessa è nell'evasione, dove bisogna aggiornare le giacenze
-# riga per riga e determinare lo stato finale dell'ordine.
 
 class OrderManager:
+    """
+    Manages the full order lifecycle: registration, fulfilment, and cancellation.
+
+    Registration records the order and checks availability but does not touch stock.
+    Fulfilment deducts stock line by line using min(requested, available), which
+    guarantees quantities never go negative. The final order status is determined
+    pessimistically: a single unmet line downgrades the entire order to "partial"
+    or "on_hold".
+    """
 
     def __init__(self, data_manager: DataManager, warehouse: Warehouse, logger: Logger):
         self.dm = data_manager
         self.wh = warehouse
         self.logger = logger
-        self.ordini: list[dict[str, Any]] = self.dm.carica_ordini()
+        self.orders: list[dict[str, Any]] = self.dm.load_orders()
 
-    def salva(self):
-        self.dm.salva_ordini(self.ordini)
+    def save(self):
+        self.dm.save_orders(self.orders)
 
-    def _genera_id(self) -> str:
-        """
-        Genera il prossimo ID ordine nel formato ORD-ANNO-NNN.
-        Conta quanti ordini esistono già per l'anno corrente e prende il numero successivo.
-        """
-        anno = datetime.now().year
-        # Filtro gli ordini dell'anno in corso per trovare l'ultimo numero usato
-        ordini_anno = [o["id_ordine"] for o in self.ordini if str(anno) in o["id_ordine"]]
-        if not ordini_anno:
-            return f"ORD-{anno}-001"
-        # Estraggo solo la parte numerica finale di ogni ID (es. "003") e prendo il massimo
-        numeri = [int(oid.split("-")[-1]) for oid in ordini_anno]
-        prossimo = max(numeri) + 1
-        return f"ORD-{anno}-{prossimo:03d}"  # :03d garantisce sempre 3 cifre (es. 004, not 4)
+    def _generate_id(self) -> str:
+        """Generates the next order ID in the format ORD-YEAR-NNN."""
+        year = datetime.now().year
+        year_orders = [o["order_id"] for o in self.orders if str(year) in o["order_id"]]
+        if not year_orders:
+            return f"ORD-{year}-001"
+        numbers = [int(oid.split("-")[-1]) for oid in year_orders]
+        return f"ORD-{year}-{max(numbers) + 1:03d}"
 
-    def registra_ordine(
+    def register_order(
         self,
-        cliente: str,
-        righe: list[dict[str, Any]],
-        priorita: str = "normale",
-        operatore: str = OPERATORE_DEFAULT
+        customer: str,
+        lines: list[dict[str, Any]],
+        priority: str = "normal",
+        operator: str = DEFAULT_OPERATOR
     ) -> dict[str, Any]:
         """
-        Registra un nuovo ordine verificando la disponibilità per ogni prodotto.
-        NON scarica le giacenze: quello avviene solo quando si evade l'ordine.
-        Lo stato dell'ordine dipende dalla disponibilità peggiore tra le righe:
-          - tutte disponibili  → "nuovo"
-          - almeno una parziale → "parziale"
-          - almeno una a zero o non trovata → "in_attesa"
+        Creates a new order and pre-checks availability for each line.
+        Stock is not modified at registration time.
         """
-        id_ordine = self._genera_id()
-        data_oggi = date.today().strftime("%Y-%m-%d")
+        order_id = self._generate_id()
+        today = date.today().strftime("%Y-%m-%d")
+        processed_lines: list[dict[str, Any]] = []
+        status = "new"
 
-        righe_processate = []
-        stato_ordine = "nuovo"  # parto da nuovo e peggioro se trovo problemi
+        for line in lines:
+            code = line["code"].upper()
+            qty_requested = line["quantity"]
+            product = self.wh.get_product(code)
 
-        for riga in righe:
-            codice = riga["codice"].upper()
-            quantita_richiesta = riga["quantita"]
-            prodotto = self.wh.get_prodotto(codice)
-
-            if not prodotto:
-                # Prodotto non trovato nel catalogo
-                righe_processate.append({
-                    "codice": codice,
-                    "quantita_richiesta": quantita_richiesta,
-                    "quantita_evasa": 0,
-                    "disponibilita": "prodotto_non_trovato"
+            if not product:
+                processed_lines.append({
+                    "code": code,
+                    "quantity_requested": qty_requested,
+                    "quantity_fulfilled": 0,
+                    "availability": "product_not_found"
                 })
-                stato_ordine = "in_attesa"
+                status = "on_hold"
                 continue
 
-            # Confronto la giacenza disponibile con quanto richiesto
-            giacenza = prodotto["giacenza"]
-            if giacenza >= quantita_richiesta:
-                disponibilita = "disponibile"
-            elif giacenza > 0:
-                disponibilita = "parziale"
-                # peggioro lo stato solo se era ancora "nuovo"
-                if stato_ordine == "nuovo":
-                    stato_ordine = "parziale"
+            stock = product["stock"]
+            if stock >= qty_requested:
+                availability = "available"
+            elif stock > 0:
+                availability = "partial"
+                if status == "new":
+                    status = "partial"
             else:
-                disponibilita = "indisponibile"
-                stato_ordine = "in_attesa"  # zero unità disponibili: ordine bloccato
+                availability = "unavailable"
+                status = "on_hold"
 
-            righe_processate.append({
-                "codice": codice,
-                "quantita_richiesta": quantita_richiesta,
-                "quantita_evasa": 0,
-                "disponibilita": disponibilita
+            processed_lines.append({
+                "code": code,
+                "quantity_requested": qty_requested,
+                "quantity_fulfilled": 0,
+                "availability": availability
             })
 
-        # Costruisco il dizionario dell'ordine completo
-        nuovo_ordine: dict[str, Any] = {
-            "id_ordine": id_ordine,
-            "data": data_oggi,
-            "cliente": cliente,
-            "priorita": priorita,
-            "stato": stato_ordine,
-            "righe": righe_processate,
-            "note": ""
+        new_order: dict[str, Any] = {
+            "order_id": order_id,
+            "date": today,
+            "customer": customer,
+            "priority": priority,
+            "status": status,
+            "lines": processed_lines,
+            "notes": ""
         }
-        self.ordini.append(nuovo_ordine)
+        self.orders.append(new_order)
         self.logger.log(
-            "NUOVO_ORDINE",
-            id_ordine,
-            f"Cliente: {cliente} | Priorità: {priorita} | Stato: {stato_ordine}",
-            operatore
+            "NEW_ORDER",
+            order_id,
+            f"Customer: {customer} | Priority: {priority} | Status: {status}",
+            operator
         )
-        return nuovo_ordine
+        return new_order
 
-    def evadi_ordine(self, id_ordine: str, operatore: str = OPERATORE_DEFAULT) -> tuple[bool, str]:
+    def fulfill_order(self, order_id: str, operator: str = DEFAULT_OPERATOR) -> tuple[bool, str]:
         """
-        Tenta di evadere un ordine: per ogni riga, scarica dal magazzino
-        quanto disponibile (fino alla quantità richiesta).
-        Uso min() per non rischiare di portare la giacenza sotto zero.
+        Dispatches an order. Each line is fulfilled up to available stock.
+        The order reaches "fulfilled" status only when every line is fully covered.
         """
-        ordine = self.get_ordine(id_ordine)
-        if not ordine:
-            return False, f"Ordine {id_ordine} non trovato."
-        if ordine["stato"] == "evaso":
-            return False, f"Ordine {id_ordine} è già stato evaso."
-        if ordine["stato"] == "annullato":
-            return False, f"Ordine {id_ordine} è annullato, non si può evadere."
+        order = self.get_order(order_id)
+        if not order:
+            return False, f"Order {order_id} not found."
+        if order["status"] == "fulfilled":
+            return False, f"Order {order_id} has already been fulfilled."
+        if order["status"] == "cancelled":
+            return False, f"Order {order_id} is cancelled and cannot be fulfilled."
 
-        tutto_evaso = True  # diventerà False se anche solo una riga rimane incompleta
-        messaggi: list[str] = []
+        fully_fulfilled = True
+        messages: list[str] = []
 
-        for riga in ordine["righe"]:
-            codice = riga["codice"]
-            # Calcolo quanto manca ancora da evadere per questa riga
-            da_evadere = riga["quantita_richiesta"] - riga["quantita_evasa"]
+        for line in order["lines"]:
+            code = line["code"]
+            remaining = line["quantity_requested"] - line["quantity_fulfilled"]
 
-            if da_evadere <= 0:
-                continue  # questa riga era già completa
-
-            prodotto = self.wh.get_prodotto(codice)
-            if not prodotto:
-                messaggi.append(f"  {codice}: prodotto non trovato in magazzino")
-                tutto_evaso = False
+            if remaining <= 0:
                 continue
 
-            # min() serve a non scaricare più di quello che c'è in magazzino
-            da_scaricare = min(da_evadere, prodotto["giacenza"])
+            product = self.wh.get_product(code)
+            if not product:
+                messages.append(f"  {code}: product not found in warehouse")
+                fully_fulfilled = False
+                continue
 
-            if da_scaricare > 0:
-                self.wh.aggiorna_giacenza(codice, -da_scaricare, operatore)
-                riga["quantita_evasa"] += da_scaricare
-                # aggiorno il flag di disponibilità per rispecchiare il risultato reale
-                if da_scaricare == da_evadere:
-                    riga["disponibilita"] = "disponibile"
-                else:
-                    riga["disponibilita"] = "parziale"
+            to_dispatch = min(remaining, product["stock"])
 
-            # Controllo se la riga è ora completamente soddisfatta
-            if riga["quantita_evasa"] < riga["quantita_richiesta"]:
-                tutto_evaso = False
-                mancanti = riga["quantita_richiesta"] - riga["quantita_evasa"]
-                messaggi.append(
-                    f"  {codice}: evasi {riga['quantita_evasa']}/{riga['quantita_richiesta']} — mancano {mancanti}"
+            if to_dispatch > 0:
+                self.wh.update_stock(code, -to_dispatch, operator)
+                line["quantity_fulfilled"] += to_dispatch
+                line["availability"] = "available" if to_dispatch == remaining else "partial"
+
+            if line["quantity_fulfilled"] < line["quantity_requested"]:
+                fully_fulfilled = False
+                short = line["quantity_requested"] - line["quantity_fulfilled"]
+                messages.append(
+                    f"  {code}: dispatched {line['quantity_fulfilled']}/{line['quantity_requested']} — {short} short"
                 )
             else:
-                messaggi.append(
-                    f"  {codice}: evasi {riga['quantita_evasa']}/{riga['quantita_richiesta']} ✓"
+                messages.append(
+                    f"  {code}: dispatched {line['quantity_fulfilled']}/{line['quantity_requested']} ✓"
                 )
 
-        # Lo stato finale è "evaso" solo se tutte le righe sono state completate
-        if tutto_evaso:
-            ordine["stato"] = "evaso"
-        else:
-            ordine["stato"] = "parziale"
-
+        order["status"] = "fulfilled" if fully_fulfilled else "partial"
         self.logger.log(
-            "EVASIONE_ORDINE",
-            id_ordine,
-            f"Stato finale: {ordine['stato']} | Operatore: {operatore}",
-            operatore
+            "ORDER_FULFILL",
+            order_id,
+            f"Final status: {order['status']} | Operator: {operator}",
+            operator
         )
-        messaggio_finale = f"Ordine {id_ordine} — stato: {ordine['stato'].upper()}\n" + "\n".join(messaggi)
-        return True, messaggio_finale
+        summary = f"Order {order_id} — status: {order['status'].upper()}\n" + "\n".join(messages)
+        return True, summary
 
-    def annulla_ordine(self, id_ordine: str, operatore: str = OPERATORE_DEFAULT) -> tuple[bool, str]:
-        """Annulla un ordine che non sia già stato evaso. Non modifica le giacenze."""
-        ordine = self.get_ordine(id_ordine)
-        if not ordine:
-            return False, f"Ordine {id_ordine} non trovato."
-        if ordine["stato"] == "evaso":
-            return False, "Non si può annullare un ordine già evaso."
-        ordine["stato"] = "annullato"
-        self.logger.log("ANNULLAMENTO_ORDINE", id_ordine, f"Cliente: {ordine['cliente']}", operatore)
-        return True, f"Ordine {id_ordine} annullato."
+    def cancel_order(self, order_id: str, operator: str = DEFAULT_OPERATOR) -> tuple[bool, str]:
+        """Cancels an order. Already-fulfilled orders cannot be cancelled."""
+        order = self.get_order(order_id)
+        if not order:
+            return False, f"Order {order_id} not found."
+        if order["status"] == "fulfilled":
+            return False, "Fulfilled orders cannot be cancelled."
+        order["status"] = "cancelled"
+        self.logger.log("ORDER_CANCEL", order_id, f"Customer: {order['customer']}", operator)
+        return True, f"Order {order_id} cancelled."
 
-    def get_ordine(self, id_ordine: str) -> Optional[dict[str, Any]]:
-        """Cerca un ordine per ID esatto. Restituisce None se non esiste."""
-        for o in self.ordini:
-            if o["id_ordine"] == id_ordine:
+    def get_order(self, order_id: str) -> Optional[dict[str, Any]]:
+        for o in self.orders:
+            if o["order_id"] == order_id:
                 return o
         return None
 
-    def get_ordini_filtrati(
+    def get_filtered_orders(
         self,
-        stato: str = "",
-        cliente: str = "",
-        data_da: str = "",
-        data_a: str = ""
+        status: str = "",
+        customer: str = "",
+        date_from: str = "",
+        date_to: str = ""
     ) -> list[dict[str, Any]]:
         """
-        Filtra gli ordini per i criteri indicati (tutti opzionali).
-        Per le date uso il confronto diretto tra stringhe: funziona perché
-        il formato YYYY-MM-DD ha lo stesso ordine lessicografico e cronologico.
+        Filters orders by any combination of status, customer substring, and date range.
+        Date strings are compared lexicographically, which is correct for ISO 8601 format.
         """
-        risultati = self.ordini
+        results = self.orders
 
-        if stato:
-            risultati = [o for o in risultati if o["stato"] == stato]
+        if status:
+            results = [o for o in results if o["status"] == status]
+        if customer:
+            results = [o for o in results if customer.lower() in o["customer"].lower()]
+        if date_from:
+            results = [o for o in results if o["date"] >= date_from]
+        if date_to:
+            results = [o for o in results if o["date"] <= date_to]
 
-        if cliente:
-            risultati = [o for o in risultati if cliente.lower() in o["cliente"].lower()]
+        return results
 
-        if data_da:
-            risultati = [o for o in risultati if o["data"] >= data_da]
-
-        if data_a:
-            risultati = [o for o in risultati if o["data"] <= data_a]
-
-        return risultati
-
-    def ordini_oggi(self) -> list[dict[str, Any]]:
-        oggi = date.today().strftime("%Y-%m-%d")
-        return [o for o in self.ordini if o["data"] == oggi]
+    def orders_today(self) -> list[dict[str, Any]]:
+        today = date.today().strftime("%Y-%m-%d")
+        return [o for o in self.orders if o["date"] == today]
 
 
 # ==============================================================================
-# CLASSE ReportGenerator
+# ReportGenerator
 # ==============================================================================
-# Genera il report giornaliero in due formati: TXT (leggibile a schermo) e
-# CSV (importabile in Excel). Ho scelto questi due formati per coprire sia
-# chi usa il terminale sia chi preferisce i fogli di calcolo.
 
 class ReportGenerator:
+    """Generates a daily summary report in plain-text and CSV formats."""
 
     def __init__(self, warehouse: Warehouse, order_manager: OrderManager, logger: Logger):
         self.wh = warehouse
         self.om = order_manager
         self.logger = logger
 
-    def genera_report_giornaliero(self, data_report: str = "") -> tuple[str, str]:
+    def generate_daily_report(self, report_date: str = "") -> tuple[str, str]:
         """
-        Genera il report per la data indicata (default: oggi).
-        Restituisce il testo del report e il percorso del file CSV salvato.
+        Generates the report for report_date (defaults to today).
+        Returns the report text and the path to the saved CSV file.
         """
-        if not data_report:
-            data_report = date.today().strftime("%Y-%m-%d")
+        if not report_date:
+            report_date = date.today().strftime("%Y-%m-%d")
 
-        # Separo gli ordini del giorno per stato
-        ordini_giorno = [o for o in self.om.ordini if o["data"] == data_report]
-        ordini_evasi    = [o for o in ordini_giorno if o["stato"] == "evaso"]
-        ordini_parziali = [o for o in ordini_giorno if o["stato"] == "parziale"]
-        ordini_sospeso  = [o for o in ordini_giorno if o["stato"] in ("nuovo", "in_attesa")]
-        ordini_annullati = [o for o in ordini_giorno if o["stato"] == "annullato"]
+        day_orders = [o for o in self.om.orders if o["date"] == report_date]
+        fulfilled  = [o for o in day_orders if o["status"] == "fulfilled"]
+        partial    = [o for o in day_orders if o["status"] == "partial"]
+        pending    = [o for o in day_orders if o["status"] in ("new", "on_hold")]
+        cancelled  = [o for o in day_orders if o["status"] == "cancelled"]
 
-        # Calcolo le vendite del giorno: sommo le quantità evase per ogni prodotto
-        # usando un dizionario come accumulatore (chiave = codice prodotto)
-        vendite: dict[str, int] = {}
-        for ordine in ordini_giorno:
-            for riga in ordine["righe"]:
-                codice = riga["codice"]
-                vendite[codice] = vendite.get(codice, 0) + riga.get("quantita_evasa", 0)
-        # Ordino per quantità decrescente e prendo i primi 5
-        top_prodotti = sorted(vendite.items(), key=lambda x: x[1], reverse=True)[:5]
+        # Aggregate quantities dispatched today to find the top-moving products.
+        dispatched: dict[str, int] = {}
+        for order in day_orders:
+            for line in order["lines"]:
+                code = line["code"]
+                dispatched[code] = dispatched.get(code, 0) + line.get("quantity_fulfilled", 0)
+        top_products = sorted(dispatched.items(), key=lambda x: x[1], reverse=True)[:5]
 
-        prodotti_riordino = self.wh.prodotti_sotto_riordino()
+        low_stock = self.wh.products_below_reorder()
 
-        # ---- Costruzione del testo TXT ----
-        sep   = "=" * 60
-        linea = "-" * 60
+        sep  = "=" * 60
+        hdiv = "-" * 60
 
-        righe_testo = [
+        rows = [
             sep,
-            f"  REPORT GIORNALIERO — LogiServe S.r.l.",
-            f"  Data: {data_report}",
-            f"  Generato il: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"  DAILY REPORT — LogiServe S.r.l.",
+            f"  Date: {report_date}",
+            f"  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             sep, "",
-            "RIEPILOGO ORDINI", linea,
-            f"  Ordini ricevuti oggi  : {len(ordini_giorno)}",
-            f"  Ordini evasi          : {len(ordini_evasi)}",
-            f"  Ordini parziali       : {len(ordini_parziali)}",
-            f"  Ordini in sospeso     : {len(ordini_sospeso)}",
-            f"  Ordini annullati      : {len(ordini_annullati)}", "",
+            "ORDER SUMMARY", hdiv,
+            f"  Orders received today : {len(day_orders)}",
+            f"  Fulfilled             : {len(fulfilled)}",
+            f"  Partial               : {len(partial)}",
+            f"  Pending               : {len(pending)}",
+            f"  Cancelled             : {len(cancelled)}", "",
         ]
 
-        if top_prodotti:
-            righe_testo += ["PRODOTTI PIÙ VENDUTI (OGGI)", linea]
-            for codice, qty in top_prodotti:
-                prodotto = self.wh.get_prodotto(codice)
-                nome = prodotto["nome"] if prodotto else codice
-                righe_testo.append(f"  {codice} — {nome}: {qty} unità")
-            righe_testo.append("")
+        if top_products:
+            rows += ["TOP PRODUCTS (TODAY)", hdiv]
+            for code, qty in top_products:
+                product = self.wh.get_product(code)
+                name = product["name"] if product else code
+                rows.append(f"  {code} — {name}: {qty} units dispatched")
+            rows.append("")
 
-        righe_testo += [
-            "STATO GIACENZE", linea,
-            f"  {'Codice':<8} {'Nome':<35} {'Giacenza':>9} {'Riordino':>9} {'UM':<6} {'Stato':<12}",
-            f"  {'-'*8} {'-'*35} {'-'*9} {'-'*9} {'-'*6} {'-'*12}",
+        rows += [
+            "STOCK STATUS", hdiv,
+            f"  {'Code':<8} {'Name':<35} {'Stock':>7} {'Reorder':>8} {'Unit':<6} {'Status':<14}",
+            f"  {'-'*8} {'-'*35} {'-'*7} {'-'*8} {'-'*6} {'-'*14}",
         ]
-        for p in sorted(self.wh.prodotti, key=lambda x: x["codice"]):
-            if p["giacenza"] == 0:
-                stato_g = "✗ ESAURITO"
-            elif p["giacenza"] <= p["punto_riordino"]:
-                stato_g = "⚠ RIORDINO"
+        for p in sorted(self.wh.products, key=lambda x: x["code"]):
+            if p["stock"] == 0:
+                stock_status = "✗ OUT OF STOCK"
+            elif p["stock"] <= p["reorder_point"]:
+                stock_status = "⚠ REORDER"
             else:
-                stato_g = "OK"
-            righe_testo.append(
-                f"  {p['codice']:<8} {p['nome'][:35]:<35} {p['giacenza']:>9} "
-                f"{p['punto_riordino']:>9} {p['unita_misura']:<6} {stato_g:<12}"
+                stock_status = "OK"
+            rows.append(
+                f"  {p['code']:<8} {p['name'][:35]:<35} {p['stock']:>7} "
+                f"{p['reorder_point']:>8} {p['unit']:<6} {stock_status:<14}"
             )
-        righe_testo.append("")
+        rows.append("")
 
-        if prodotti_riordino:
-            righe_testo += ["ALERT: PRODOTTI DA RIORDINARE", linea]
-            for p in prodotti_riordino:
-                righe_testo.append(
-                    f"  {p['codice']} — {p['nome']}: giacenza {p['giacenza']} (soglia: {p['punto_riordino']})"
+        if low_stock:
+            rows += ["REORDER ALERTS", hdiv]
+            for p in low_stock:
+                rows.append(
+                    f"  {p['code']} — {p['name']}: stock {p['stock']} (threshold: {p['reorder_point']})"
                 )
-            righe_testo.append("")
+            rows.append("")
 
-        if ordini_sospeso:
-            righe_testo += ["ORDINI IN SOSPESO", linea]
-            for o in ordini_sospeso:
-                righe_testo.append(
-                    f"  {o['id_ordine']} | {o['cliente']} | Priorità: {o['priorita']}"
-                )
-            righe_testo.append("")
+        if pending:
+            rows += ["PENDING ORDERS", hdiv]
+            for o in pending:
+                rows.append(f"  {o['order_id']} | {o['customer']} | Priority: {o['priority']}")
+            rows.append("")
 
-        righe_testo.append(sep)
-        testo = "\n".join(righe_testo)
+        rows.append(sep)
+        text = "\n".join(rows)
 
-        # Salvo il file TXT
-        txt_path = REPORTS_DIR / f"report_{data_report}.txt"
+        txt_path = REPORTS_DIR / f"report_{report_date}.txt"
         with open(txt_path, "w", encoding="utf-8") as f:
-            f.write(testo)
+            f.write(text)
 
-        # ---- Costruzione e salvataggio del CSV ----
-        # Uso tre colonne (Sezione, Campo, Valore) per poterlo filtrare facilmente in Excel
-        csv_path = REPORTS_DIR / f"report_{data_report}.csv"
+        # Three-column layout (Section, Field, Value) makes the CSV easy to filter in Excel.
+        csv_path = REPORTS_DIR / f"report_{report_date}.csv"
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Sezione", "Campo", "Valore"])
-            writer.writerow(["Riepilogo", "Data report", data_report])
-            writer.writerow(["Riepilogo", "Ordini ricevuti", len(ordini_giorno)])
-            writer.writerow(["Riepilogo", "Ordini evasi", len(ordini_evasi)])
-            writer.writerow(["Riepilogo", "Ordini parziali", len(ordini_parziali)])
-            writer.writerow(["Riepilogo", "Ordini in sospeso", len(ordini_sospeso)])
-            writer.writerow(["Riepilogo", "Ordini annullati", len(ordini_annullati)])
-            for codice, qty in top_prodotti:
-                writer.writerow(["Top venduto", codice, qty])
-            for p in self.wh.prodotti:
-                writer.writerow(["Giacenza", p["codice"], p["giacenza"]])
-            for p in prodotti_riordino:
-                writer.writerow(["Alert riordino", p["codice"], p["giacenza"]])
+            writer.writerow(["Section", "Field", "Value"])
+            writer.writerow(["Summary", "Report date", report_date])
+            writer.writerow(["Summary", "Orders received", len(day_orders)])
+            writer.writerow(["Summary", "Fulfilled", len(fulfilled)])
+            writer.writerow(["Summary", "Partial", len(partial)])
+            writer.writerow(["Summary", "Pending", len(pending)])
+            writer.writerow(["Summary", "Cancelled", len(cancelled)])
+            for code, qty in top_products:
+                writer.writerow(["Top product", code, qty])
+            for p in self.wh.products:
+                writer.writerow(["Stock", p["code"], p["stock"]])
+            for p in low_stock:
+                writer.writerow(["Reorder alert", p["code"], p["stock"]])
 
-        self.logger.log("REPORT", f"report_{data_report}", f"Salvato in {txt_path} e {csv_path}")
-        return testo, str(csv_path)
+        self.logger.log("REPORT", f"report_{report_date}", f"Saved to {txt_path} and {csv_path}")
+        return text, str(csv_path)
 
 
 # ==============================================================================
-# CLASSE CLI
+# CLI
 # ==============================================================================
-# Gestisce tutta l'interfaccia a menu. Ho cercato di tenere ogni funzione
-# il più corta possibile, delegando la logica alle altre classi.
 
 class CLI:
+    """Interactive menu loop. All business logic is delegated to the classes above."""
 
     def __init__(self):
-        # Creo le componenti nell'ordine giusto: Logger prima di tutto,
-        # perché le altre classi lo usano già durante l'inizializzazione
+        # Logger must be instantiated first because every other component uses it during init.
         logger = Logger(LOG_FILE)
         dm = DataManager(logger)
         self.wh = Warehouse(dm, logger)
         self.om = OrderManager(dm, self.wh, logger)
         self.rg = ReportGenerator(self.wh, self.om, logger)
         self.logger = logger
-        self.operatore = "operatore"  # modificabile dal menu impostazioni
+        self.operator = "operator"
 
     @staticmethod
-    def _stampa_intestazione(titolo: str):
+    def _print_header(title: str):
         print(f"\n{'=' * 60}")
-        print(f"  {titolo}")
+        print(f"  {title}")
         print(f"{'=' * 60}")
 
     @staticmethod
     def _input(prompt: str) -> str:
-        """Legge una stringa da tastiera. In caso di Ctrl+C o EOF restituisce stringa vuota."""
         try:
             return input(prompt).strip()
         except (EOFError, KeyboardInterrupt):
-            print("\nOperazione annullata.")
+            print("\nOperation cancelled.")
             return ""
 
     @staticmethod
-    def _input_int(prompt: str, minimo: int = 1) -> Optional[int]:
-        """Chiede un numero intero ripetendo la domanda finché il valore non è valido.
-        Se l'utente preme invio senza scrivere nulla, restituisce None."""
+    def _input_int(prompt: str, minimum: int = 1) -> Optional[int]:
+        """Prompts for an integer. Returns None if the user submits an empty string."""
         while True:
             val = CLI._input(prompt)
             if val == "":
-                return None  # l'utente vuole saltare
+                return None
             try:
                 n = int(val)
-                if n < minimo:
-                    print(f"  Inserire un valore >= {minimo}.")
+                if n < minimum:
+                    print(f"  Please enter a value >= {minimum}.")
                     continue
                 return n
             except ValueError:
-                print("  Valore non valido. Inserire un numero intero.")
+                print("  Invalid value — please enter an integer.")
 
     @staticmethod
-    def _conferma(domanda: str) -> bool:
-        """Chiede conferma sì/no. Il default è NO (la N maiuscola nel prompt lo indica)."""
-        risposta = CLI._input(f"{domanda} [s/N]: ").lower()
-        return risposta in ("s", "si", "sì", "y", "yes")
+    def _confirm(question: str) -> bool:
+        """Asks a yes/no question. Defaults to No."""
+        answer = CLI._input(f"{question} [y/N]: ").lower()
+        return answer in ("y", "yes")
 
-    def avvia(self):
-        print("\n  Benvenuto in LogiServe — Sistema di Monitoraggio Ordini e Magazzino")
-        print(f"  Operatore corrente: {self.operatore}")
-        self._avvisa_riordino_iniziale()  # mostro subito se ci sono prodotti critici
+    def run(self):
+        print("\n  Welcome to LogiServe — Warehouse & Order Monitoring System")
+        print(f"  Current operator: {self.operator}")
+        self._warn_low_stock_startup()
         while True:
-            self._stampa_intestazione("MENU PRINCIPALE")
-            print("  1. Gestione Ordini")
-            print("  2. Gestione Magazzino")
-            print("  3. Report e Log")
-            print("  4. Impostazioni")
-            print("  0. Esci e salva")
-            scelta = self._input("\nScelta: ")
-            if scelta == "1":
-                self._menu_ordini()
-            elif scelta == "2":
-                self._menu_magazzino()
-            elif scelta == "3":
-                self._menu_report()
-            elif scelta == "4":
-                self._menu_impostazioni()
-            elif scelta == "0":
-                self._esci()
+            self._print_header("MAIN MENU")
+            print("  1. Orders")
+            print("  2. Warehouse")
+            print("  3. Reports & Log")
+            print("  4. Settings")
+            print("  0. Save & Exit")
+            choice = self._input("\nChoice: ")
+            if choice == "1":
+                self._orders_menu()
+            elif choice == "2":
+                self._warehouse_menu()
+            elif choice == "3":
+                self._report_menu()
+            elif choice == "4":
+                self._settings_menu()
+            elif choice == "0":
+                self._quit()
                 break
             else:
-                print("  Scelta non valida.")
+                print("  Invalid choice.")
 
-    def _avvisa_riordino_iniziale(self):
-        """Mostra all'avvio i prodotti che hanno bisogno di essere riordinati."""
-        sotto = self.wh.prodotti_sotto_riordino()
-        if sotto:
-            print(f"\n  ⚠  ATTENZIONE: {len(sotto)} prodotto/i sotto il punto di riordino:")
-            for p in sotto:
-                print(f"     {p['codice']} — {p['nome']}: giacenza {p['giacenza']} (soglia {p['punto_riordino']})")
+    def _warn_low_stock_startup(self):
+        low = self.wh.products_below_reorder()
+        if low:
+            print(f"\n  ⚠  WARNING: {len(low)} product(s) below reorder point:")
+            for p in low:
+                print(f"     {p['code']} — {p['name']}: stock {p['stock']} (threshold {p['reorder_point']})")
 
-    # --- Menu Ordini ---
+    # --- Orders ---
 
-    def _menu_ordini(self):
+    def _orders_menu(self):
         while True:
-            self._stampa_intestazione("GESTIONE ORDINI")
-            print("  1. Registra nuovo ordine")
-            print("  2. Evadi ordine")
-            print("  3. Annulla ordine")
-            print("  4. Visualizza ordini")
-            print("  5. Dettaglio ordine")
-            print("  0. Torna al menu principale")
-            scelta = self._input("\nScelta: ")
-            if scelta == "1":
-                self._registra_ordine()
-            elif scelta == "2":
-                self._evadi_ordine()
-            elif scelta == "3":
-                self._annulla_ordine()
-            elif scelta == "4":
-                self._visualizza_ordini()
-            elif scelta == "5":
-                self._dettaglio_ordine()
-            elif scelta == "0":
+            self._print_header("ORDERS")
+            print("  1. Register new order")
+            print("  2. Fulfil order")
+            print("  3. Cancel order")
+            print("  4. View orders")
+            print("  5. Order detail")
+            print("  0. Back")
+            choice = self._input("\nChoice: ")
+            if choice == "1":
+                self._register_order()
+            elif choice == "2":
+                self._fulfill_order()
+            elif choice == "3":
+                self._cancel_order()
+            elif choice == "4":
+                self._view_orders()
+            elif choice == "5":
+                self._order_detail()
+            elif choice == "0":
                 break
             else:
-                print("  Scelta non valida.")
+                print("  Invalid choice.")
 
-    def _registra_ordine(self):
-        self._stampa_intestazione("REGISTRA NUOVO ORDINE")
+    def _register_order(self):
+        self._print_header("REGISTER NEW ORDER")
 
-        cliente = self._input("Cliente: ")
-        if not cliente:
-            print("  Il nome del cliente è obbligatorio.")
+        customer = self._input("Customer: ")
+        if not customer:
+            print("  Customer name is required.")
             return
 
-        print(f"  Priorità disponibili: {', '.join(PRIORITA_VALIDE)}")
-        priorita = self._input("Priorità [normale]: ").lower() or "normale"
-        if priorita not in PRIORITA_VALIDE:
-            print("  Priorità non riconosciuta, uso 'normale'.")
-            priorita = "normale"
+        print(f"  Available priorities: {', '.join(VALID_PRIORITIES)}")
+        priority = self._input("Priority [normal]: ").lower() or "normal"
+        if priority not in VALID_PRIORITIES:
+            print("  Unrecognised priority — defaulting to 'normal'.")
+            priority = "normal"
 
-        # Raccolgo le righe dell'ordine in un loop: ogni iterazione chiede codice + quantità
-        righe: list[dict[str, Any]] = []
-        print("\n  Inserire i prodotti dell'ordine (lasciare il codice vuoto per terminare):")
+        lines: list[dict[str, Any]] = []
+        print("\n  Enter order lines (leave code blank to finish):")
         while True:
-            codice = self._input("  Codice prodotto: ").upper()
-            if not codice:
-                break  # l'utente ha finito di inserire prodotti
+            code = self._input("  Product code: ").upper()
+            if not code:
+                break
 
-            prodotto = self.wh.get_prodotto(codice)
-            if not prodotto:
-                print(f"  ⚠  Prodotto {codice} non trovato nel catalogo.")
-                if not self._conferma("  Aggiungere comunque all'ordine?"):
+            product = self.wh.get_product(code)
+            if not product:
+                print(f"  ⚠  Product {code} not found in catalogue.")
+                if not self._confirm("  Add to order anyway?"):
                     continue
             else:
-                # mostro le info del prodotto per aiutare l'operatore
-                print(f"  → {prodotto['nome']} | Giacenza attuale: {prodotto['giacenza']} {prodotto['unita_misura']}")
+                print(f"  → {product['name']} | Current stock: {product['stock']} {product['unit']}")
 
-            quantita = self._input_int("  Quantità: ", minimo=1)
-            if quantita is None:
-                continue  # quantità vuota = salto questo prodotto
-            righe.append({"codice": codice, "quantita": quantita})
+            quantity = self._input_int("  Quantity: ", minimum=1)
+            if quantity is None:
+                continue
+            lines.append({"code": code, "quantity": quantity})
 
-        if not righe:
-            print("  Nessun prodotto inserito. Ordine non creato.")
+        if not lines:
+            print("  No products entered — order not created.")
             return
 
-        ordine = self.om.registra_ordine(cliente, righe, priorita, self.operatore)
-        print(f"\n  Ordine registrato con ID: {ordine['id_ordine']}")
-        print(f"  Stato: {ordine['stato'].upper()}")
-        for r in ordine["righe"]:
-            print(f"  {r['codice']}: richiesti {r['quantita_richiesta']} — disponibilità: {r.get('disponibilita', '?')}")
+        order = self.om.register_order(customer, lines, priority, self.operator)
+        print(f"\n  Order registered: {order['order_id']}")
+        print(f"  Status: {order['status'].upper()}")
+        for ln in order["lines"]:
+            print(f"  {ln['code']}: requested {ln['quantity_requested']} — availability: {ln.get('availability', '?')}")
 
-        self.om.salva()
+        self.om.save()
 
-    def _evadi_ordine(self):
-        self._stampa_intestazione("EVADI ORDINE")
-        # Mostro prima la lista degli ordini in attesa di evasione per aiutare l'utente
-        self._mostra_lista_ordini_breve(filtro_stato=["nuovo", "parziale", "in_attesa"])
+    def _fulfill_order(self):
+        self._print_header("FULFIL ORDER")
+        self._print_orders_brief(status_filter=["new", "partial", "on_hold"])
 
-        id_ordine = self._input("\nID ordine da evadere: ").upper()
-        if not id_ordine:
+        order_id = self._input("\nOrder ID to fulfil: ").upper()
+        if not order_id:
             return
-        if not self._conferma(f"Confermare evasione di {id_ordine}?"):
+        if not self._confirm(f"Confirm fulfilment of {order_id}?"):
             return
 
-        ok, msg = self.om.evadi_ordine(id_ordine, self.operatore)
+        ok, msg = self.om.fulfill_order(order_id, self.operator)
         print(f"\n{msg}")
 
         if ok:
-            self.om.salva()
-            self.wh.salva()  # salvo anche le giacenze aggiornate
-            self._avvisa_riordino_post_evasione()
+            self.om.save()
+            self.wh.save()
+            self._warn_low_stock_post_fulfil()
 
-    def _annulla_ordine(self):
-        self._stampa_intestazione("ANNULLA ORDINE")
-        self._mostra_lista_ordini_breve(filtro_stato=["nuovo", "parziale", "in_attesa"])
+    def _cancel_order(self):
+        self._print_header("CANCEL ORDER")
+        self._print_orders_brief(status_filter=["new", "partial", "on_hold"])
 
-        id_ordine = self._input("\nID ordine da annullare: ").upper()
-        if not id_ordine:
+        order_id = self._input("\nOrder ID to cancel: ").upper()
+        if not order_id:
             return
-        if not self._conferma(f"Sicuro di voler annullare {id_ordine}?"):
+        if not self._confirm(f"Cancel order {order_id}?"):
             return
 
-        ok, msg = self.om.annulla_ordine(id_ordine, self.operatore)
+        ok, msg = self.om.cancel_order(order_id, self.operator)
         print(f"\n  {msg}")
         if ok:
-            self.om.salva()
+            self.om.save()
 
-    def _visualizza_ordini(self):
-        self._stampa_intestazione("VISUALIZZA ORDINI")
-        print("  Filtri opzionali (invio per saltare):")
-        stato   = self._input(f"  Stato ({'/'.join(STATI_ORDINE)}): ").lower()
-        cliente = self._input("  Cliente (anche parziale): ")
-        data_da = self._input("  Data da (AAAA-MM-GG): ")
-        data_a  = self._input("  Data a  (AAAA-MM-GG): ")
+    def _view_orders(self):
+        self._print_header("VIEW ORDERS")
+        print("  Optional filters (press Enter to skip):")
+        status    = self._input(f"  Status ({'/'.join(ORDER_STATUSES)}): ").lower()
+        customer  = self._input("  Customer (partial match): ")
+        date_from = self._input("  From date (YYYY-MM-DD): ")
+        date_to   = self._input("  To date   (YYYY-MM-DD): ")
 
-        ordini = self.om.get_ordini_filtrati(stato, cliente, data_da, data_a)
-        if not ordini:
-            print("  Nessun ordine trovato con i filtri indicati.")
+        orders = self.om.get_filtered_orders(status, customer, date_from, date_to)
+        if not orders:
+            print("  No orders found for the given filters.")
             return
 
-        print(f"\n  {'ID Ordine':<18} {'Data':<12} {'Cliente':<28} {'Priorità':<10} {'Stato':<12}")
+        print(f"\n  {'Order ID':<18} {'Date':<12} {'Customer':<28} {'Priority':<10} {'Status':<12}")
         print(f"  {'-'*18} {'-'*12} {'-'*28} {'-'*10} {'-'*12}")
-        for o in ordini:
+        for o in orders:
             print(
-                f"  {o['id_ordine']:<18} {o['data']:<12} {o['cliente'][:28]:<28} "
-                f"{o['priorita']:<10} {o['stato']:<12}"
+                f"  {o['order_id']:<18} {o['date']:<12} {o['customer'][:28]:<28} "
+                f"{o['priority']:<10} {o['status']:<12}"
             )
-        print(f"\n  Trovati: {len(ordini)} ordini")
+        print(f"\n  Found: {len(orders)} orders")
 
-    def _dettaglio_ordine(self):
-        self._stampa_intestazione("DETTAGLIO ORDINE")
-        id_ordine = self._input("ID ordine: ").upper()
-        if not id_ordine:
+    def _order_detail(self):
+        self._print_header("ORDER DETAIL")
+        order_id = self._input("Order ID: ").upper()
+        if not order_id:
             return
-        ordine = self.om.get_ordine(id_ordine)
-        if not ordine:
-            print(f"  Ordine {id_ordine} non trovato.")
+        order = self.om.get_order(order_id)
+        if not order:
+            print(f"  Order {order_id} not found.")
             return
 
-        print(f"\n  ID Ordine : {ordine['id_ordine']}")
-        print(f"  Data      : {ordine['data']}")
-        print(f"  Cliente   : {ordine['cliente']}")
-        print(f"  Priorità  : {ordine['priorita']}")
-        print(f"  Stato     : {ordine['stato'].upper()}")
-        if ordine["note"]:
-            print(f"  Note      : {ordine['note']}")
+        print(f"\n  Order ID  : {order['order_id']}")
+        print(f"  Date      : {order['date']}")
+        print(f"  Customer  : {order['customer']}")
+        print(f"  Priority  : {order['priority']}")
+        print(f"  Status    : {order['status'].upper()}")
+        if order["notes"]:
+            print(f"  Notes     : {order['notes']}")
 
-        print(f"\n  {'Codice':<8} {'Richiesti':>10} {'Evasi':>8} {'Disponibilità':<18}")
-        print(f"  {'-'*8} {'-'*10} {'-'*8} {'-'*18}")
-        for r in ordine["righe"]:
-            prodotto = self.wh.get_prodotto(r["codice"])
-            # mostro il nome del prodotto tra parentesi se esiste ancora in catalogo
-            nome = f"({prodotto['nome'][:20]})" if prodotto else ""
+        print(f"\n  {'Code':<8} {'Requested':>10} {'Fulfilled':>10} {'Availability':<18}")
+        print(f"  {'-'*8} {'-'*10} {'-'*10} {'-'*18}")
+        for ln in order["lines"]:
+            product = self.wh.get_product(ln["code"])
+            name = f"({product['name'][:20]})" if product else ""
             print(
-                f"  {r['codice']:<8} {r['quantita_richiesta']:>10} {r['quantita_evasa']:>8} "
-                f"{r.get('disponibilita', '?'):<18} {nome}"
+                f"  {ln['code']:<8} {ln['quantity_requested']:>10} {ln['quantity_fulfilled']:>10} "
+                f"{ln.get('availability', '?'):<18} {name}"
             )
 
-    def _mostra_lista_ordini_breve(self, filtro_stato: Optional[list[str]] = None):
-        """Stampa un riepilogo compatto degli ordini, usato come riferimento prima di chiedere un ID."""
-        ordini = self.om.ordini
-        if filtro_stato:
-            ordini = [o for o in ordini if o["stato"] in filtro_stato]
-        if not ordini:
-            print("  Nessun ordine disponibile.")
+    def _print_orders_brief(self, status_filter: Optional[list[str]] = None):
+        """Prints a compact order list used as reference before asking for an order ID."""
+        orders = self.om.orders
+        if status_filter:
+            orders = [o for o in orders if o["status"] in status_filter]
+        if not orders:
+            print("  No orders available.")
             return
-        print(f"\n  {'ID Ordine':<18} {'Cliente':<28} {'Stato':<12} {'Priorità'}")
+        print(f"\n  {'Order ID':<18} {'Customer':<28} {'Status':<12} {'Priority'}")
         print(f"  {'-'*18} {'-'*28} {'-'*12} {'-'*10}")
-        # Mostro solo gli ultimi 15 per non riempire troppo lo schermo
-        for o in ordini[-15:]:
-            print(f"  {o['id_ordine']:<18} {o['cliente'][:28]:<28} {o['stato']:<12} {o['priorita']}")
+        for o in orders[-15:]:
+            print(f"  {o['order_id']:<18} {o['customer'][:28]:<28} {o['status']:<12} {o['priority']}")
 
-    # --- Menu Magazzino ---
+    # --- Warehouse ---
 
-    def _menu_magazzino(self):
+    def _warehouse_menu(self):
         while True:
-            self._stampa_intestazione("GESTIONE MAGAZZINO")
-            print("  1. Visualizza prodotti")
-            print("  2. Prodotti sotto punto di riordino")
-            print("  3. Aggiorna giacenza manualmente")
-            print("  4. Aggiungi nuovo prodotto")
-            print("  0. Torna al menu principale")
-            scelta = self._input("\nScelta: ")
-            if scelta == "1":
-                self._visualizza_prodotti()
-            elif scelta == "2":
-                self._prodotti_riordino()
-            elif scelta == "3":
-                self._aggiorna_giacenza_manuale()
-            elif scelta == "4":
-                self._aggiungi_prodotto()
-            elif scelta == "0":
+            self._print_header("WAREHOUSE")
+            print("  1. View products")
+            print("  2. Products below reorder point")
+            print("  3. Manual stock adjustment")
+            print("  4. Add new product")
+            print("  0. Back")
+            choice = self._input("\nChoice: ")
+            if choice == "1":
+                self._view_products()
+            elif choice == "2":
+                self._reorder_products()
+            elif choice == "3":
+                self._update_stock_manual()
+            elif choice == "4":
+                self._add_product()
+            elif choice == "0":
                 break
             else:
-                print("  Scelta non valida.")
+                print("  Invalid choice.")
 
-    def _visualizza_prodotti(self):
-        self._stampa_intestazione("STATO MAGAZZINO")
-        print("  Filtri opzionali (invio per saltare):")
-        codice = self._input("  Codice: ")
-        print(f"  Categorie presenti: {', '.join(self.wh.categorie())}")
-        categoria = self._input("  Categoria: ")
-        sotto_str = self._input("  Solo prodotti sotto riordino? [s/N]: ").lower()
-        sotto_riordino = sotto_str in ("s", "si", "sì", "y")
+    def _view_products(self):
+        self._print_header("PRODUCT CATALOGUE")
+        print("  Optional filters (press Enter to skip):")
+        code = self._input("  Code: ")
+        print(f"  Available categories: {', '.join(self.wh.categories())}")
+        category = self._input("  Category: ")
+        below_str = self._input("  Only products below reorder point? [y/N]: ").lower()
+        below_reorder = below_str in ("y", "yes")
 
-        prodotti = self.wh.get_prodotti_filtrati(codice, categoria, sotto_riordino)
-        if not prodotti:
-            print("  Nessun prodotto trovato.")
+        products = self.wh.get_filtered_products(code, category, below_reorder)
+        if not products:
+            print("  No products found.")
             return
 
         print(
-            f"\n  {'Cod':<8} {'Nome':<35} {'Giacenza':>9} {'Riordino':>9} "
-            f"{'UM':<6} {'Prezzo':>8} {'Stato'}"
+            f"\n  {'Code':<8} {'Name':<35} {'Stock':>7} {'Reorder':>8} "
+            f"{'Unit':<6} {'Price':>8} {'Status'}"
         )
-        print(f"  {'-'*8} {'-'*35} {'-'*9} {'-'*9} {'-'*6} {'-'*8} {'-'*10}")
-        for p in sorted(prodotti, key=lambda x: x["codice"]):
-            if p["giacenza"] == 0:
-                stato = "ESAURITO"
-            elif p["giacenza"] <= p["punto_riordino"]:
-                stato = "RIORDINO"
+        print(f"  {'-'*8} {'-'*35} {'-'*7} {'-'*8} {'-'*6} {'-'*8} {'-'*12}")
+        for p in sorted(products, key=lambda x: x["code"]):
+            if p["stock"] == 0:
+                status = "OUT OF STOCK"
+            elif p["stock"] <= p["reorder_point"]:
+                status = "REORDER"
             else:
-                stato = "OK"
+                status = "OK"
             print(
-                f"  {p['codice']:<8} {p['nome'][:35]:<35} {p['giacenza']:>9} "
-                f"{p['punto_riordino']:>9} {p['unita_misura']:<6} "
-                f"{p['prezzo_unitario']:>7.2f}€ {stato}"
+                f"  {p['code']:<8} {p['name'][:35]:<35} {p['stock']:>7} "
+                f"{p['reorder_point']:>8} {p['unit']:<6} "
+                f"{p['unit_price']:>7.2f}€ {status}"
             )
-        print(f"\n  Totale: {len(prodotti)} prodotti")
+        print(f"\n  Total: {len(products)} products")
 
-    def _prodotti_riordino(self):
-        self._stampa_intestazione("PRODOTTI SOTTO PUNTO DI RIORDINO")
-        prodotti = self.wh.prodotti_sotto_riordino()
-        if not prodotti:
-            print("  Tutti i prodotti sono sopra il punto di riordino.")
+    def _reorder_products(self):
+        self._print_header("PRODUCTS BELOW REORDER POINT")
+        products = self.wh.products_below_reorder()
+        if not products:
+            print("  All products are above their reorder point.")
             return
-        for p in prodotti:
+        for p in products:
             print(
-                f"  {p['codice']:<8} {p['nome']:<40} "
-                f"Giacenza: {p['giacenza']:>6} / Riordino: {p['punto_riordino']}"
+                f"  {p['code']:<8} {p['name']:<40} "
+                f"Stock: {p['stock']:>6} / Reorder: {p['reorder_point']}"
             )
 
-    def _aggiorna_giacenza_manuale(self):
-        """Permette di registrare un carico (+) o uno scarico (-) manuale."""
-        self._stampa_intestazione("AGGIORNAMENTO GIACENZA MANUALE")
-        codice = self._input("Codice prodotto: ").upper()
-        if not codice:
+    def _update_stock_manual(self):
+        """Registers a manual stock receipt (+) or adjustment (-)."""
+        self._print_header("MANUAL STOCK ADJUSTMENT")
+        code = self._input("Product code: ").upper()
+        if not code:
             return
 
-        prodotto = self.wh.get_prodotto(codice)
-        if not prodotto:
-            print(f"  Prodotto {codice} non trovato.")
+        product = self.wh.get_product(code)
+        if not product:
+            print(f"  Product {code} not found.")
             return
 
-        print(f"  {prodotto['nome']} — Giacenza attuale: {prodotto['giacenza']} {prodotto['unita_misura']}")
-        print("  Inserire la variazione (es. +50 per un carico, -10 per uno scarico):")
-        delta_str = self._input("  Variazione: ")
+        print(f"  {product['name']} — Current stock: {product['stock']} {product['unit']}")
+        print("  Enter the adjustment (e.g. +50 for a receipt, -10 for a write-off):")
+        delta_str = self._input("  Adjustment: ")
         if not delta_str:
             return
 
         try:
             delta = int(delta_str)
         except ValueError:
-            print("  Valore non valido.")
+            print("  Invalid value — please enter an integer.")
             return
 
-        # Avviso se la variazione porterebbe la giacenza sotto zero
-        nuova_giacenza = prodotto["giacenza"] + delta
-        if nuova_giacenza < 0:
-            print(f"  Attenzione: la giacenza diventerebbe {nuova_giacenza} (negativa).")
-            if not self._conferma("Continuare comunque?"):
+        new_stock = product["stock"] + delta
+        if new_stock < 0:
+            print(f"  Warning: this would bring stock to {new_stock} (negative).")
+            if not self._confirm("Continue anyway?"):
                 return
 
-        self.wh.aggiorna_giacenza(codice, delta, self.operatore)
-        self.wh.salva()
-        # prodotto["giacenza"] è già aggiornato perché aggiorna_giacenza modifica il dizionario
-        print(f"  Giacenza aggiornata: {prodotto['giacenza']} {prodotto['unita_misura']}")
+        self.wh.update_stock(code, delta, self.operator)
+        self.wh.save()
+        # product["stock"] reflects the updated value because update_stock mutates the dict in place.
+        print(f"  Stock updated: {product['stock']} {product['unit']}")
 
-    def _aggiungi_prodotto(self):
-        self._stampa_intestazione("AGGIUNGI NUOVO PRODOTTO")
+    def _add_product(self):
+        self._print_header("ADD NEW PRODUCT")
 
-        codice = self._input("Codice (es. P009): ").upper()
-        if not codice:
+        code = self._input("Code (e.g. P009): ").upper()
+        if not code:
             return
-        if self.wh.get_prodotto(codice):
-            print(f"  Esiste già un prodotto con codice {codice}.")
-            return
-
-        nome = self._input("Nome prodotto: ")
-        if not nome:
+        if self.wh.get_product(code):
+            print(f"  A product with code {code} already exists.")
             return
 
-        print(f"  Categorie già presenti: {', '.join(self.wh.categorie())}")
-        categoria      = self._input("Categoria: ")
-        giacenza       = self._input_int("Giacenza iniziale: ", minimo=0) or 0
-        punto_riordino = self._input_int("Punto di riordino: ", minimo=0) or 0
-        unita          = self._input("Unità di misura (es. pz, mt, kg): ") or "pz"
+        name = self._input("Product name: ")
+        if not name:
+            return
 
-        # Accetto sia il punto che la virgola come separatore decimale
-        prezzo_str = self._input("Prezzo unitario (€): ")
+        print(f"  Existing categories: {', '.join(self.wh.categories())}")
+        category      = self._input("Category: ")
+        stock         = self._input_int("Initial stock: ", minimum=0) or 0
+        reorder_point = self._input_int("Reorder point: ", minimum=0) or 0
+        unit          = self._input("Unit of measure (e.g. pcs, m, kg): ") or "pcs"
+
+        # Both dot and comma are accepted as decimal separators for convenience.
+        price_str = self._input("Unit price (€): ")
         try:
-            prezzo = float(prezzo_str.replace(",", "."))
+            unit_price = float(price_str.replace(",", "."))
         except (ValueError, AttributeError):
-            prezzo = 0.0
+            unit_price = 0.0
 
-        prodotto: dict[str, Any] = {
-            "codice": codice,
-            "nome": nome,
-            "categoria": categoria,
-            "giacenza": giacenza,
-            "punto_riordino": punto_riordino,
-            "unita_misura": unita,
-            "prezzo_unitario": prezzo
+        product: dict[str, Any] = {
+            "code": code,
+            "name": name,
+            "category": category,
+            "stock": stock,
+            "reorder_point": reorder_point,
+            "unit": unit,
+            "unit_price": unit_price
         }
-        self.wh.aggiungi_prodotto(prodotto, self.operatore)
-        self.wh.salva()
-        print(f"  Prodotto {codice} aggiunto correttamente al catalogo.")
+        self.wh.add_product(product, self.operator)
+        self.wh.save()
+        print(f"  Product {code} added to catalogue.")
 
-    def _avvisa_riordino_post_evasione(self):
-        """Mostra i prodotti scesi sotto soglia dopo l'evasione appena completata."""
-        sotto = self.wh.prodotti_sotto_riordino()
-        if sotto:
-            print(f"\n  ⚠  Prodotti scesi sotto il punto di riordino dopo l'evasione:")
-            for p in sotto:
-                print(f"     {p['codice']} — {p['nome']}: giacenza {p['giacenza']} (soglia {p['punto_riordino']})")
+    def _warn_low_stock_post_fulfil(self):
+        low = self.wh.products_below_reorder()
+        if low:
+            print(f"\n  ⚠  Products that fell below reorder point after fulfilment:")
+            for p in low:
+                print(f"     {p['code']} — {p['name']}: stock {p['stock']} (threshold {p['reorder_point']})")
 
-    # --- Menu Report e Log ---
+    # --- Reports & Log ---
 
-    def _menu_report(self):
+    def _report_menu(self):
         while True:
-            self._stampa_intestazione("REPORT E LOG")
-            print("  1. Genera report giornaliero (oggi)")
-            print("  2. Genera report per data specifica")
-            print("  3. Visualizza log operazioni (oggi)")
-            print("  0. Torna al menu principale")
-            scelta = self._input("\nScelta: ")
-            if scelta == "1":
-                self._genera_report()
-            elif scelta == "2":
-                data = self._input("Data (AAAA-MM-GG): ")
-                if data:
-                    self._genera_report(data)
-            elif scelta == "3":
-                self._visualizza_log()
-            elif scelta == "0":
+            self._print_header("REPORTS & LOG")
+            print("  1. Generate today's report")
+            print("  2. Generate report for a specific date")
+            print("  3. View today's operation log")
+            print("  0. Back")
+            choice = self._input("\nChoice: ")
+            if choice == "1":
+                self._generate_report()
+            elif choice == "2":
+                date_input = self._input("Date (YYYY-MM-DD): ")
+                if date_input:
+                    self._generate_report(date_input)
+            elif choice == "3":
+                self._view_log()
+            elif choice == "0":
                 break
             else:
-                print("  Scelta non valida.")
+                print("  Invalid choice.")
 
-    def _genera_report(self, data: str = ""):
-        print("\n  Generazione report in corso...")
-        testo, csv_path = self.rg.genera_report_giornaliero(data)
-        print(testo)
-        print(f"\n  File CSV salvato in: {csv_path}")
-        print(f"  File TXT salvato in: {csv_path.replace('.csv', '.txt')}")
+    def _generate_report(self, report_date: str = ""):
+        print("\n  Generating report...")
+        text, csv_path = self.rg.generate_daily_report(report_date)
+        print(text)
+        print(f"\n  CSV saved to: {csv_path}")
+        print(f"  TXT saved to: {csv_path.replace('.csv', '.txt')}")
 
-    def _visualizza_log(self):
-        self._stampa_intestazione("LOG OPERAZIONI — OGGI")
-        entries = self.logger.get_log_oggi()
+    def _view_log(self):
+        self._print_header("OPERATION LOG — TODAY")
+        entries = self.logger.get_today_log()
         if not entries:
-            print("  Nessuna operazione registrata oggi.")
+            print("  No operations logged today.")
             return
-        print(f"\n  {'Timestamp':<20} {'Operazione':<25} {'Risorsa':<15} {'Dettaglio'}")
+        print(f"\n  {'Timestamp':<20} {'Operation':<25} {'Resource':<15} {'Detail'}")
         print(f"  {'-'*20} {'-'*25} {'-'*15} {'-'*30}")
         for e in entries:
             print(
-                f"  {e['timestamp']:<20} {e['operazione']:<25} "
-                f"{e['risorsa']:<15} {e['dettaglio'][:40]}"
+                f"  {e['timestamp']:<20} {e['operation']:<25} "
+                f"{e['resource']:<15} {e['detail'][:40]}"
             )
 
-    # --- Menu Impostazioni ---
+    # --- Settings ---
 
-    def _menu_impostazioni(self):
-        self._stampa_intestazione("IMPOSTAZIONI")
-        print(f"  Operatore attuale: {self.operatore}")
-        nuovo = self._input("Nuovo nome operatore (invio per non cambiare): ")
-        if nuovo:
-            self.operatore = nuovo
-            print(f"  Operatore impostato a: {self.operatore}")
+    def _settings_menu(self):
+        self._print_header("SETTINGS")
+        print(f"  Current operator: {self.operator}")
+        new_name = self._input("New operator name (Enter to keep current): ")
+        if new_name:
+            self.operator = new_name
+            print(f"  Operator set to: {self.operator}")
 
-    def _esci(self):
-        """Salva tutto prima di uscire."""
-        print("\n  Salvataggio dati in corso...")
-        self.wh.salva()
-        self.om.salva()
-        print("  Dati salvati.")
-        print("  Arrivederci!\n")
+    def _quit(self):
+        print("\n  Saving data...")
+        self.wh.save()
+        self.om.save()
+        print("  Data saved. Goodbye!\n")
 
 
-# Punto di ingresso del programma
 if __name__ == "__main__":
     try:
         cli = CLI()
-        cli.avvia()
+        cli.run()
     except KeyboardInterrupt:
-        print("\n\n  Interruzione da tastiera. Arrivederci!")
+        print("\n\n  Interrupted. Goodbye!")
         sys.exit(0)
