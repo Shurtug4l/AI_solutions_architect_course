@@ -1,71 +1,71 @@
 # AI Solutions Architect Master
 
-Repository con progetti, esercizi e materiale pratico sviluppato durante il Master in **AI Solutions Architecture**.
+Repository with projects, exercises, and hands-on material developed during the **AI Solutions Architecture** Master program.
 
-Il percorso forma la capacità di progettare e orchestrare soluzioni di intelligenza artificiale end-to-end: dalla traduzione di obiettivi di business in architetture tecniche, alla selezione di tecnologie, all'integrazione di modelli AI, fino alla supervisione di team di sviluppo.
+The course builds the ability to design and orchestrate end-to-end AI solutions: from translating business objectives into technical architectures, to selecting technologies, integrating AI models, and leading development teams.
 
 ---
 
-## Aree tematiche
+## Topic Areas
 
-### Programmazione con Python
+### Python Programming
 
-Fondamenti di programmazione applicati a contesti reali di data engineering e automazione.
-**Progetto:** Sistema di monitoraggio ordini e magazzino.
+Programming fundamentals applied to real-world data engineering and automation scenarios.
+**Project:** Order and warehouse monitoring system.
 
 ### Machine Learning
 
-Pipeline ML complete, dalla preparazione dei dati alla valutazione dei modelli, con focus su casi d'uso industriali.
-**Progetto:** Modello di classificazione dei pezzi difettosi in produzione.
+Complete ML pipelines, from data preparation to model evaluation, with a focus on industrial use cases.
+**Project:** Classification model for defective parts in manufacturing.
 
 ### Large Language Models
 
-Architetture transformer, prompt engineering, fine-tuning e sistemi RAG per applicazioni enterprise.
-**Progetto:** Sistema RAG per la gestione intelligente della conoscenza aziendale.
+Transformer architectures, prompt engineering, fine-tuning, and RAG systems for enterprise applications.
+**Project:** RAG system for intelligent enterprise knowledge management.
 
 ### Agentic AI
 
-Progettazione di sistemi multi-agente, orchestrazione e tool use per automazione di processi complessi.
-**Progetto:** Orchestrazione di agenti AI per un'azienda di servizi digitali.
+Design of multi-agent systems, orchestration, and tool use for automating complex processes.
+**Project:** AI agent orchestration for a digital services company.
 
 ### Business Case & AI Product Management
 
-Analisi di fattibilità, roadmap di prodotto, stima dei costi e gestione del ciclo di vita di soluzioni AI.
-**Progetto:** Dalla visione di business al deployment di un sistema AI.
+Feasibility analysis, product roadmaps, cost estimation, and lifecycle management of AI solutions.
+**Project:** From business vision to deployment of an AI system.
 
-### Cloud per l'AI
+### Cloud for AI
 
-Progettazione di infrastrutture cloud-native per workload AI su AWS, GCP e Azure.
-**Progetto:** Infrastruttura AI multi-cloud.
+Design of cloud-native infrastructures for AI workloads on AWS, GCP, and Azure.
+**Project:** Multi-cloud AI infrastructure.
 
-### Deploy di servizi AI
+### AI Service Deployment
 
-Containerizzazione, CI/CD, monitoraggio e scalabilità di modelli in produzione.
-**Progetto:** Deploy di un modello predittivo per la stima dei tempi di consegna.
+Containerization, CI/CD, monitoring, and scalability of models in production.
+**Project:** Deployment of a predictive model for delivery time estimation.
 
 ### Data Governance & Knowledge Management
 
-Strategie di gestione, qualità e lineage del dato per sistemi AI enterprise.
-**Progetto:** Architettura di Data Governance per un'azienda farmaceutica.
+Strategies for data management, quality, and lineage in enterprise AI systems.
+**Project:** Data Governance architecture for a pharmaceutical company.
 
-### Design di soluzioni e architetture
+### Solution Design & Architecture
 
-Pattern architetturali per sistemi AI scalabili, resilienti e manutenibili.
-**Progetto:** Architettura scalabile per sistemi AI.
+Architectural patterns for scalable, resilient, and maintainable AI systems.
+**Project:** Scalable architecture for AI systems.
 
-### Sicurezza delle architetture AI
+### AI Architecture Security
 
-Threat modeling, analisi delle vulnerabilità e hardening di sistemi basati su AI.
-**Progetto:** Analisi di rischi e vulnerabilità di un sistema basato su AI.
+Threat modeling, vulnerability analysis, and hardening of AI-based systems.
+**Project:** Risk and vulnerability analysis of an AI-based system.
 
-### Governance, Etica e Compliance
+### Governance, Ethics & Compliance
 
-Framework normativi (AI Act, GDPR), bias, explainability e responsabilità algoritmica.
-**Progetto:** Framework di AI governance per un'azienda fintech.
+Regulatory frameworks (AI Act, GDPR), bias, explainability, and algorithmic accountability.
+**Project:** AI governance framework for a fintech company.
 
 ---
 
-## Struttura della repository
+## Repository Structure
 
 ```text
 AI_solutions_architect_course/
