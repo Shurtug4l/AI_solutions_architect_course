@@ -70,7 +70,7 @@ Regulatory frameworks (AI Act, GDPR), bias, explainability, and algorithmic acco
 ```text
 AI_solutions_architect_course/
 ├── 000_Certs/
-├── 00_Programmazione con Python/
+├── 00_Python_Programming/
 ├── 01_Machine Learning per AI Solutions Architect/
 └── README.md
 ```
