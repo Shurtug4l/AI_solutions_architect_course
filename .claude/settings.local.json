@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(jupyter nbconvert *)",
+      "Bash(python3 -m nbconvert --to notebook --execute --inplace 04_ex_classification.ipynb)"
     ]
   }
 }
