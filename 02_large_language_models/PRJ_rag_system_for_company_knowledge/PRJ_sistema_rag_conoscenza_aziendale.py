@@ -469,15 +469,17 @@ KNOWLEDGE_BASE: list[dict] = [
 class Documento:
     """Rappresenta un singolo chunk di documento dopo l'ingestion."""
 
-    chunk_id: str   # es. "POL-001_chunk000" - identificatore univoco del chunk
-    doc_id: str     # ID del documento sorgente (per citazioni e de-dup)
+    chunk_id: str  # es. "POL-001_chunk000" - identificatore univoco del chunk
+    doc_id: str  # ID del documento sorgente (per citazioni e de-dup)
     titolo: str
     categoria: str
     autore: str
     data_creazione: str
     data_validita: Optional[str]
-    testo: str              # testo del chunk (usato per indicizzazione e retrieval)
-    testo_originale: str    # testo completo del documento (per assemblare il contesto LLM)
+    testo: str  # testo del chunk (usato per indicizzazione e retrieval)
+    testo_originale: (
+        str  # testo completo del documento (per assemblare il contesto LLM)
+    )
 
 
 @dataclass
@@ -485,10 +487,10 @@ class RisultatoRetrieval:
     """Singolo risultato di retrieval con score aggregato e breakdown dei segnali."""
 
     documento: Documento
-    score_ibrido: float     # score finale normalizzato [0, 1]
+    score_ibrido: float  # score finale normalizzato [0, 1]
     score_semantico: float  # contributo dalla similarità vettoriale
-    score_bm25: float       # contributo dalla ricerca BM25
-    rank: int              # posizione nella lista ordinata (1-indexed)
+    score_bm25: float  # contributo dalla ricerca BM25
+    rank: int  # posizione nella lista ordinata (1-indexed)
 
 
 @dataclass
@@ -498,7 +500,7 @@ class RispostaRAG:
     query: str
     risposta: str
     fonti: list[RisultatoRetrieval]
-    confidenza: float           # media score ibridi top-k: proxy della qualità del retrieval
+    confidenza: float  # media score ibridi top-k: proxy della qualità del retrieval
     timestamp_risposta: str
     latenza_retrieval_ms: float
     latenza_llm_ms: float
@@ -943,10 +945,12 @@ class LLMPipeline:
 
     def _init_ollama(self) -> None:
         from langchain_ollama import OllamaLLM
+
         self.llm = OllamaLLM(model=self.modello_nome, temperature=0.1)
 
     def _init_openai(self) -> None:
         from langchain_openai import ChatOpenAI
+
         chiave = os.environ.get("OPENAI_API_KEY")
         if not chiave:
             raise EnvironmentError(
@@ -1224,6 +1228,7 @@ def stampa_risposta(risposta: RispostaRAG, larghezza: int = 80) -> None:
 # SALVATAGGIO OUTPUT
 # ==============================================================================
 
+
 def salva_in_markdown(risposte: list[RispostaRAG], percorso: str) -> None:
     """Serializza una lista di RispostaRAG in un file Markdown."""
     righe = [
@@ -1233,7 +1238,11 @@ def salva_in_markdown(risposte: list[RispostaRAG], percorso: str) -> None:
         f"",
     ]
     for i, r in enumerate(risposte, start=1):
-        livello = "ALTA" if r.confidenza >= 0.6 else "MEDIA" if r.confidenza >= 0.3 else "BASSA"
+        livello = (
+            "ALTA"
+            if r.confidenza >= 0.6
+            else "MEDIA" if r.confidenza >= 0.3 else "BASSA"
+        )
         righe += [
             f"---",
             f"",
@@ -1312,28 +1321,20 @@ def main() -> None:
     sistema = RAGSystem(top_k=4, alpha=0.6, usa_llm=True, provider="ollama")
 
     query_di_test = [
-
         # Test 1 - caso d'uso principale del progetto
         (
             "Qual è la procedura aggiornata per la richiesta di accesso ai dati "
             "dei clienti e quali normative dobbiamo rispettare?"
         ),
-
         # Test 2 - gestione incidenti di sicurezza
-        (
-            "Cosa devo fare se scopro una violazione dei dati personali (data breach)?"
-        ),
-
+        ("Cosa devo fare se scopro una violazione dei dati personali (data breach)?"),
         # Test 3 - query con codice documento specifico (segnale BM25)
-        (
-            "Cosa prevede la POL-001 riguardo ai livelli di accesso e alle sanzioni?"),
-
+        ("Cosa prevede la POL-001 riguardo ai livelli di accesso e alle sanzioni?"),
         # Test 4 - recupero informazioni tecniche (fuori dal dominio compliance)
         (
             "Quali sono i risultati della migrazione cloud e qual è "
             "l'architettura AWS attuale di DataPulse?"
         ),
-
         # Test 5 - aggregazione multi-documento per onboarding
         (
             "Sono un nuovo dipendente: cosa devo fare nella prima settimana "
@@ -1349,7 +1350,9 @@ def main() -> None:
         # Pausa minima tra le query per non sovraccaricare l'LLM locale
         time.sleep(1)
 
-    scelta = input("\nVuoi salvare l'output in un file Markdown? [s/N] ").strip().lower()
+    scelta = (
+        input("\nVuoi salvare l'output in un file Markdown? [s/N] ").strip().lower()
+    )
     if scelta == "s":
         nome_file = f"rag_output_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.md"
         salva_in_markdown(risposte, nome_file)
