@@ -477,9 +477,7 @@ class Documento:
     data_creazione: str
     data_validita: Optional[str]
     testo: str  # testo del chunk (usato per indicizzazione e retrieval)
-    testo_originale: (
-        str  # testo completo del documento (per assemblare il contesto LLM)
-    )
+    testo_originale: str  # testo completo del documento (per assemblare il contesto LLM)
 
 
 @dataclass
@@ -577,11 +575,7 @@ class DocumentProcessor:
                     chunks.append(chunk_corrente)
                 # Overlap: si trascina la coda del chunk precedente per mantenere
                 # continuità semantica tra chunk adiacenti.
-                coda = (
-                    chunk_corrente[-self.overlap :]
-                    if self.overlap < len(chunk_corrente)
-                    else chunk_corrente
-                )
+                coda = chunk_corrente[-self.overlap :] if self.overlap < len(chunk_corrente) else chunk_corrente
                 chunk_corrente = (coda + "\n\n" + paragrafo).strip()
 
         if chunk_corrente:
@@ -616,9 +610,7 @@ class EmbeddingEngine:
 
     def codifica(self, testi: list[str]) -> np.ndarray:
         """Restituisce matrice (N, D) con gli embedding del batch di testi."""
-        return self.modello.encode(
-            testi, convert_to_numpy=True, show_progress_bar=False
-        )
+        return self.modello.encode(testi, convert_to_numpy=True, show_progress_bar=False)
 
     def codifica_query(self, query: str) -> np.ndarray:
         """Codifica una singola query; restituisce vettore 1D (D,)."""
@@ -638,7 +630,7 @@ class VectorStore:
     - API più semplice rispetto a FAISS (nessuna compilazione C++).
     - Supporto nativo per metadati filtrabili per categoria, data, autore.
     - Storage in-memory per demo; basta passare a
-      chromadb.PersistentClient()per rendere l'indice persistente tra esecuzioni.
+      chromadb.PersistentClient() per rendere l'indice persistente tra esecuzioni.
 
     Metrica coseno:
     Misura la similarità direzionale tra vettori, invariante rispetto alla magnitudine.
@@ -687,9 +679,7 @@ class VectorStore:
             }
             for doc in documenti
         ]
-        self.collection.add(
-            documents=testi, embeddings=embeddings, metadatas=metadati, ids=ids
-        )
+        self.collection.add(documents=testi, embeddings=embeddings, metadatas=metadati, ids=ids)
         print(f"[VectorStore] Indicizzati {len(ids)} chunk.")
 
     def cerca(self, query: str, top_k: int = 5) -> list[tuple[str, float, dict]]:
@@ -858,10 +848,7 @@ class HybridRetriever:
         for chunk_id, dati in scores.items():
             if chunk_id not in self._id_a_doc:
                 continue
-            score_ibrido = (
-                self.alpha * dati["score_semantico"]
-                + (1 - self.alpha) * dati["score_bm25"]
-            )
+            score_ibrido = self.alpha * dati["score_semantico"] + (1 - self.alpha) * dati["score_bm25"]
             risultati.append(
                 RisultatoRetrieval(
                     documento=self._id_a_doc[chunk_id],
@@ -893,15 +880,11 @@ class LLMPipeline:
 
     OLLAMA (provider="ollama")
     - Esecuzione completamente locale: nessun dato trasmesso a provider esterni.
-      La scelta più sicura per una knowledge base soggetta a specifiche normative di protezione dei dati.
-    - Modello default: llama3.2 (3B parametri) - buon equilibrio tra qualità
-      e latenza su hardware consumer.
-    - Dipendenza: langchain-ollama. Nessuna chiave API richiesta.
+    - Modello default: llama3.2 (3B parametri)
 
     OPENAI (provider="openai")
     - Qualità generativa superiore, latenza ridotta rispetto ai modelli locali.
-    - Modello default: gpt-4o-mini - ottimo rapporto qualità/costo per RAG.
-    - Dipendenza: langchain-openai.
+    - Modello default: gpt-4o-mini.
     - Chiave API letta dalla variabile d'ambiente OPENAI_API_KEY (non inserire
       mai nel codice per rispettare le best practice di sicurezza).
     - Attenzione: il contesto dei documenti viene trasmesso ai server OpenAI.
@@ -938,10 +921,7 @@ class LLMPipeline:
         elif provider == self.PROVIDER_OPENAI:
             self._init_openai()
         else:
-            raise ValueError(
-                f"Provider non supportato: '{provider}'. "
-                f"Valori ammessi: ollama, openai."
-            )
+            raise ValueError(f"Provider non supportato: '{provider}'. Valori ammessi: ollama, openai.")
 
     def _init_ollama(self) -> None:
         from langchain_ollama import OllamaLLM
@@ -954,8 +934,7 @@ class LLMPipeline:
         chiave = os.environ.get("OPENAI_API_KEY")
         if not chiave:
             raise EnvironmentError(
-                "Variabile d'ambiente OPENAI_API_KEY non impostata.\n"
-                "Eseguire: export OPENAI_API_KEY='sk-...'"
+                "Variabile d'ambiente OPENAI_API_KEY non impostata.\nEseguire: export OPENAI_API_KEY='sk-...'"
             )
         # ChatOpenAI restituisce un oggetto AIMessage; genera() lo gestisce.
         self.llm = ChatOpenAI(model=self.modello_nome, temperature=0.1, api_key=chiave)
@@ -968,9 +947,7 @@ class LLMPipeline:
         # OllamaLLM restituisce direttamente una stringa.
         return risposta.content if hasattr(risposta, "content") else str(risposta)
 
-    def _costruisci_prompt(
-        self, query: str, contesto: str, fonti_meta: list[dict]
-    ) -> str:
+    def _costruisci_prompt(self, query: str, contesto: str, fonti_meta: list[dict]) -> str:
         """Assembla il prompt con separazione netta tra sistema, contesto e domanda."""
         lista_fonti = "\n".join(
             f"  [{m['doc_id']}] {m['titolo']} "
@@ -1031,8 +1008,8 @@ class RAGSystem:
     - Bassa confidenza -> il retrieval è debole
       -> la risposta potrebbe essere incompleta o basata su documenti marginali.
     Limitazione: è un proxy indiretto; non misura la correttezza della risposta
-    generata dall'LLM. In produzione si aggiungerebbe un layer di valutazione
-    separato (es. LLM-as-judge, RAGAS).
+    generata dall'LLM. In produzione si potrebbe aggiungere un layer di valutazione
+    separato (es. LLM-as-judge).
     """
 
     def __init__(
@@ -1055,17 +1032,13 @@ class RAGSystem:
         self.documenti = self.processor.processa_knowledge_base(KNOWLEDGE_BASE)
         n_sorgenti = len(KNOWLEDGE_BASE)
         n_chunk = len(self.documenti)
-        print(
-            f"[RAGSystem] {n_sorgenti} documenti → {n_chunk} chunk (avg {n_chunk // n_sorgenti} chunk/doc)."
-        )
+        print(f"[RAGSystem] {n_sorgenti} documenti → {n_chunk} chunk (avg {n_chunk // n_sorgenti} chunk/doc).")
 
         self.vector_store = VectorStore(self.embedding_engine)
         self.vector_store.indicizza(self.documenti)
         self.bm25_engine.indicizza(self.documenti)
 
-        self.retriever = HybridRetriever(
-            self.vector_store, self.bm25_engine, self.documenti, alpha=alpha
-        )
+        self.retriever = HybridRetriever(self.vector_store, self.bm25_engine, self.documenti, alpha=alpha)
 
         self.llm_pipeline: Optional[LLMPipeline] = None
         if self.usa_llm:
@@ -1074,9 +1047,7 @@ class RAGSystem:
                 nome_mod = self.llm_pipeline.modello_nome
                 print(f"[RAGSystem] LLM pronto: {nome_mod} (provider: {provider})")
             except Exception as exc:
-                print(
-                    f"[RAGSystem] LLM non disponibile ({exc}). Modalità retrieval-only attiva."
-                )
+                print(f"[RAGSystem] LLM non disponibile ({exc}). Modalità retrieval-only attiva.")
                 self.usa_llm = False
         else:
             print("[RAGSystem] Modalità retrieval-only (LLM disabilitato).")
@@ -1091,9 +1062,7 @@ class RAGSystem:
         latenza_retrieval_ms = (time.perf_counter() - ts_inizio) * 1000
 
         # Score di confidenza: media degli score ibridi top-k
-        confidenza = (
-            float(np.mean([r.score_ibrido for r in risultati])) if risultati else 0.0
-        )
+        confidenza = float(np.mean([r.score_ibrido for r in risultati])) if risultati else 0.0
 
         # De-duplicazione per doc_id: si usa il testo originale del documento
         # per dare all'LLM il massimo contesto disponibile per ogni fonte citata.
@@ -1106,9 +1075,7 @@ class RAGSystem:
             if doc.doc_id in doc_ids_visti:
                 continue
             doc_ids_visti.add(doc.doc_id)
-            parti_contesto.append(
-                f"[{doc.doc_id}] {doc.titolo}\n{'─' * 60}\n{doc.testo_originale}"
-            )
+            parti_contesto.append(f"[{doc.doc_id}] {doc.titolo}\n{'─' * 60}\n{doc.testo_originale}")
             fonti_meta.append(
                 {
                     "doc_id": doc.doc_id,
@@ -1128,13 +1095,8 @@ class RAGSystem:
             try:
                 testo_risposta = self.llm_pipeline.genera(query, contesto, fonti_meta)
             except Exception as exc:
-                testo_risposta = (
-                    f"[Errore LLM: {exc}]\n\n"
-                    "Documenti pertinenti trovati (retrieval-only):\n"
-                    + "\n".join(
-                        f"  [{r.documento.doc_id}] {r.documento.titolo} (score: {r.score_ibrido:.3f})"
-                        for r in risultati
-                    )
+                testo_risposta = f"[Errore LLM: {exc}]\n\nDocumenti pertinenti trovati (retrieval-only):\n" + "\n".join(
+                    f"  [{r.documento.doc_id}] {r.documento.titolo} (score: {r.score_ibrido:.3f})" for r in risultati
                 )
         elif not risultati:
             testo_risposta = "Nessun documento pertinente trovato nella knowledge base."
@@ -1154,9 +1116,7 @@ class RAGSystem:
         )
 
     @staticmethod
-    def _risposta_retrieval_only(
-        query: str, risultati: list[RisultatoRetrieval]
-    ) -> str:
+    def _risposta_retrieval_only(query: str, risultati: list[RisultatoRetrieval]) -> str:
         """
         Fallback testuale quando l'LLM non è disponibile.
         Restituisce gli estratti più rilevanti senza sintesi generativa.
@@ -1164,9 +1124,7 @@ class RAGSystem:
         righe = [f"Query: {query}\n\nEstratti più rilevanti dalla knowledge base:\n"]
         for r in risultati:
             doc = r.documento
-            righe.append(
-                f"\n[{doc.doc_id}] {doc.titolo} (score: {r.score_ibrido:.3f})\n"
-            )
+            righe.append(f"\n[{doc.doc_id}] {doc.titolo} (score: {r.score_ibrido:.3f})\n")
             righe.append(textwrap.fill(doc.testo[:500], width=80) + "\n[...]")
         return "\n".join(righe)
 
@@ -1185,11 +1143,7 @@ def stampa_risposta(risposta: RispostaRAG, larghezza: int = 80) -> None:
     print(f"QUERY: {risposta.query}")
     print(sep)
 
-    livello = (
-        "ALTA"
-        if risposta.confidenza >= 0.6
-        else "MEDIA" if risposta.confidenza >= 0.3 else "BASSA"
-    )
+    livello = "ALTA" if risposta.confidenza >= 0.6 else "MEDIA" if risposta.confidenza >= 0.3 else "BASSA"
     print(
         f"Confidenza: {risposta.confidenza:.2%} [{livello}]  |  "
         f"Retrieval: {risposta.latenza_retrieval_ms:.0f}ms  |  "
@@ -1238,11 +1192,7 @@ def salva_in_markdown(risposte: list[RispostaRAG], percorso: str) -> None:
         f"",
     ]
     for i, r in enumerate(risposte, start=1):
-        livello = (
-            "ALTA"
-            if r.confidenza >= 0.6
-            else "MEDIA" if r.confidenza >= 0.3 else "BASSA"
-        )
+        livello = "ALTA" if r.confidenza >= 0.6 else "MEDIA" if r.confidenza >= 0.3 else "BASSA"
         righe += [
             f"---",
             f"",
@@ -1331,15 +1281,9 @@ def main() -> None:
         # Test 3 - query con codice documento specifico (segnale BM25)
         ("Cosa prevede la POL-001 riguardo ai livelli di accesso e alle sanzioni?"),
         # Test 4 - recupero informazioni tecniche (fuori dal dominio compliance)
-        (
-            "Quali sono i risultati della migrazione cloud e qual è "
-            "l'architettura AWS attuale di DataPulse?"
-        ),
+        ("Quali sono i risultati della migrazione cloud e qual è l'architettura AWS attuale di DataPulse?"),
         # Test 5 - aggregazione multi-documento per onboarding
-        (
-            "Sono un nuovo dipendente: cosa devo fare nella prima settimana "
-            "e quali policy devo firmare?"
-        ),
+        ("Sono un nuovo dipendente: cosa devo fare nella prima settimana e quali policy devo firmare?"),
     ]
 
     risposte: list[RispostaRAG] = []
@@ -1350,9 +1294,7 @@ def main() -> None:
         # Pausa minima tra le query per non sovraccaricare l'LLM locale
         time.sleep(1)
 
-    scelta = (
-        input("\nVuoi salvare l'output in un file Markdown? [s/N] ").strip().lower()
-    )
+    scelta = input("\nVuoi salvare l'output in un file Markdown? [s/N] ").strip().lower()
     if scelta == "s":
         nome_file = f"rag_output_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.md"
         salva_in_markdown(risposte, nome_file)
