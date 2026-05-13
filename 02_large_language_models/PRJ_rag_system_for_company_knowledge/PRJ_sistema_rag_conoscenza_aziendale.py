@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 ================================================================================
-PROGETTO: Sistema RAG per la Gestione Intelligente della Conoscenza Aziendale
+PROGETTO: Sistema RAG per la gestione intelligente della conoscenza aziendale
           DataPulse S.p.A.
 
           Modulo 02: Large Language Models
 ================================================================================
 
 Autore  : Simone La Porta
-Data    : 2026-05-06
+Data    : 2026-05-13
 
 
 OVERVIEW
@@ -17,6 +17,15 @@ Backend RAG (Retrieval-Augmented Generation) per DataPulse S.p.A., che
 consente ai dipendenti di interrogare in linguaggio naturale la documentazione
 aziendale interna: policy, manuali operativi, FAQ, guide di compliance e
 report di progetto.
+
+La knowledge base è inlineata come lista di dizionari Python (sezione
+KNOWLEDGE_BASE) anziché caricata da file .txt esterni. La scelta è
+deliberata: in un contesto didattico il dataset rimane sotto controllo
+versione insieme al codice, l'esecuzione resta a dipendenza zero rispetto
+al filesystem ed è banale rigenerare i test con corpus differenti. La
+sostituzione con un loader (cartella data/, repository documentale, S3)
+tocca solo la funzione di ingestion: il resto della pipeline lavora già
+su oggetti `Documento` agnostici rispetto alla sorgente.
 
 ARCHITETTURA
 ------------
@@ -33,8 +42,8 @@ ARCHITETTURA
      │           │
      └─────┬─────┘
            ▼
-   HybridRetriever            ← fusione lineare pesata (alpha * sem + (1-alpha) * bm25)
-           │
+   HybridRetriever            ← fusione di semantico + lessicale + recency/validità
+           │                    e filtri opzionali su categoria / data minima
            ▼
    LLMPipeline                ← prompt strutturato → Ollama | OpenAI
            │
@@ -46,7 +55,9 @@ COMPONENTI CHIAVE
   EmbeddingEngine   : paraphrase-multilingual-MiniLM-L12-v2 (multilingue, 384d)
   VectorStore       : ChromaDB in-memory, metrica coseno
   BM25Engine        : BM25Okapi con normalizzazione min-max degli score
-  HybridRetriever   : alpha=0.6 (sbilanciato verso semantico)
+  HybridRetriever   : alpha=0.6 (peso testo), gamma=0.15 (peso recency)
+                      Score = (1-gamma) * (alpha*sem + (1-alpha)*bm25) + gamma * recency
+                      Filtri opzionali su categoria e data minima del documento.
   LLMPipeline       : provider selezionabile (ollama | openai)
   Confidenza         : media degli score ibridi top-k (proxy di qualità del retrieval)
 
@@ -67,20 +78,19 @@ ESECUZIONE
   python PRJ_rag_system_for_company_knowledge.py
 
   Il provider si imposta nel main() tramite il parametro `provider`.
-  La chiave API OpenAI non deve essere inserita nel codice: il sistema la legge
-  dalla variabile d'ambiente OPENAI_API_KEY.
   Per modalità retrieval-only (senza LLM): impostare usa_llm=False nel main().
 ================================================================================
 """
 
 # ── Libreria standard ──────────────────────────────────────────────────────────
+import math
 import os
 import re
 import textwrap
 import time
 import warnings
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 # ── Librerie di terze parti ────────────────────────────────────────────────────
@@ -97,7 +107,7 @@ warnings.filterwarnings("ignore")
 # ==============================================================================
 #
 # In un sistema reale questa sezione è sostituita da un loader che legge da
-# file, database documentale o repository aziendale. Qui usiamo dizionari
+# file, database documentale o repository aziendale. Qui uso dizionari
 # in-memory per mantenere il progetto autocontenuto ed eseguibile senza
 # dipendenze esterne al codice.
 #
@@ -120,8 +130,8 @@ KNOWLEDGE_BASE: list[dict] = [
         "titolo": "Policy di Accesso ai Dati dei Clienti",
         "categoria": "policy",
         "autore": "Ufficio Compliance",
-        "data_creazione": "2025-03-01",
-        "data_validita": "2026-03-01",
+        "data_creazione": "2025-09-01",
+        "data_validita": "2026-09-01",
         "testo": """
                 POLICY DI ACCESSO AI DATI DEI CLIENTI - DataPulse S.p.A.
                 Versione 2.1 - Emessa dall'Ufficio Compliance
@@ -329,7 +339,7 @@ KNOWLEDGE_BASE: list[dict] = [
         "titolo": "Guida Operativa - Gestione delle Richieste dei Clienti",
         "categoria": "guida",
         "autore": "Customer Success Team",
-        "data_creazione": "2025-02-28",
+        "data_creazione": "2026-02-28",
         "data_validita": None,
         "testo": """
                 GUIDA OPERATIVA - GESTIONE DELLE RICHIESTE DEI CLIENTI
@@ -451,7 +461,7 @@ KNOWLEDGE_BASE: list[dict] = [
                 - CloudTrail è stato fondamentale per l'audit di conformità post-migrazione
                   richiesto dall'Ufficio Compliance.
 
-                PROSSIMI STEP
+                PROSSIMI STEPS
                 - Q2 2025: implementazione del disaster recovery multi-regione.
                 - Q3 2025: integrazione di AWS Security Hub per centralizzazione degli alert.
                 - Q4 2025: ottimizzazione dei costi con Savings Plans e Reserved Instances.
@@ -488,6 +498,7 @@ class RisultatoRetrieval:
     score_ibrido: float  # score finale normalizzato [0, 1]
     score_semantico: float  # contributo dalla similarità vettoriale
     score_bm25: float  # contributo dalla ricerca BM25
+    score_recency: float  # contributo dal segnale strutturato (data + validità)
     rank: int  # posizione nella lista ordinata (1-indexed)
 
 
@@ -596,7 +607,6 @@ class EmbeddingEngine:
     Modello scelto: paraphrase-multilingual-MiniLM-L12-v2
     - Supporto nativo per l'italiano (e 50+ lingue): requisito fondamentale
       per una knowledge base redatta in italiano.
-    - Setup rapido, adatto al contesto didattico/demo senza GPU dedicata.
     - Ottimizzato per paraphrase similarity: cattura le relazioni semantiche
       di riformulazione meglio dei modelli generalisti solo-inglese.
     """
@@ -779,10 +789,18 @@ class BM25Engine:
 
 class HybridRetriever:
     """
-    Combina retrieval semantico (VectorStore) e lessicale (BM25Engine).
+    Combina tre segnali in un unico score di rilevanza:
+      1. Similarità semantica dal VectorStore.
+      2. Match lessicale BM25 da BM25Engine.
+      3. Recency, segnale strutturato basato sui metadata di data del documento.
 
-    Formula di fusione lineare pesata:
-        score_ibrido = alpha * score_semantico + (1 - alpha) * score_bm25
+    Il termine "recency" è quello standard in information retrieval per indicare
+    uno score temporale che premia i documenti più recenti, eventualmente
+    combinato con una penalità per quelli scaduti.
+
+    Formula di fusione:
+        score_testo  = alpha * score_semantico + (1 - alpha) * score_bm25
+        score_ibrido = (1 - gamma) * score_testo + gamma * score_recency
 
     Scelta dell'alpha = 0.6 (sbilanciato verso il semantico):
     - Per query in linguaggio naturale, la comprensione semantica è più
@@ -792,15 +810,46 @@ class HybridRetriever:
     - Il contributo BM25 (0.4) rimane sufficiente per far emergere documenti
       con codici tecnici esatti quando presenti nella query.
 
+    Scelta del gamma = 0.15 (peso del segnale strutturato):
+    - La consegna del progetto richiede che il retrieval ibrido combini
+      pertinenza semantica e segnali strutturati (metadati, data).
+    - Un peso piccolo evita che lo score di recency sovrasti il match testuale:
+      un documento perfettamente pertinente ma di un anno fa deve continuare
+      a vincere su uno marginale appena pubblicato.
+    - Un peso non nullo è comunque sufficiente a fare la differenza tra
+      documenti testualmente equivalenti ma di età molto diversa, cosa
+      importante per le policy di compliance che vengono revisionate.
+
+    Calcolo dello score di recency:
+    - Decadimento esponenziale exp(-Δgiorni / 730) sulla data di creazione.
+      Il valore di tau = 730 giorni implica che un documento di un anno fa
+      vale circa 0.61, di due anni 0.37: una "spinta" verso i più recenti
+      senza azzerare i precedenti.
+    - Penalità moltiplicativa 0.3 se data_validita è nel passato: il
+      documento resta visibile, ma viene demosso rispetto agli analoghi
+      ancora in vigore.
+    - Documenti senza data_creazione parsabile ricevono uno score neutro (0.5).
+
+    Filtri opzionali sui metadata:
+    - filtri={"categorie": {"policy", "guida"}} restringe il retrieval alle
+      categorie indicate (utile per query mirate, es. "solo policy ufficiali").
+    - filtri={"data_minima": "2025-06-01"} esclude documenti più vecchi
+      della soglia (utile per query del tipo "info aggiornate degli ultimi mesi").
+    - I filtri sono applicati post-retrieval sul pool di candidati: nessuna
+      modifica all'API degli indici sottostanti.
+
     Alternativa considerata: Reciprocal Rank Fusion (RRF).
     RRF è più robusta alla scala assoluta degli score (non richiede
-    normalizzazione), ma è meno interpretabile per un progetto didattico.
-    La fusione lineare è preferita per trasparenza e controllabilità.
+    normalizzazione), ma è meno interpretabile e si presta meno
+    naturalmente a integrare un terzo segnale (recency).
 
     De-duplicazione: se lo stesso chunk appare nei risultati di entrambe le
     strategie, si aggregano i rispettivi score (il secondo passaggio aggiorna
     il valore, quello mancante rimane a 0.0). Questo evita il double-counting.
     """
+
+    TAU_RECENCY_GIORNI: float = 730.0  # half-life (~2 anni)
+    PENALITA_VALIDITA_SCADUTA: float = 0.3  # moltiplicativa sullo score di recency
 
     def __init__(
         self,
@@ -808,23 +857,33 @@ class HybridRetriever:
         bm25_engine: BM25Engine,
         documenti: list[Documento],
         alpha: float = 0.6,
+        gamma: float = 0.15,
     ):
         self.vector_store = vector_store
         self.bm25_engine = bm25_engine
         self.documenti = documenti
         self.alpha = alpha
+        self.gamma = gamma
         # Dizionario chunk_id -> Documento per lookup O(1) durante la fusione
         self._id_a_doc: dict[str, Documento] = {doc.chunk_id: doc for doc in documenti}
 
-    def recupera(self, query: str, top_k: int = 5) -> list[RisultatoRetrieval]:
+    def recupera(
+        self,
+        query: str,
+        top_k: int = 5,
+        filtri: Optional[dict] = None,
+    ) -> list[RisultatoRetrieval]:
         """
         Esegue il retrieval ibrido e restituisce i top_k risultati ordinati.
 
         Il pool di candidati è 2 * top_k per dare al BM25 la possibilità di
         far emergere documenti poco rilevanti semanticamente ma con corrispondenza
-        lessicale precisa, e viceversa.
+        lessicale precisa, e viceversa. Quando sono attivi filtri sui metadata
+        il pool viene ulteriormente espanso (4 * top_k) per ridurre il rischio
+        che il filtro vuoti la lista finale.
         """
-        pool = top_k * 2
+        moltiplicatore_pool = 4 if filtri else 2
+        pool = top_k * moltiplicatore_pool
 
         # Raccolta candidati dai due indici
         candidati_sem = self.vector_store.cerca(query, top_k=pool)
@@ -843,18 +902,34 @@ class HybridRetriever:
             else:
                 scores[chunk_id] = {"score_semantico": 0.0, "score_bm25": score_bm25}
 
-        # Calcolo score ibrido, filtraggio dei chunk non mappati, ordinamento
+        categorie_ammesse = filtri.get("categorie") if filtri else None
+        data_minima = filtri.get("data_minima") if filtri else None
+
+        # Calcolo score ibrido, applicazione filtri, ordinamento
         risultati: list[RisultatoRetrieval] = []
         for chunk_id, dati in scores.items():
             if chunk_id not in self._id_a_doc:
                 continue
-            score_ibrido = self.alpha * dati["score_semantico"] + (1 - self.alpha) * dati["score_bm25"]
+            doc = self._id_a_doc[chunk_id]
+
+            if categorie_ammesse is not None and doc.categoria not in categorie_ammesse:
+                continue
+            # Le date ISO YYYY-MM-DD si confrontano lessicograficamente come
+            # cronologicamente: nessun parsing necessario per il filtro.
+            if data_minima is not None and doc.data_creazione < data_minima:
+                continue
+
+            score_testo = self.alpha * dati["score_semantico"] + (1 - self.alpha) * dati["score_bm25"]
+            score_rec = self._recency(doc)
+            score_ibrido = (1 - self.gamma) * score_testo + self.gamma * score_rec
+
             risultati.append(
                 RisultatoRetrieval(
-                    documento=self._id_a_doc[chunk_id],
+                    documento=doc,
                     score_ibrido=score_ibrido,
                     score_semantico=dati["score_semantico"],
                     score_bm25=dati["score_bm25"],
+                    score_recency=score_rec,
                     rank=0,
                 )
             )
@@ -864,6 +939,31 @@ class HybridRetriever:
             r.rank = i + 1
 
         return risultati[:top_k]
+
+    @classmethod
+    def _recency(cls, doc: Documento) -> float:
+        """
+        Restituisce uno score di recency in (0, 1] basato sui metadata di data
+        del documento. Documenti senza data_creazione valida ricevono un valore
+        neutro (0.5) per non penalizzarli arbitrariamente.
+        """
+        try:
+            d_creazione = date.fromisoformat(doc.data_creazione)
+        except (ValueError, TypeError):
+            return 0.5
+
+        delta_giorni = max(0, (date.today() - d_creazione).days)
+        recency = math.exp(-delta_giorni / cls.TAU_RECENCY_GIORNI)
+
+        if doc.data_validita:
+            try:
+                d_validita = date.fromisoformat(doc.data_validita)
+                if d_validita < date.today():
+                    recency *= cls.PENALITA_VALIDITA_SCADUTA
+            except ValueError:
+                pass
+
+        return recency
 
 
 # ==============================================================================
@@ -885,8 +985,7 @@ class LLMPipeline:
     OPENAI (provider="openai")
     - Qualità generativa superiore, latenza ridotta rispetto ai modelli locali.
     - Modello default: gpt-4o-mini.
-    - Chiave API letta dalla variabile d'ambiente OPENAI_API_KEY (non inserire
-      mai nel codice per rispettare le best practice di sicurezza).
+    - Chiave API letta dalla variabile d'ambiente OPENAI_API_KEY.
     - Attenzione: il contesto dei documenti viene trasmesso ai server OpenAI.
       In produzione necessario valutare i termini di servizio rispetto ai dati aziendali.
 
@@ -1001,21 +1100,38 @@ class RAGSystem:
     5. Costruzione di RispostaRAG con metriche e metadati delle fonti.
 
     Calcolo della confidenza:
-    Usiamo la media degli score ibridi dei top-k risultati come proxy della
+    Uso la media degli score ibridi dei top-k risultati come proxy della
     qualità del retrieval.
     - Alta confidenza -> il corpus contiene documenti molto pertinenti alla query
       -> risposta probabilmente completa e accurata.
     - Bassa confidenza -> il retrieval è debole
       -> la risposta potrebbe essere incompleta o basata su documenti marginali.
-    Limitazione: è un proxy indiretto; non misura la correttezza della risposta
-    generata dall'LLM. In produzione si potrebbe aggiungere un layer di valutazione
-    separato (es. LLM-as-judge).
+
+    Limitazioni note del proxy attuale e direzioni di estensione:
+    - La confidenza misura solo la qualità del retrieval, non della generazione.
+      L'LLM potrebbe comunque produrre allucinazioni o sintesi imprecise a partire
+      da fonti pertinenti. Le tre metriche RAG standard non sono coperte:
+        * faithfulness     : aderenza della risposta ai passaggi citati
+        * answer relevancy : pertinenza della risposta alla domanda posta
+        * context precision: frazione del contesto recuperato effettivamente usata
+      In produzione queste metriche andrebbero misurate con RAGAS (o equivalente)
+      su un set di golden Q&A: richiede un dataset etichettato e un LLM-as-judge,
+      fuori scope in questo caso, ma è il naturale passo successivo.
+    - Re-ranking: dopo il retrieval ibrido si potrebbe applicare un cross-encoder
+      (es. ms-marco-MiniLM-L-6-v2) per riordinare i top-N candidati basandosi su
+      una valutazione joint query-documento. Aumenta la precisione ma raddoppia
+      la latenza di retrieval; vale la pena con corpus di centinaia di documenti
+      o più, non con poche decine come in questo caso.
+    - Query expansion: riformulazione automatica della domanda (HyDE, multi-query)
+      per generare più varianti e unire i risultati. Migliora il recall su query
+      ambigue, al costo di una chiamata LLM aggiuntiva prima del retrieval.
     """
 
     def __init__(
         self,
         top_k: int = 4,
         alpha: float = 0.6,
+        gamma: float = 0.15,
         usa_llm: bool = True,
         provider: str = LLMPipeline.PROVIDER_OLLAMA,
         modello_llm: Optional[str] = None,
@@ -1038,7 +1154,13 @@ class RAGSystem:
         self.vector_store.indicizza(self.documenti)
         self.bm25_engine.indicizza(self.documenti)
 
-        self.retriever = HybridRetriever(self.vector_store, self.bm25_engine, self.documenti, alpha=alpha)
+        self.retriever = HybridRetriever(
+            self.vector_store,
+            self.bm25_engine,
+            self.documenti,
+            alpha=alpha,
+            gamma=gamma,
+        )
 
         self.llm_pipeline: Optional[LLMPipeline] = None
         if self.usa_llm:
@@ -1054,11 +1176,17 @@ class RAGSystem:
 
         print("[RAGSystem] Sistema pronto.\n")
 
-    def interroga(self, query: str) -> RispostaRAG:
-        """Esegue la pipeline RAG completa per una query in linguaggio naturale."""
+    def interroga(self, query: str, filtri: Optional[dict] = None) -> RispostaRAG:
+        """
+        Esegue la pipeline RAG completa per una query in linguaggio naturale.
+
+        `filtri` è opzionale e viene inoltrato al retriever per restringere
+        il pool di candidati su segnali strutturati. Schema accettato:
+          {"categorie": set[str], "data_minima": "YYYY-MM-DD"}
+        """
         ts_inizio = time.perf_counter()
 
-        risultati = self.retriever.recupera(query, top_k=self.top_k)
+        risultati = self.retriever.recupera(query, top_k=self.top_k, filtri=filtri)
         latenza_retrieval_ms = (time.perf_counter() - ts_inizio) * 1000
 
         # Score di confidenza: media degli score ibridi top-k
@@ -1173,8 +1301,99 @@ def stampa_risposta(risposta: RispostaRAG, larghezza: int = 80) -> None:
             f"       Categoria: {r.documento.categoria}  |  Autore: {r.documento.autore}\n"
             f"       Creazione: {r.documento.data_creazione}  |  Validità: {validita}\n"
             f"       Score: ibrido={r.score_ibrido:.3f}  "
-            f"semantico={r.score_semantico:.3f}  BM25={r.score_bm25:.3f}"
+            f"semantico={r.score_semantico:.3f}  BM25={r.score_bm25:.3f}  "
+            f"recency={r.score_recency:.3f}"
         )
+    print(sep)
+
+
+# ==============================================================================
+# CONCLUSIONI A VIDEO
+# ==============================================================================
+
+
+def conclusioni(risposte: list[RispostaRAG], larghezza: int = 80) -> None:
+    """
+    Riepilogo conciso a video: statistiche aggregate sui tre segnali del
+    retrieval (semantico, BM25, recency), copertura del corpus, e tre
+    osservazioni dinamiche calcolate sulle metriche reali della run.
+    """
+    if not risposte:
+        return
+
+    confidenze = [r.confidenza for r in risposte]
+    conf_media = float(np.mean(confidenze))
+    conf_min = float(np.min(confidenze))
+    conf_max = float(np.max(confidenze))
+
+    tutte_fonti = [f for r in risposte for f in r.fonti]
+    avg_sem = float(np.mean([f.score_semantico for f in tutte_fonti]))
+    avg_bm25 = float(np.mean([f.score_bm25 for f in tutte_fonti]))
+    avg_rec = float(np.mean([f.score_recency for f in tutte_fonti]))
+
+    doc_citati = {f.documento.doc_id for r in risposte for f in r.fonti}
+
+    sep = "=" * larghezza
+    print(f"\n{sep}")
+    print("CONCLUSIONI")
+    print(sep)
+    print(f"Query eseguite   : {len(risposte)}")
+    print(f"Confidenza       : media {conf_media:.2%}  range [{conf_min:.2%}, {conf_max:.2%}]")
+    print(f"Score medi fonti : semantico={avg_sem:.2f}  BM25={avg_bm25:.2f}  recency={avg_rec:.2f}")
+    print(f"Copertura corpus : {len(doc_citati)}/{len(KNOWLEDGE_BASE)} documenti emersi")
+
+    osservazioni: list[str] = []
+    if avg_bm25 > avg_sem + 0.05:
+        osservazioni.append(
+            "BM25 traina il ranking: comportamento atteso quando le query "
+            "contengono codici o sigle verbatim (POL-001, GDPR). Diventerebbe "
+            "un campanello solo se persistesse su query in linguaggio naturale puro."
+        )
+    elif avg_sem > avg_bm25 + 0.05:
+        osservazioni.append(
+            "Il semantico traina il ranking: l'embedding multilingue sta "
+            "lavorando bene su query riformulate rispetto al testo dei documenti."
+        )
+    else:
+        osservazioni.append(
+            "Semantico e BM25 bilanciati: nessuno dei due segnali domina, alpha=0.6 risulta calibrato sul corpus."
+        )
+
+    if avg_rec < 0.40:
+        osservazioni.append(
+            "Recency basso: parte del corpus è scaduta o invecchiata, il "
+            "segnale strutturato sta penalizzando correttamente i documenti "
+            "obsoleti senza nasconderli."
+        )
+    elif avg_rec > 0.70:
+        osservazioni.append(
+            "Recency alto: corpus prevalentemente fresco, il segnale "
+            "strutturato pesa poco oggi ma resta utile come scudo man mano "
+            "che il corpus invecchia."
+        )
+    else:
+        osservazioni.append(
+            "Recency intermedio: corpus a metà tra fresco e prossimo alla "
+            "scadenza, lo scenario in cui il segnale strutturato porta più "
+            "valore al ranking."
+        )
+
+    if conf_max - conf_min > 0.30:
+        osservazioni.append(
+            "Forbice di confidenza ampia: il sistema discrimina bene tra "
+            "query coperte e marginali, utile per politiche di fallback "
+            "differenziate per soglia."
+        )
+    else:
+        osservazioni.append(
+            "Forbice di confidenza stretta: corpus piccolo, BM25 satura e "
+            "gli score si comprimono. Su scala maggiore varrebbe la pena "
+            "valutare Reciprocal Rank Fusion."
+        )
+
+    print("\nOsservazioni:")
+    for o in osservazioni:
+        print(textwrap.fill(o, width=larghezza, initial_indent="  - ", subsequent_indent="    "))
     print(sep)
 
 
@@ -1258,17 +1477,20 @@ def main() -> None:
       - "openai"  -> richiede variabile d'ambiente OPENAI_API_KEY
     Per modalità retrieval-only (senza LLM): impostare usa_llm=False.
     """
-    # ── Configurazione provider ────────────────────────────────────────────────
-    # Modificare `provider` per scegliere il backend LLM.
-    # Il modello può essere sovrascritto con `modello_llm`; se None si usa
-    # il default del provider (llama3.2 per Ollama, gpt-4o-mini per OpenAI).
+    # ── Configurazione ─────────────────────────────────────────────────────────
+    # Parametri del costruttore RAGSystem (modificare la chiamata qui sotto):
+    #   provider="openai"        usa GPT-4o-mini al posto di Ollama; richiede $OPENAI_API_KEY
+    #   modello_llm="gpt-4o"     sovrascrive il modello di default del provider
+    #   usa_llm=False            retrieval-only, salta del tutto la chiamata LLM
+    #   top_k=N                  numero di chunk recuperati per ogni query (default 4)
+    #   alpha                    peso del semantico nella fusione testo (default 0.6)
+    #   gamma                    peso del segnale di recency (default 0.15; 0.0 = disattivato)
     #
-    # Esempi:
-    #   RAGSystem(provider="ollama")
-    #   RAGSystem(provider="openai")
-    #   RAGSystem(provider="openai", modello_llm="gpt-4o")
-    #   RAGSystem(usa_llm=False)  ← retrieval-only, nessun LLM
-    sistema = RAGSystem(top_k=4, alpha=0.6, usa_llm=True, provider="ollama")
+    # Filtri sui metadata - secondo argomento opzionale di interroga():
+    #   filtri={"categorie": {"policy", "guida"}}    limita a policy e guide
+    #   filtri={"data_minima": "2025-06-01"}         scarta documenti più vecchi della soglia
+    #   le due chiavi sono combinabili nello stesso dict.
+    sistema = RAGSystem(top_k=4, alpha=0.6, gamma=0.15, usa_llm=True, provider="ollama")
 
     query_di_test = [
         # Test 1 - caso d'uso principale del progetto
@@ -1293,6 +1515,24 @@ def main() -> None:
         risposte.append(risposta)
         # Pausa minima tra le query per non sovraccaricare l'LLM locale
         time.sleep(1)
+
+    # ── Demo dei filtri sui metadata ──────────────────────────────────────────
+    # Stessa query del test 1 ma ristretta alle sole policy e guide. Mostra
+    # come la pipeline ibrida possa essere vincolata a un sotto-insieme del
+    # corpus senza riscrivere la query in linguaggio naturale: utile quando
+    # l'utente vuole esplicitamente "solo documenti ufficiali" o "solo
+    # documenti aggiornati negli ultimi mesi".
+    print("=" * 70)
+    print("DEMO FILTRI - retrieval ristretto a categorie {policy, guida}")
+    print("=" * 70)
+    risposta_filtrata = sistema.interroga(
+        query_di_test[0],
+        filtri={"categorie": {"policy", "guida"}},
+    )
+    stampa_risposta(risposta_filtrata)
+    risposte.append(risposta_filtrata)
+
+    conclusioni(risposte)
 
     scelta = input("\nVuoi salvare l'output in un file Markdown? [s/N] ").strip().lower()
     if scelta == "s":
