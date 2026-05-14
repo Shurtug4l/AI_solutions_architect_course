@@ -218,7 +218,7 @@ CT is the one that distinguishes "MLOps" from "DevOps applied to ML". A model is
 
 ### Other notes
 - [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) — these primitives instantiated on AWS (S3, DynamoDB, Aurora, SageMaker)
-- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) — Azure's pyramid of services, from Cognitive Services to Azure ML
+- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) — Azure's pyramid of services, from Azure AI Services to Azure ML and AI Foundry
 - [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — GCP's data-first take, BigQuery + Vertex AI
 - [05_iaas_open_source_and_on_prem_deployment.md](05_iaas_open_source_and_on_prem_deployment.md) — what changes if you skip the managed platform
 - [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — comparison and decision criteria across all three models

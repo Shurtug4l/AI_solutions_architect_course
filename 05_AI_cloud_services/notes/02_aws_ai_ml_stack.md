@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-AWS sells the broadest catalog of cloud services (200+), and its AI/ML stack is built on three primitives plus a managed platform. The primitives are **storage** (object, relational, NoSQL), the platform is **SageMaker**, and they are bound together by AWS's **Region / Availability Zone** geography. **S3** is the default landing zone for everything (raw data, processed features, model artefacts, logs) and behaves like a flat data lake. **Aurora** is the managed relational engine (MySQL/PostgreSQL-compatible) with autoscaling storage, suited to feature stores and transactional workloads. **DynamoDB** is the serverless NoSQL with single-digit-millisecond latency at any scale, suited to real-time prediction lookups and session state. **SageMaker** is the end-to-end ML platform: it reads from S3, runs managed training and tuning, registers models, deploys them as endpoints, and monitors them for drift through **CloudWatch** and **EventBridge**. The canonical AWS pipeline is **S3 (raw) → SageMaker Processing/Feature engineering → SageMaker Training/HPO → Model Registry → SageMaker Endpoint → SageMaker Model Monitor**. Resilience is built on **Regions** (geographic macro-areas, the operational and legal boundary) containing multiple **Availability Zones** (isolated failure domains within a region). A model that needs intra-region HA is deployed across AZs; a model with global users needs deployment across regions and is a separate architectural question (latency, cross-region cost, data residency).
+AWS sells the broadest catalog of cloud services (200+), and its AI/ML stack is built on three primitives plus a managed platform. The primitives are **storage** (object, relational, NoSQL), the platform is **SageMaker**, and they are bound together by AWS's **Region / Availability Zone** geography. **S3** is the default landing zone for everything (raw data, processed features, model artefacts, logs) and behaves like a flat data lake. **Aurora** is the managed relational engine (MySQL/PostgreSQL-compatible) with autoscaling storage, suited to feature stores and transactional workloads. **DynamoDB** is the serverless NoSQL with single-digit-millisecond latency at any scale, suited to real-time prediction lookups and session state. **SageMaker** is the end-to-end ML platform: it reads from S3, runs managed training and tuning, registers models, deploys them as endpoints, and monitors them for drift through **CloudWatch** and **EventBridge**. The canonical AWS pipeline is **S3 (raw) → SageMaker Processing/Feature engineering → SageMaker Training/HPO → Model Registry → SageMaker Endpoint → SageMaker Model Monitor**. At re:Invent 2024 AWS introduced the **next-generation SageMaker / SageMaker Unified Studio**, a single workspace combining the classical ML platform (renamed **SageMaker AI**) with Glue, Athena, EMR, Redshift and QuickSight; existing SageMaker notebooks and the v2 Python SDK still work unchanged. On top of the ML stack, **Amazon Bedrock** is the managed gateway for foundation models (Anthropic Claude, Meta Llama, Mistral, Cohere, AI21, Amazon Titan/Nova, Stable Diffusion), with private fine-tuning, agents, guardrails and knowledge bases. Bedrock is the natural AWS counterpart to Azure OpenAI Service / Azure AI Foundry. Resilience is built on **Regions** (geographic macro-areas, the operational and legal boundary) containing multiple **Availability Zones** (isolated failure domains within a region). A model that needs intra-region HA is deployed across AZs; a model with global users needs deployment across regions and is a separate architectural question (latency, cross-region cost, data residency).
 
 ## Cheatsheet
 
@@ -13,12 +13,14 @@ AWS sells the broadest catalog of cloud services (200+), and its AI/ML stack is 
 | **S3** | Object storage, virtually unlimited, the AWS data lake | Datasets, models, logs, artefacts |
 | **DynamoDB** | Serverless NoSQL key-value, single-digit ms latency | Real-time prediction context, session state |
 | **Aurora** | Managed RDBMS, MySQL/PostgreSQL-compatible, autoscaling storage | Feature store, transactional data |
-| **SageMaker** | End-to-end managed ML platform | Build, train, deploy, monitor |
+| **SageMaker AI** (formerly just **SageMaker** / **SageMaker Studio**, renamed in 2024) | End-to-end managed ML platform | Build, train, deploy, monitor |
+| **SageMaker Unified Studio** | Next-gen workspace bundling SageMaker AI + Glue + Athena + EMR + Redshift + QuickSight (announced re:Invent 2024) | Single pane for data + ML |
 | **SageMaker Processing** | Managed jobs for preprocessing and feature engineering | ETL inside the ML pipeline |
 | **SageMaker Training / HPO** | Distributed training and hyperparameter tuning | The training step |
 | **SageMaker Model Registry** | Versioned model catalogue | Promotion, lineage, governance |
 | **SageMaker Endpoint** | Managed inference endpoint, real-time or batch | Serving |
 | **SageMaker Model Monitor** | Drift detection on data and model quality | ML observability |
+| **Amazon Bedrock** | Managed foundation-model gateway (Claude, Llama, Mistral, Titan/Nova, Stable Diffusion) with agents, guardrails, knowledge bases | GenAI / LLM workloads |
 | **CloudWatch** | Metrics, logs, alarms | Observability sink |
 | **EventBridge** | Event bus for triggering reactions | Auto-retrain on alarm, glue between services |
 
@@ -141,6 +143,18 @@ Raw data on S3
 | **Endpoint** | Real-time HTTPS endpoint or batch transform job, autoscaling | One API call instead of building a serving stack |
 | **Model Monitor** | Statistics on input distribution, drift, model quality | Out-of-the-box ML observability |
 
+### Where Amazon Bedrock fits
+
+SageMaker is for **training and serving your models** (classical ML, fine-tuned LLMs, custom architectures). **Amazon Bedrock** is for **consuming foundation models** through a managed API without owning the weights or the GPUs:
+
+- Single API across providers (Claude, Llama, Mistral, Cohere, Titan/Nova, Stable Diffusion).
+- **Knowledge Bases** for fully managed RAG against S3 sources.
+- **Agents** for tool-calling orchestration without writing an agent loop.
+- **Guardrails** for content filtering, PII redaction, denied topics.
+- **Custom Model Import** to bring your own fine-tuned weights into the Bedrock runtime.
+
+The AWS counterpart of Azure OpenAI Service / Azure AI Foundry. If the use case is "we need an LLM that does X", Bedrock is the first stop; SageMaker is for when you actually need to train.
+
 ### Why "use SageMaker" is the right default on AWS
 
 The alternative is to wire S3 + EC2 + ECR + a custom serving stack + a custom drift pipeline. That works but reproduces what SageMaker already gives, and the maintenance falls on the team. SageMaker pays back its higher per-hour cost in **engineering hours saved** unless the workload is unusual enough to need the bespoke setup.
@@ -203,6 +217,7 @@ The point of running this on AWS (rather than locally) is the **reproducibility 
 | Promote and govern model versions | **SageMaker Model Registry** | Lineage, approvals |
 | Serve a model with auto-scaling | **SageMaker Endpoint** | Real-time or batch |
 | Detect data and model drift | **SageMaker Model Monitor** | Native ML observability |
+| Call a foundation LLM / agent / RAG without owning the model | **Amazon Bedrock** | Managed gateway, multi-provider |
 | Centralise metrics and logs | **CloudWatch** | The AWS sink |
 | Trigger automation on events | **EventBridge** | Glue between services |
 | Survive a data-centre failure | Multi-AZ deployment | Same Region, no cross-region cost |

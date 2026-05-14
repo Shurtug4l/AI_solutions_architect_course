@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Google Cloud's positioning is **data-first**: build the AI around the data warehouse, not the warehouse around the AI. The strategy is consistent with Google's own product history (Search, YouTube, Gmail are data products), and it translates into a stack where **BigQuery** is the gravitational centre and **Vertex AI** is the unified ML platform that orbits it. **BigQuery** is a serverless, columnar warehouse that scales from gigabytes to petabytes, with a billing model based on query bytes scanned (not stored), and a feature that justifies the philosophy on its own: **BigQuery ML**, the ability to train and serve ML models with plain SQL, with no data movement. **Vertex AI** unifies what other clouds split across multiple products: managed **Workbench** (notebooks with GPU/TPU), **AutoML** (no-code on tabular, vision, NLP, video), **Custom Training** (distributed on GPU/TPU with hyperparameter tuning), **Model Registry**, **Endpoints** (REST with autoscaling), **A/B testing**, **Feature Store** (centralised features shared between training and serving, guaranteed consistent). **Dataflow** is the managed Apache Beam runner for streaming and batch ETL, the data engineering layer that prepares data for ML, with **TensorFlow Transform** as the bridge that ensures the same code runs at training and serving time, eliminating training-serving skew. The four AI APIs (Vision, Language, Speech, Dialogflow) are the equivalent of Azure's Cognitive Services, all designed to plug into Vertex AI for customisation. The strategic question: **pick GCP when the data side is the differentiator** (large volumes, real-time analytics, BigQuery-first architectures, Google-ecosystem alignment); pick Azure when the enterprise integration is the differentiator; pick AWS when the breadth of the catalogue and the maturity of the operations are.
+Google Cloud's positioning is **data-first**: build the AI around the data warehouse, not the warehouse around the AI. The strategy is consistent with Google's own product history (Search, YouTube, Gmail are data products), and it translates into a stack where **BigQuery** is the gravitational centre and **Vertex AI** is the unified ML platform that orbits it. **BigQuery** is a serverless, columnar warehouse that scales from gigabytes to petabytes, with a billing model based on query bytes scanned (not stored), and a feature that justifies the philosophy on its own: **BigQuery ML**, the ability to train and serve ML models with plain SQL, with no data movement. **Vertex AI** unifies what other clouds split across multiple products: managed **Workbench** (notebooks with GPU/TPU), **AutoML** (no-code on tabular, vision, NLP, video), **Custom Training** (distributed on GPU/TPU with hyperparameter tuning), **Model Registry**, **Endpoints** (REST with autoscaling), **A/B testing**, **Feature Store** (centralised features shared between training and serving, guaranteed consistent). For generative AI specifically, the **Vertex AI Model Garden** hosts Google's own **Gemini** family (Gemini 2.x Pro and Flash, multimodal, long-context), Anthropic Claude, Meta Llama, Mistral, plus open-weights checkpoints; **Vertex AI Agent Builder** packages agent runtime, RAG against Vertex AI Search, and grounding into one product. Gemini replaced PaLM as Google's flagship LLM family in 2024; the PaLM API is deprecated. **Dataflow** is the managed Apache Beam runner for streaming and batch ETL, the data engineering layer that prepares data for ML, with **TensorFlow Transform** as the bridge that ensures the same code runs at training and serving time, eliminating training-serving skew. The four AI APIs (Vision, Language, Speech, Dialogflow CX) are the equivalent of Azure AI Services and AWS Comprehend/Rekognition, all designed to plug into Vertex AI for customisation. The strategic question: **pick GCP when the data side is the differentiator** (large volumes, real-time analytics, BigQuery-first architectures, Google-ecosystem alignment); pick Azure when the enterprise integration is the differentiator; pick AWS when the breadth of the catalogue and the maturity of the operations are.
 
 ## Cheatsheet
 
@@ -15,6 +15,10 @@ Google Cloud's positioning is **data-first**: build the AI around the data wareh
 | **Workbench** | Managed Jupyter with GPU/TPU access | Vertex AI |
 | **AutoML** | No-code training for vision, NLP, tabular, video | Vertex AI |
 | **Custom Training** | Distributed training on GPU/TPU clusters, HPO | Vertex AI |
+| **Model Garden** | Catalogue: Gemini, Claude, Llama, Mistral, OSS checkpoints | Vertex AI |
+| **Agent Builder** | Managed agents + RAG + grounding (Vertex AI Search inside) | Vertex AI |
+| **Vertex AI Search** (formerly **Vertex AI Search for Retail / Enterprise Search**) | Vector + keyword retrieval for RAG | Vertex AI |
+| **Gemini** (replaces the retired **PaLM API**, 2024) | Frontier multimodal LLM family (Gemini 2.x Pro / Flash) | Vertex AI Model Garden |
 | **Model Registry** | Versioned model catalogue with lineage | Vertex AI |
 | **Endpoints** | REST inference with autoscaling | Vertex AI |
 | **Feature Store** | Centralised features, training-serving consistency | Vertex AI |
@@ -157,14 +161,15 @@ Every night, the recommendations model is retrained on the BigQuery snapshot of 
 
 ## AI APIs: the ready-to-use layer
 
-GCP's equivalent of Azure Cognitive Services. Pre-trained REST APIs for common AI tasks, designed to be **upgraded** into Vertex AI custom models when the generic version is not enough.
+GCP's equivalent of Azure AI Services. Pre-trained REST APIs for common AI tasks, designed to be **upgraded** into Vertex AI custom models when the generic version is not enough.
 
 | API | Capability |
 |---|---|
 | **Vision API** | Label detection, OCR, face detection, landmark recognition, content moderation |
 | **Language API** | Sentiment, entity extraction, syntax analysis, content classification |
 | **Speech API** | Speech-to-Text, Text-to-Speech, in 125+ languages |
-| **Dialogflow** | Conversational AI for chatbots and voice agents |
+| **Dialogflow CX** (Dialogflow **ES** is the legacy variant, still supported but no longer the default) | Conversational AI for chatbots and voice agents |
+| **Gemini API (via Vertex AI)** (replaces the retired **PaLM API**) | Frontier LLM (text + vision + audio, long-context) |
 
 The design discipline is the same as Azure's: try the API first; if it does not meet the bar, escalate to Vertex AI AutoML; if that does not, escalate to custom training.
 
@@ -279,7 +284,7 @@ The point is not "look at this case study", it is **the pattern**: every step is
 ### Other notes
 - [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — the abstract pipeline; GCP just collapses the seams
 - [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) — AWS comparison (S3 ↔ Cloud Storage, SageMaker ↔ Vertex AI, no native BigQuery analogue)
-- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) — Azure comparison (Cognitive Services ↔ AI APIs, Azure ML ↔ Vertex AI)
+- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) — Azure comparison (Azure AI Services ↔ AI APIs, Azure ML ↔ Vertex AI, Azure AI Foundry ↔ Vertex AI Agent Builder)
 - [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — Vertex AI is the PaaS choice; sometimes you do not want it
 - [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) — when to mix BigQuery with non-GCP workloads
 

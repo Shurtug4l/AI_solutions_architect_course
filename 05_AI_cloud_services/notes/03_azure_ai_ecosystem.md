@@ -2,20 +2,22 @@
 
 ## TL;DR
 
-Azure is the second-largest cloud after AWS but the leader in **enterprise** adoption, driven by tight integration with Microsoft's existing stack (Office 365, Active Directory, Dynamics 365) and a deep portfolio of **compliance certifications** (GDPR, ISO 27001, HIPAA, SOC 2). The AI offering is organised as a **three-level pyramid** that maps directly onto the build-vs-buy tradeoff: **Level 1 (Cognitive Services)** is ready-to-use REST APIs for vision, speech, language, decision, integrated in days; **Level 2 (Custom Vision, LUIS)** is no-code customisation of those same models on your data, weeks-to-months; **Level 3 (Azure Machine Learning)** is full custom ML with code, months and a real ML team. The Cognitive Services portfolio covers four families (**Vision**, **Speech**, **Language**, **Decision**) and is the fastest path from "we need AI" to "we have AI". **Azure OpenAI Service** is the enterprise-safe wrapper around GPT-4 / GPT-3.5 / DALL-E with three contractual guarantees that public OpenAI does not give: your data is not used to train models, it stays in your Azure region, and the service holds the same compliance certifications as the rest of Azure. **Azure Machine Learning** has four faces (Designer no-code drag-and-drop, AutoML, Notebooks code-first, MLOps for production) on the same underlying platform. The **Power Platform** (Power BI, Power Apps, Power Automate) sits above all of this and democratises AI for citizen developers. The Azure data foundation is the usual quartet: **Blob Storage** (unstructured), **Azure SQL Database** (relational), **Cosmos DB** (global low-latency NoSQL), **Data Lake** (petabyte analytics). Pricing optimisation follows the standard cloud playbook: **batch processing (-50%)**, **result caching (-70%)**, **reserved instances (-40%)**, **auto-scaling (-50%)**.
+Azure is the second-largest cloud after AWS but the leader in **enterprise** adoption, driven by tight integration with Microsoft's existing stack (Office 365, Active Directory, Dynamics 365) and a deep portfolio of **compliance certifications** (GDPR, ISO 27001, HIPAA, SOC 2). The AI offering is organised as a **three-level pyramid** that maps directly onto the build-vs-buy tradeoff: **Level 1 (Azure AI Services**, the rebranded name of what the course slides and older documentation still call "Cognitive Services"**)** is ready-to-use REST APIs for vision, speech, language, decision, integrated in days; **Level 2 (Custom Vision, Conversational Language Understanding)** is no-code customisation of those same models on your data, weeks-to-months; **Level 3 (Azure Machine Learning)** is full custom ML with code, months and a real ML team. The Azure AI Services portfolio covers four families (**Vision**, **Speech**, **Language**, **Decision**) and is the fastest path from "we need AI" to "we have AI". **Azure OpenAI Service** is the enterprise-safe wrapper around the OpenAI catalogue (GPT-4o family, o-series reasoning models, image models like GPT-image-1) with three contractual guarantees that public OpenAI does not give: your data is not used to train models, it stays in your Azure region, and the service holds the same compliance certifications as the rest of Azure. **Azure AI Foundry** (formerly **Azure AI Studio**, rebranded at Microsoft Ignite 2024) is the unified development hub for generative AI: model catalogue (OpenAI, Llama, Mistral, Phi, custom), agent builder, fine-tuning, evaluation, content safety; it sits alongside Azure ML (for classical custom ML) rather than replacing it. **Azure Machine Learning** has four faces (Designer no-code drag-and-drop, AutoML, Notebooks code-first, MLOps for production) on the same underlying platform; the web UI is still called "Azure Machine Learning Studio". The **Power Platform** (Power BI, Power Apps, Power Automate) sits above all of this and democratises AI for citizen developers. The Azure data foundation is the usual quartet: **Blob Storage** (unstructured), **Azure SQL Database** (relational), **Cosmos DB** (global low-latency NoSQL), **Data Lake** (petabyte analytics), with **Azure AI Search** (formerly Cognitive Search) as the vector + keyword retrieval layer behind most RAG deployments. Pricing optimisation follows the standard cloud playbook: **batch processing (-50%)**, **result caching (-70%)**, **reserved instances (-40%)**, **auto-scaling (-50%)**.
 
 ## Cheatsheet
 
 | Service / Concept | One-line | Pyramid level |
 |---|---|---|
-| **Pyramid Level 1** | Pre-built REST APIs, days to integrate | Cognitive Services |
-| **Pyramid Level 2** | No-code customisation on your data | Custom Vision, LUIS |
+| **Pyramid Level 1** | Pre-built REST APIs, days to integrate | Azure AI Services (legacy name: Cognitive Services) |
+| **Pyramid Level 2** | No-code customisation on your data | Custom Vision, CLU (Conversational Language Understanding) |
 | **Pyramid Level 3** | Full custom ML, code-first | Azure Machine Learning |
-| **Cognitive Services / Vision** | Computer Vision, Face API, Custom Vision, Document Intelligence | Lv 1 |
-| **Cognitive Services / Speech** | Speech-to-Text, Text-to-Speech, Speech Translation | Lv 1 |
-| **Cognitive Services / Language** | Text Analytics, Translator, LUIS, QnA Maker | Lv 1 |
-| **Cognitive Services / Decision** | Personalizer, Anomaly Detector | Lv 1 |
-| **Azure OpenAI Service** | GPT-4, GPT-3.5, DALL-E on Azure with enterprise guarantees | Across all levels |
+| **Azure AI Services / Vision** | Computer Vision (Image Analysis 4.0), Face API, Custom Vision, Document Intelligence | Lv 1 |
+| **Azure AI Services / Speech** | Speech-to-Text, Text-to-Speech, Speech Translation | Lv 1 |
+| **Azure AI Services / Language** | Text Analytics, Translator, CLU, Custom Question Answering | Lv 1 |
+| **Azure AI Services / Decision** | Personalizer, Anomaly Detector | Lv 1 |
+| **Azure OpenAI Service** | GPT-4o family, o-series reasoning models, GPT-image-1 on Azure with enterprise guarantees | Across all levels |
+| **Azure AI Foundry** (formerly **Azure AI Studio**) | Unified hub for GenAI: model catalogue, agents, fine-tuning, evaluation | New top of the stack |
+| **Azure AI Search** | Vector + keyword retrieval (formerly Cognitive Search) | RAG layer |
 | **Azure ML Designer** | Drag-and-drop pipeline builder | Lv 3 (no-code) |
 | **Azure ML AutoML** | Automated algorithm + hyperparameter search | Lv 3 (no-code) |
 | **Azure ML Notebooks** | Jupyter + VS Code integrated, GPU and Spark access | Lv 3 (code-first) |
@@ -44,7 +46,10 @@ The implication for AI workloads: Azure is the **lowest-friction choice when the
 
 > Three levels, each calibrated for a different tradeoff between **time, budget, and competence**.
 
-### Level 1: Cognitive Services (ready-to-use APIs)
+### Level 1: Azure AI Services (ready-to-use APIs)
+
+> Microsoft rebranded "Cognitive Services" to **Azure AI Services** in 2023. The course slides and most third-party tutorials still use the legacy name; the underlying products (Computer Vision, Speech, Language, Document Intelligence, ...) and their REST contracts are unchanged.
+
 
 REST APIs pre-configured for the most common AI tasks. You authenticate, you call the endpoint, you get a result.
 
@@ -57,7 +62,7 @@ REST APIs pre-configured for the most common AI tasks. You authenticate, you cal
 
 ### Level 2: No-code customisation
 
-The Cognitive Services line includes products (**Custom Vision** for vision, **LUIS** for language understanding) that let you upload your own labelled data through a UI and get a fine-tuned version of the underlying model.
+The Azure AI Services line includes products (**Custom Vision** for vision, **Conversational Language Understanding / CLU** for language, **Custom Question Answering** for FAQ) that let you upload your own labelled data through a UI and get a fine-tuned version of the underlying model. CLU and Custom Question Answering both live inside Azure AI Language and have replaced the legacy LUIS (retired October 2025) and QnA Maker (retired March 2025) products that older documentation references.
 
 | Property | Detail |
 |---|---|
@@ -89,7 +94,7 @@ The wrong answer in either direction is expensive: building a Level-3 custom-vis
 
 ---
 
-## Cognitive Services: the four families
+## Azure AI Services: the four families
 
 The cleanest way to remember the catalogue is by family.
 
@@ -115,9 +120,9 @@ The cleanest way to remember the catalogue is by family.
 | Service | Capability |
 |---|---|
 | **Text Analytics** | Sentiment, key phrases, Named Entity Recognition |
-| **LUIS** | Intent recognition from natural language |
+| **Conversational Language Understanding (CLU)** (formerly **LUIS**, retired Oct 2025) | Intent and entity recognition from natural language |
 | **Translator** | Text translation across 100+ languages |
-| **QnA Maker** | Build FAQ chatbots from a knowledge base |
+| **Custom Question Answering** (formerly **QnA Maker**, retired Mar 2025) | Build FAQ chatbots from a knowledge base |
 
 ### Decision
 
@@ -128,15 +133,15 @@ The cleanest way to remember the catalogue is by family.
 
 ### What this stack is for
 
-Cognitive Services is the **fastest path from idea to working feature**. The right question is not "is the model state-of-the-art?" but "is it good enough for this use case?". For document OCR, sentiment on customer reviews, and basic image classification, the answer is almost always yes, and the project ships in days.
+Azure AI Services is the **fastest path from idea to working feature**. The right question is not "is the model state-of-the-art?" but "is it good enough for this use case?". For document OCR, sentiment on customer reviews, and basic image classification, the answer is almost always yes, and the project ships in days.
 
-The wrong question is "can I match GPT-4 with LUIS?". You cannot, and you should not try; if the use case needs LLM capability, the right Azure answer is **Azure OpenAI Service**.
+The wrong question is "can I match GPT-4o with CLU?". You cannot, and you should not try; if the use case needs LLM capability, the right Azure answer is **Azure OpenAI Service** (raw API access) or **Azure AI Foundry** (full GenAI development environment).
 
 ---
 
-## Azure OpenAI Service: GPT inside Azure
+## Azure OpenAI Service: OpenAI inside Azure
 
-> The most capable OpenAI models (GPT-4, GPT-3.5 Turbo, DALL-E) running on Azure infrastructure, with enterprise contractual guarantees.
+> The most capable OpenAI models running on Azure infrastructure with enterprise contractual guarantees. The catalogue tracks public OpenAI with a short delay and currently covers the **GPT-4o** family (text + vision + audio), the **o-series reasoning models** (o1, o3, o4-mini), and image generation (**GPT-image-1**, DALL·E 3). GPT-4 and GPT-3.5 Turbo are still available as legacy options.
 
 This is not "OpenAI repackaged". It is **the same models** with three differences that matter to enterprises.
 
@@ -148,6 +153,31 @@ This is not "OpenAI repackaged". It is **the same models** with three difference
 | **SLA** | Best-effort | 99.9% with Microsoft support |
 
 The cost is access (it is gated behind a Microsoft application process and quota allocation) and slightly higher pricing than the public API. For any regulated or enterprise context, the cost is worth paying; for prototypes that do not touch sensitive data, the public OpenAI API is faster to get started with.
+
+---
+
+## Azure AI Foundry: the GenAI hub
+
+> Introduced at Microsoft Ignite 2024 as the rebrand and expansion of **Azure AI Studio** (the previous name is still common in tutorials and older training materials). The single entry point for **generative AI** workloads on Azure.
+
+What you do inside Foundry:
+
+- **Browse and deploy from the model catalogue**: OpenAI (via Azure OpenAI), Meta Llama, Mistral, Phi, Cohere, plus models hosted as Models-as-a-Service.
+- **Build agents**: the Agent Service abstracts orchestration, tool use, threads, file search, and code interpreter; the cloud equivalent of LangGraph or the OpenAI Assistants API.
+- **Fine-tune and customise**: supervised fine-tuning, DPO, RFT on supported models; brings your data via secure connectors.
+- **Evaluate and ground**: built-in evaluators (groundedness, relevance, safety) and integration with Azure AI Search for RAG.
+- **Apply content safety**: prompt shields, jailbreak detection, PII detection, all configurable per deployment.
+
+How it relates to Azure Machine Learning:
+
+| Dimension | Azure AI Foundry | Azure Machine Learning |
+|---|---|---|
+| **Workload focus** | GenAI: LLMs, agents, RAG, multimodal | Classical and custom ML: tabular, vision, NLP, time series |
+| **Primary user** | App developer, AI engineer | Data scientist, MLOps engineer |
+| **Model paradigm** | Prompt + fine-tune pre-trained foundation models | Train from data |
+| **UI** | Foundry portal | Azure Machine Learning Studio |
+
+They share the underlying compute and storage; the choice is not "one or the other" but "the right tool for the workload". A team building a customer-service agent works mainly in Foundry; a team training a defect-classification CNN works mainly in Azure ML.
 
 ---
 
@@ -200,9 +230,9 @@ The Power Platform is **above** the AI pyramid. It does not give you models; it 
 |---|---|---|
 | **Power BI** | Business Intelligence and dashboards | Natural-language Q&A ("sales by region last 3 months"), automatic insights, Key Influencers analysis, integration with Azure ML custom models |
 | **Power Apps** | Low-code app builder | AI Builder with OCR, object detection, form processing, sentiment built-in |
-| **Power Automate** | Workflow automation | Cognitive Services in workflows: incoming invoice → Document Intelligence extracts fields → auto-approve if amount < threshold |
+| **Power Automate** | Workflow automation | Azure AI Services in workflows: incoming invoice → Document Intelligence extracts fields → auto-approve if amount < threshold |
 
-The strategic role: Power Platform is what turns a Cognitive Services API into a feature **inside an existing business process** that someone without engineering bandwidth can build and operate. It is also the easiest demonstration of why Azure adoption is sticky in enterprises (no other cloud has the same low-code surface tied to its AI portfolio).
+The strategic role: Power Platform is what turns an Azure AI Services API into a feature **inside an existing business process** that someone without engineering bandwidth can build and operate. It is also the easiest demonstration of why Azure adoption is sticky in enterprises (no other cloud has the same low-code surface tied to its AI portfolio).
 
 ---
 
@@ -253,12 +283,13 @@ The discipline is to apply them **before** the bill becomes a problem, not after
 |---|---|---|
 | Building Level-3 custom ML for a problem Level-1 solves | A team spends a quarter on what an API call covers | Always try the API first; build custom only when API outputs miss the spec |
 | Public OpenAI used for sensitive data | Compliance breach | Use Azure OpenAI Service; verify region and contract |
-| Cognitive Services for tasks outside their training distribution | Bad accuracy, surprises in production | Validate against your own test set before launch; consider Custom Vision / Azure ML if generic accuracy fails |
+| Azure AI Services for tasks outside their training distribution | Bad accuracy, surprises in production | Validate against your own test set before launch; consider Custom Vision / Azure ML if generic accuracy fails |
 | Cosmos DB used as a transactional RDBMS | High cost, poor query patterns | Use Cosmos for global low-latency access, Azure SQL for transactions |
 | Azure ML deployed without MLOps | Cannot reproduce, no drift monitoring | Always wire Model Registry + monitoring + CI/CD from the first deploy |
 | Cost optimisations applied after the fact | The team gets a $30 K monthly bill before the optimisations are done | Build batch/cache/auto-scale into the architecture, not as a remediation |
 | Power Platform used without governance | Citizen developers create unmanaged workflows that leak data | Establish a Power Platform CoE: environments, policies, audited connectors |
-| Cognitive Services region mismatched with data residency policy | Audit finding | Choose region explicitly; default may be US |
+| Azure AI Services region mismatched with data residency policy | Audit finding | Choose region explicitly; default may be US |
+| LUIS / QnA Maker in legacy codebases | Service retired in 2025, returns 410 | Migrate to CLU and Custom Question Answering inside Azure AI Language |
 
 ---
 
@@ -266,11 +297,13 @@ The discipline is to apply them **before** the bill becomes a problem, not after
 
 | Need | Pick |
 |---|---|
-| Fastest possible OCR / sentiment / object detection feature | **Cognitive Services** (Lv 1) |
-| Model the generic API does not handle, no data science team | **Custom Vision / LUIS** (Lv 2) |
+| Fastest possible OCR / sentiment / object detection feature | **Azure AI Services** (Lv 1) |
+| Model the generic API does not handle, no data science team | **Custom Vision / CLU** (Lv 2) |
 | Full custom model, ML team available | **Azure ML** (Lv 3) |
 | LLM capability with enterprise guarantees | **Azure OpenAI Service** |
-| AI inside a workflow built by a business user | **Power Platform** + Cognitive Services |
+| Build agents, RAG, fine-tune LLMs, evaluate generative outputs | **Azure AI Foundry** |
+| Vector + keyword search for RAG | **Azure AI Search** |
+| AI inside a workflow built by a business user | **Power Platform** + Azure AI Services |
 | Store training datasets, model artefacts, logs | **Blob Storage** |
 | Transactional features and prediction outputs | **Azure SQL Database** |
 | Real-time prediction context with global low latency | **Cosmos DB** |
@@ -286,7 +319,7 @@ The discipline is to apply them **before** the bill becomes a problem, not after
 
 ### Other notes
 - [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — pyramid maps to the AIaaS-vs-custom-platform tradeoff
-- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) — AWS counterpart (Cognitive Services ↔ Bedrock + Comprehend etc.; Azure ML ↔ SageMaker)
+- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) — AWS counterpart (Azure AI Services ↔ Bedrock + Comprehend etc.; Azure ML ↔ SageMaker)
 - [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — GCP counterpart, with a different philosophy (data-first vs services-first)
 - [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — when to leave the Azure pyramid for IaaS or OSS
 

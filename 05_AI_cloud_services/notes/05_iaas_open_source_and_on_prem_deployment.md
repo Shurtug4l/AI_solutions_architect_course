@@ -15,7 +15,7 @@ Not every AI workload belongs on a managed PaaS. The alternative path runs throu
 | **On-prem deploy** | Hardware you own | Maximum privacy, predictable cost |
 | **Third-party APIs (paid)** | OpenAI, Anthropic, Mistral cloud, etc. | Best-of-breed without owning the model |
 | **Third-party APIs (free)** | Hugging Face Inference, public endpoints | Prototyping, low volume |
-| **OSS LLMs** | Llama, Mistral, Gemma | Run frontier-class models locally |
+| **OSS LLMs** | Llama (4.x), Mistral (Large 2, Small 3, Mixtral), Gemma, Qwen | Run frontier-class models locally |
 | **HF Transformers** | Library for NLP/vision models | Industry default |
 | **Diffusion models** | Stable Diffusion family | OSS image generation |
 | **scikit-learn** | Classical ML on tabular data | Baseline + production-ready pipelines |
@@ -98,7 +98,7 @@ The OSS path **wins long-term at scale** because per-unit cost is lower than per
 | Tool / Model | Used for |
 |---|---|
 | **scikit-learn** | Classical ML on tabular data; the default Python ML library |
-| **Llama, Mistral** | Open-weights LLMs of various sizes, runnable on consumer-to-enterprise hardware |
+| **Llama 4.x, Mistral (Large 2, Small 3, Mixtral), Gemma, Qwen** | Open-weights LLM families spanning 1B to 400B parameters, runnable on consumer-to-enterprise hardware |
 | **Stable Diffusion** | Image generation, runnable on a single GPU |
 | **HF Transformers** | NLP and vision models from BERT to LLaMA, with a uniform API |
 | **Hugging Face Hub** | The registry: 1M+ pre-trained models, datasets, model cards |

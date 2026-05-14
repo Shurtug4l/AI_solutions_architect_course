@@ -31,15 +31,15 @@
 
 | Term | What it mixes | Example |
 |---|---|---|
-| **Hybrid architecture** | Service models (PaaS, IaaS, OSS) inside the same solution | E-commerce: Azure Cognitive Services (PaaS) + Llama OSS for high-volume LLM calls |
+| **Hybrid architecture** | Service models (PaaS, IaaS, OSS) inside the same solution | E-commerce: Azure AI Services (PaaS) + Llama OSS for high-volume LLM calls |
 | **Multi-cloud** | Cloud providers | Startup: AWS US + Azure EU + GCP analytics |
 
-The two can combine: a system that runs **Azure Cognitive Services in EU, Llama OSS in EU, and AWS S3 for archival** is both hybrid and multi-cloud.
+The two can combine: a system that runs **Azure AI Services in EU, Llama OSS in EU, and AWS S3 for archival** is both hybrid and multi-cloud.
 
 ### Concrete examples by sector
 
 **Hybrid architectures**:
-- **E-commerce**: Azure Cognitive Services (vision and language APIs) + Llama OSS (chatbot, high volume).
+- **E-commerce**: Azure AI Services (vision and language APIs) + Llama OSS (chatbot, high volume).
 - **FinTech**: OpenAI API (general LLM) + on-premise fraud detection models (regulated data).
 - **B2B SaaS**: Google Vertex AI (managed ML platform) + custom OSS models (vertical-specific).
 
