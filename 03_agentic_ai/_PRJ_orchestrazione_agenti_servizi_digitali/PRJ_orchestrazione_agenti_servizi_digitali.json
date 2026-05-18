@@ -1,10 +1,10 @@
 {
-  "name": "DigitServe - Orchestrazione Agenti Servizi Digitali",
+  "name": "DigitServe S.r.l. - Orchestrazione di agenti AI per azienda di servizi digitali",
   "nodes": [
     {
       "parameters": {
-        "content": "## DigitServe S.r.l. - Orchestrazione Agenti AI per Servizi Digitali\n### Modulo 03 - Agentic AI\n\n**Autore:** Simone La Porta · **Data:** 2026-05-09 · **Runtime:** Ollama (default) o OpenAI\n\n---\n\n### Obiettivo\nSistema multi-agente che riceve richieste interne dai canali aziendali (form, email, chat), le interpreta semanticamente, decide il piano operativo e attiva gli agenti esecutivi (ticketing, CRM, notifiche, reportistica) in modo automatico oppure con approvazione umana sui casi sensibili.\n\n### Architettura\n```\nCanali interni → Webhook\n   │\n   ├─ [0] Configurazione provider LLM (ollama | openai)\n   ├─ [1] Agente di Interpretazione (LLM → JSON strutturato)\n   ├─ [2] Agente Decisionale (regole + scoring deterministico)\n   ├─ [3] Gate approvazione umana (urgenza critica | key-account + sensibile)\n   ├─ [4] Agenti esecutivi paralleli (ticket, CRM, notifica, report, analisi)\n   └─ [5] Aggregazione esiti + Audit log + Risposta sincrona\n```\n\n### Scelte di design\n- **Doppio provider LLM** selezionabile per richiesta (`provider` nel payload). Ollama default per privacy e zero esfiltrazione; OpenAI per qualità di estrazione superiore su input ambigui.\n- **HTTP Request diretto** verso Ollama/OpenAI invece dei nodi `@n8n/n8n-nodes-langchain` per portabilità.\n- **Decisionale a regole**, non LLM: ispezionabile, riproducibile, costo zero. L'LLM è confinato al solo step di interpretazione.\n- **Esecuzione parallela** degli executor via Switch + branch indipendenti.\n- **Workflow autocontenuto**: gli executor sono Code nodes con simulazione interna (TKT-, EVT-, NTF-, RPT-, AUD-). Per produzione: sostituire con HTTP Request verso i sistemi reali, l'`esito_azione` resta invariato.\n- **Audit strutturato** con `correlation_id` propagato in ogni step.",
-        "height": 616,
+        "content": "## DigitServe S.r.l. - Orchestrazione di agenti AI per azienda di servizi digitali\n### Modulo - Agentic AI\n\n**Autore:** Simone La Porta · **Data:** 2026-05-19 · **Runtime:** Ollama (default) o OpenAI\n\n---\n\n### Obiettivo\nRiceve richieste interne (form/email/chat), le interpreta, decide il piano operativo, le esegue o le sottopone ad approvazione umana sui casi sensibili, registra audit completo end-to-end.\n\n### Architettura\n```\nWebhook -> Normalizza -> Switch provider -> LLM (Ollama|OpenAI) -> Parse\n   -> Decisionale -> IF approvazione -> [HITL Gmail Send&Wait | Auto-approva]\n   -> Esegui Piano (dispatcher 5 tipi) -> Costruisci -> Persisti -> Respond\n```\n\n### Scelte di design\n- **Dual-provider LLM** selezionabile per richiesta. Ollama locale di default per privacy e zero esfiltrazione; OpenAI per qualita' superiore su input ambigui.\n- **Decisionale a regole** Regole = piano riproducibile e ispezionabile. Casi non coperti passano dal gate HITL.\n- **Executor mock single-node** `Esegui Piano` simula gli effetti con schema `esito_azione` fisso (TKT-/EVT-/NTF-/RPT-/ANL- + AUD- da `Persisti Audit Log`). Migrazione produzione = sostituire gli handler con HTTP Request, schema invariato.\n- **HTTP Request diretto** verso Ollama/OpenAI: controllo puntuale prompt/parsing, portabilita' del JSON, zero dipendenze.\n- **Audit `correlation_id` end-to-end** + header `X-Correlation-Id` in response per riconciliazione lato chiamante.",
+        "height": 502,
         "width": 1088,
         "color": 5
       },
@@ -13,14 +13,14 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        14384,
-        4048
+        14224,
+        4144
       ]
     },
     {
       "parameters": {
-        "content": "### Stage 0 - Ingestion\nWebhook POST `/digitserve-richiesta`. Payload:\n```\n{\n  \"canale\": \"form|email|chat\",\n  \"mittente\": {\"nome\", \"ruolo\", \"email\"},\n  \"testo\": str,\n  \"provider\": \"ollama\"|\"openai\" (opzionale, default ollama),\n  \"modello_llm\": str (opzionale, default per provider)\n}\n```\nNormalizzazione genera `correlation_id` (id esecuzione + ms) usato come chiave di riconciliazione su tutto il flusso.",
-        "height": 220,
+        "content": "### Stage 0 - Ingestion\nWebhook `POST /digitserve-richiesta`. Payload:\n```\n{\n  \"canale\": \"form|email|chat\",\n  \"mittente\": {\"nome\", \"ruolo\", \"email\"},\n  \"testo\": str,\n  \"provider\": \"ollama\"|\"openai\"  (opt, default ollama),\n  \"modello_llm\": str             (opt, default per provider)\n}\n```\n`Normalizza Input` genera `correlation_id` (id esecuzione + ms), usato come chiave su tutto il flusso.",
+        "height": 292,
         "width": 652,
         "color": 6
       },
@@ -29,7 +29,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        15536,
+        15520,
         4288
       ]
     },
@@ -210,8 +210,8 @@
     },
     {
       "parameters": {
-        "content": "### Stage 1 - Interpretazione (LLM)\nUnico componente probabilistico, isolato a uno stage. Schema JSON forzato (`format=json` su Ollama, `response_format={type:'json_object'}` su OpenAI) per garantire output parsabile.\n\n**Branch Ollama** (default): llama3.2 in locale, zero esfiltrazione.\n**Branch OpenAI**: gpt-4o-mini, dati transitano sul provider.\n\nParser difensivo a valle: su `parse_ok=false` applica fallback conservativo (urgenza alta, ticket di revisione manuale) invece di fallire.",
-        "height": 224,
+        "content": "### Stage 1 - Interpretazione (LLM)\nUnico componente probabilistico, isolato qui. Schema JSON forzato (`format=json` su Ollama, `response_format={type:'json_object'}` su OpenAI) per garantire output parsabile senza testo a corollario.\n\n**Branch Ollama** (default): `llama3.2` in locale, zero esfiltrazione.\n**Branch OpenAI**: `gpt-4o-mini`, dati transitano sul provider.\n\nParser difensivo a valle: su HTTP error o JSON malformato → `parse_ok=false`, fallback conservativo (urgenza alta + ticket di revisione manuale) e flag che il decisionale onora per forzare HITL. Non collassa \"LLM rotto\" e \"LLM ha risposto male\" nello stesso esito ma propaga entrambi al gate umano.",
+        "height": 262,
         "width": 560,
         "color": 6
       },
@@ -221,7 +221,7 @@
       "typeVersion": 1,
       "position": [
         16240,
-        4288
+        4240
       ]
     },
     {
@@ -230,7 +230,7 @@
         "url": "http://127.0.0.1:11434/api/generate",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: $json.modello_llm, format: \"json\", stream: false, options: { temperature: 0.1, num_ctx: 4096 }, prompt: \"Sei l'agente di interpretazione del sistema interno di DigitServe S.r.l., un'azienda italiana di servizi digitali B2B. Analizza la richiesta arrivata dal canale '\" + $json.canale + \"' e produci ESCLUSIVAMENTE un JSON con questo schema:\\n\\n{\\n  \\\"intento\\\": uno fra [\\\"analisi_anomalia\\\", \\\"apertura_ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_team\\\", \\\"richiesta_report\\\", \\\"escalation\\\", \\\"altro\\\"],\\n  \\\"cliente\\\": {\\\"nome\\\": stringa | null, \\\"id_cliente\\\": stringa | null},\\n  \\\"servizio\\\": uno fra [\\\"campagna_pubblicitaria\\\", \\\"supporto_tecnico\\\", \\\"integrazione_sistemi\\\", \\\"formazione\\\", \\\"altro\\\"] | null,\\n  \\\"urgenza\\\": uno fra [\\\"bassa\\\", \\\"media\\\", \\\"alta\\\", \\\"critica\\\"],\\n  \\\"azioni_richieste\\\": lista non vuota fra [\\\"analisi\\\", \\\"ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_marketing\\\", \\\"notifica_tecnico\\\", \\\"report\\\"],\\n  \\\"sentiment\\\": uno fra [\\\"neutro\\\", \\\"frustrato\\\", \\\"preoccupato\\\", \\\"soddisfatto\\\"],\\n  \\\"motivazione_urgenza\\\": stringa breve,\\n  \\\"contesto\\\": stringa breve (max 280 caratteri)\\n}\\n\\nRegole:\\n- Non aggiungere testo fuori dal JSON.\\n- Se un campo non è desumibile dalla richiesta, usa null o una lista vuota.\\n- L'urgenza 'critica' va riservata a impatto su clienti chiave, blocchi di servizio o anomalie con perdita economica visibile.\\n\\nRichiesta da interpretare:\\n\" + $json.testo }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: $json.modello_llm, format: \"json\", stream: false, options: { temperature: 0.1, num_ctx: 4096 }, prompt: \"Sei l'agente di interpretazione del sistema interno di DigitServe S.r.l., un'azienda italiana di servizi digitali B2B. Analizza la richiesta arrivata dal canale '\" + $json.canale + \"' e produci ESCLUSIVAMENTE un JSON con questo schema:\\n\\n{\\n  \\\"intento\\\": uno fra [\\\"analisi_anomalia\\\", \\\"apertura_ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_team\\\", \\\"richiesta_report\\\", \\\"escalation\\\", \\\"altro\\\"],\\n  \\\"cliente\\\": {\\\"nome\\\": stringa | null, \\\"id_cliente\\\": stringa | null},\\n  \\\"servizio\\\": uno fra [\\\"campagna_pubblicitaria\\\", \\\"supporto_tecnico\\\", \\\"integrazione_sistemi\\\", \\\"formazione\\\", \\\"altro\\\"] | null,\\n  \\\"urgenza\\\": uno fra [\\\"bassa\\\", \\\"media\\\", \\\"alta\\\", \\\"critica\\\"],\\n  \\\"azioni_richieste\\\": lista non vuota fra [\\\"analisi\\\", \\\"ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_marketing\\\", \\\"notifica_tecnico\\\", \\\"report\\\", \\\"escalation\\\"],\\n  \\\"sentiment\\\": uno fra [\\\"neutro\\\", \\\"frustrato\\\", \\\"preoccupato\\\", \\\"soddisfatto\\\"],\\n  \\\"motivazione_urgenza\\\": stringa breve,\\n  \\\"contesto\\\": stringa breve (max 280 caratteri)\\n}\\n\\nRegole:\\n- Non aggiungere testo fuori dal JSON.\\n- Se un campo non è desumibile dalla richiesta, usa null o una lista vuota.\\n- L'urgenza 'critica' va riservata a impatto su clienti chiave, blocchi di servizio o anomalie con perdita economica visibile.\\n- Usa l'azione 'escalation' quando la richiesta menziona esplicitamente escalation, intervento urgente del manager, o impatto bloccante su un cliente chiave; combinala con 'ticket' e 'notifica_tecnico' invece di usarla da sola.\\n\\nRichiesta da interpretare:\\n\" + $json.testo }) }}",
         "options": {
           "response": {
             "response": {
@@ -268,7 +268,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: $json.modello_llm, response_format: { type: \"json_object\" }, temperature: 0.1, messages: [ { role: \"system\", content: \"Sei l'agente di interpretazione del sistema interno di DigitServe S.r.l., un'azienda italiana di servizi digitali B2B. Restituisci ESCLUSIVAMENTE un JSON valido che rispetti lo schema indicato dall'utente. Non aggiungere testo fuori dal JSON.\" }, { role: \"user\", content: \"Schema richiesto:\\n{\\n  \\\"intento\\\": uno fra [\\\"analisi_anomalia\\\", \\\"apertura_ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_team\\\", \\\"richiesta_report\\\", \\\"escalation\\\", \\\"altro\\\"],\\n  \\\"cliente\\\": {\\\"nome\\\": stringa | null, \\\"id_cliente\\\": stringa | null},\\n  \\\"servizio\\\": uno fra [\\\"campagna_pubblicitaria\\\", \\\"supporto_tecnico\\\", \\\"integrazione_sistemi\\\", \\\"formazione\\\", \\\"altro\\\"] | null,\\n  \\\"urgenza\\\": uno fra [\\\"bassa\\\", \\\"media\\\", \\\"alta\\\", \\\"critica\\\"],\\n  \\\"azioni_richieste\\\": lista non vuota fra [\\\"analisi\\\", \\\"ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_marketing\\\", \\\"notifica_tecnico\\\", \\\"report\\\"],\\n  \\\"sentiment\\\": uno fra [\\\"neutro\\\", \\\"frustrato\\\", \\\"preoccupato\\\", \\\"soddisfatto\\\"],\\n  \\\"motivazione_urgenza\\\": stringa breve,\\n  \\\"contesto\\\": stringa breve (max 280 caratteri)\\n}\\n\\nL'urgenza 'critica' va riservata a impatto su clienti chiave, blocchi di servizio o anomalie con perdita economica visibile.\\n\\nCanale di origine: \" + $json.canale + \"\\nRichiesta da interpretare:\\n\" + $json.testo } ] }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: $json.modello_llm, response_format: { type: \"json_object\" }, temperature: 0.1, messages: [ { role: \"system\", content: \"Sei l'agente di interpretazione del sistema interno di DigitServe S.r.l., un'azienda italiana di servizi digitali B2B. Restituisci ESCLUSIVAMENTE un JSON valido che rispetti lo schema indicato dall'utente. Non aggiungere testo fuori dal JSON.\" }, { role: \"user\", content: \"Schema richiesto:\\n{\\n  \\\"intento\\\": uno fra [\\\"analisi_anomalia\\\", \\\"apertura_ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_team\\\", \\\"richiesta_report\\\", \\\"escalation\\\", \\\"altro\\\"],\\n  \\\"cliente\\\": {\\\"nome\\\": stringa | null, \\\"id_cliente\\\": stringa | null},\\n  \\\"servizio\\\": uno fra [\\\"campagna_pubblicitaria\\\", \\\"supporto_tecnico\\\", \\\"integrazione_sistemi\\\", \\\"formazione\\\", \\\"altro\\\"] | null,\\n  \\\"urgenza\\\": uno fra [\\\"bassa\\\", \\\"media\\\", \\\"alta\\\", \\\"critica\\\"],\\n  \\\"azioni_richieste\\\": lista non vuota fra [\\\"analisi\\\", \\\"ticket\\\", \\\"aggiornamento_crm\\\", \\\"notifica_marketing\\\", \\\"notifica_tecnico\\\", \\\"report\\\", \\\"escalation\\\"],\\n  \\\"sentiment\\\": uno fra [\\\"neutro\\\", \\\"frustrato\\\", \\\"preoccupato\\\", \\\"soddisfatto\\\"],\\n  \\\"motivazione_urgenza\\\": stringa breve,\\n  \\\"contesto\\\": stringa breve (max 280 caratteri)\\n}\\n\\nL'urgenza 'critica' va riservata a impatto su clienti chiave, blocchi di servizio o anomalie con perdita economica visibile.\\nUsa l'azione 'escalation' quando la richiesta menziona esplicitamente escalation, intervento urgente del manager, o impatto bloccante su un cliente chiave; combinala con 'ticket' e 'notifica_tecnico' invece di usarla da sola.\\n\\nCanale di origine: \" + $json.canale + \"\\nRichiesta da interpretare:\\n\" + $json.testo } ] }) }}",
         "options": {
           "response": {
             "response": {
@@ -305,8 +305,8 @@
     },
     {
       "parameters": {
-        "content": "### Stage 2 - Decisionale\nMappatura `interpretazione -> piano operativo` deterministica via Code node.\n\n**Scoring priorità (0-100):**\n- urgenza: bassa=10, media=30, alta=60, critica=90\n- sentiment: frustrato/preoccupato +10, soddisfatto -5\n- servizio: campagna_pubblicitaria +5, supporto_tecnico +10\n\n**Flag `richiede_approvazione`** triggerato da:\n- urgenza critica, OR\n- intent escalation, OR\n- cliente in whitelist `CLIENTI_CHIAVE` + azione sensibile (es. notifica_marketing)\n\nWhitelist hardcoded (ACME, EnerNova, BancaItalsud, Pharmacare). In produzione: lookup CRM.",
-        "height": 356,
+        "content": "### Stage 2 - Decisionale (regole)\nCode node deterministico: mappa `interpretazione -> piano operativo`. Regole motivate da requisito di tracciabilita' (piano riproducibile a parita' di input) e costo zero per richiesta.\n\n**Scoring priorita' (0-100):**\n- urgenza: bassa=10, media=30, alta=60, critica=90\n- sentiment: frustrato/preoccupato +10, soddisfatto -5\n- servizio: campagna_pubblicitaria +5, supporto_tecnico +10\n- azione `escalation`: +50 sul punteggio base (cosi' va in cima al piano)\n\n**Trigger `richiede_approvazione`:**\n- `parse_ok=false` (interpretazione corrotta)\n- urgenza `critica` OR intento/azione `escalation`\n- cliente in whitelist `CLIENTI_CHIAVE` + (`aggiornamento_crm` OR azione sensibile come `notifica_marketing`)\n\nWhitelist hardcoded (ACME, EnerNova, BancaItalsud, Pharmacare); in produzione lookup CRM.",
+        "height": 438,
         "width": 460,
         "color": 6
       },
@@ -316,12 +316,12 @@
       "typeVersion": 1,
       "position": [
         16832,
-        4160
+        4112
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Agente decisionale deterministico.\n// Trasforma l'interpretazione semantica in un piano operativo composto da\n// azioni discrete, ognuna con parametri, priorità e flag di approvazione.\n//\n// Lo scoring di priorità combina:\n//   - urgenza:     bassa=10, media=30, alta=60, critica=90\n//   - sentiment:   frustrato/preoccupato +10, soddisfatto -5\n//   - servizio:    campagna_pubblicitaria +5, supporto_tecnico +10\n// Il punteggio finale guida l'ordinamento delle azioni se eseguite\n// sequenzialmente; in modalita parallela serve come metadato per i log.\n//\n// L'approvazione umana scatta quando ALMENO una delle condizioni è vera:\n//   - parsing dell'LLM fallito (interpretazione_meta.parse_ok === false)\n//   - urgenza == 'critica'\n//   - intento == 'escalation'\n//   - intento == 'aggiornamento_crm' su clienti chiave\n//   - notifica_marketing su clienti enterprise (rischio reputazionale)\n// La definizione di 'cliente chiave' è qui hardcoded a una whitelist;\n// in produzione sarebbe una lookup contro il CRM.\n\nconst dati = $input.first().json;\nconst interp = dati.interpretazione;\n\nconst PUNTI_URGENZA = { bassa: 10, media: 30, alta: 60, critica: 90 };\nconst SENTIMENT_DELTA = { frustrato: 10, preoccupato: 10, soddisfatto: -5, neutro: 0 };\nconst SERVIZIO_DELTA = {\n  campagna_pubblicitaria: 5,\n  supporto_tecnico: 10,\n  integrazione_sistemi: 5,\n  formazione: 0,\n  altro: 0\n};\n\nconst CLIENTI_CHIAVE = ['ACME', 'EnerNova', 'BancaItalsud', 'Pharmacare'];\n\nconst punteggio = (PUNTI_URGENZA[interp.urgenza] || 30)\n  + (SENTIMENT_DELTA[interp.sentiment] || 0)\n  + (SERVIZIO_DELTA[interp.servizio] || 0);\n\nconst nome_cliente = interp.cliente?.nome || '';\nconst e_cliente_chiave = CLIENTI_CHIAVE.some(c => nome_cliente.toUpperCase().includes(c.toUpperCase()));\n\nconst azioni_sensibili = ['notifica_marketing'];\nconst tocca_sensibile = interp.azioni_richieste.some(a => azioni_sensibili.includes(a));\n\nconst parse_ok = dati.interpretazione_meta?.parse_ok !== false;\n\nconst richiede_approvazione = (\n  !parse_ok\n  || interp.urgenza === 'critica'\n  || interp.intento === 'escalation'\n  || (e_cliente_chiave && interp.intento === 'aggiornamento_crm')\n  || (e_cliente_chiave && tocca_sensibile)\n);\n\n// Costruzione del piano: una entry per azione, con parametri tipizzati.\nconst piano = [];\n\nfor (const azione of interp.azioni_richieste) {\n  switch (azione) {\n    case 'analisi':\n      piano.push({\n        tipo: 'analisi',\n        target: 'team_data',\n        params: { servizio: interp.servizio, contesto: interp.contesto },\n        priorità: punteggio\n      });\n      break;\n    case 'ticket':\n      piano.push({\n        tipo: 'ticket',\n        target: 'sistema_ticketing',\n        params: {\n          titolo: `${interp.intento.replace(/_/g, ' ')} - ${nome_cliente || 'cliente non specificato'}`,\n          descrizione: dati.testo_originale,\n          cliente: interp.cliente,\n          servizio: interp.servizio,\n          urgenza: interp.urgenza,\n          motivazione: interp.motivazione_urgenza\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'aggiornamento_crm':\n      piano.push({\n        tipo: 'crm',\n        target: 'crm_clienti',\n        params: {\n          cliente: interp.cliente,\n          evento: interp.intento,\n          note: interp.contesto,\n          canale_origine: dati.canale\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'notifica_marketing':\n      piano.push({\n        tipo: 'notifica',\n        target: 'team_marketing',\n        params: {\n          cliente: interp.cliente,\n          oggetto: `[${interp.urgenza.toUpperCase()}] Anomalia segnalata - ${nome_cliente}`,\n          messaggio: interp.contesto\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'notifica_tecnico':\n      piano.push({\n        tipo: 'notifica',\n        target: 'team_tecnico',\n        params: {\n          cliente: interp.cliente,\n          oggetto: `[${interp.urgenza.toUpperCase()}] Intervento tecnico richiesto`,\n          messaggio: interp.contesto\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'report':\n      piano.push({\n        tipo: 'report',\n        target: 'reportistica',\n        params: { cliente: interp.cliente, servizio: interp.servizio },\n        priorità: punteggio\n      });\n      break;\n    default:\n      // Azioni non riconosciute confluiscono in un ticket generico\n      piano.push({\n        tipo: 'ticket',\n        target: 'sistema_ticketing',\n        params: {\n          titolo: 'Richiesta non classificata',\n          descrizione: dati.testo_originale,\n          urgenza: 'media'\n        },\n        priorità: 30\n      });\n  }\n}\n\n// Ordinamento per priorità decrescente: utile per la presentazione e per\n// l'esecuzione sequenziale fallback se una branch parallela non è disponibile.\npiano.sort((a, b) => b.priorità - a.priorità);\n\nreturn [{\n  json: {\n    ...dati,\n    decisione: {\n      piano,\n      richiede_approvazione,\n      punteggio_priorità: punteggio,\n      cliente_chiave: e_cliente_chiave,\n      generato_at: new Date().toISOString()\n    }\n  }\n}];"
+        "jsCode": "// Agente decisionale deterministico.\n// Trasforma l'interpretazione semantica in un piano operativo composto da\n// azioni discrete, ognuna con parametri, priorità e flag di approvazione.\n//\n// Lo scoring di priorità combina:\n//   - urgenza:     bassa=10, media=30, alta=60, critica=90\n//   - sentiment:   frustrato/preoccupato +10, soddisfatto -5\n//   - servizio:    campagna_pubblicitaria +5, supporto_tecnico +10\n// Il punteggio finale guida l'ordinamento delle azioni se eseguite\n// sequenzialmente; in modalita parallela serve come metadato per i log.\n//\n// L'approvazione umana scatta quando ALMENO una delle condizioni è vera:\n//   - parsing dell'LLM fallito (interpretazione_meta.parse_ok === false)\n//   - urgenza == 'critica'\n//   - intento == 'escalation' OR azione 'escalation' presente nel piano\n//   - intento == 'aggiornamento_crm' su clienti chiave\n//   - notifica_marketing su clienti enterprise (rischio reputazionale)\n// La definizione di 'cliente chiave' è qui hardcoded a una whitelist;\n// in produzione sarebbe una lookup contro il CRM.\n\nconst dati = $input.first().json;\nconst interp = dati.interpretazione;\n\nconst PUNTI_URGENZA = { bassa: 10, media: 30, alta: 60, critica: 90 };\nconst SENTIMENT_DELTA = { frustrato: 10, preoccupato: 10, soddisfatto: -5, neutro: 0 };\nconst SERVIZIO_DELTA = {\n  campagna_pubblicitaria: 5,\n  supporto_tecnico: 10,\n  integrazione_sistemi: 5,\n  formazione: 0,\n  altro: 0\n};\n\nconst CLIENTI_CHIAVE = ['ACME', 'EnerNova', 'BancaItalsud', 'Pharmacare'];\n\nconst punteggio = (PUNTI_URGENZA[interp.urgenza] || 30)\n  + (SENTIMENT_DELTA[interp.sentiment] || 0)\n  + (SERVIZIO_DELTA[interp.servizio] || 0);\n\nconst nome_cliente = interp.cliente?.nome || '';\nconst e_cliente_chiave = CLIENTI_CHIAVE.some(c => nome_cliente.toUpperCase().includes(c.toUpperCase()));\n\nconst azioni_sensibili = ['notifica_marketing'];\nconst tocca_sensibile = interp.azioni_richieste.some(a => azioni_sensibili.includes(a));\n\nconst parse_ok = dati.interpretazione_meta?.parse_ok !== false;\n\nconst richiede_approvazione = (\n  !parse_ok\n  || interp.urgenza === 'critica'\n  || interp.intento === 'escalation'\n  || interp.azioni_richieste.includes('escalation')\n  || (e_cliente_chiave && interp.intento === 'aggiornamento_crm')\n  || (e_cliente_chiave && tocca_sensibile)\n);\n\n// Costruzione del piano: una entry per azione, con parametri tipizzati.\nconst piano = [];\n\nfor (const azione of interp.azioni_richieste) {\n  switch (azione) {\n    case 'analisi':\n      piano.push({\n        tipo: 'analisi',\n        target: 'team_data',\n        params: { servizio: interp.servizio, contesto: interp.contesto },\n        priorità: punteggio\n      });\n      break;\n    case 'ticket':\n      piano.push({\n        tipo: 'ticket',\n        target: 'sistema_ticketing',\n        params: {\n          titolo: `${interp.intento.replace(/_/g, ' ')} - ${nome_cliente || 'cliente non specificato'}`,\n          descrizione: dati.testo_originale,\n          cliente: interp.cliente,\n          servizio: interp.servizio,\n          urgenza: interp.urgenza,\n          motivazione: interp.motivazione_urgenza\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'aggiornamento_crm':\n      piano.push({\n        tipo: 'crm',\n        target: 'crm_clienti',\n        params: {\n          cliente: interp.cliente,\n          evento: interp.intento,\n          note: interp.contesto,\n          canale_origine: dati.canale\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'notifica_marketing':\n      piano.push({\n        tipo: 'notifica',\n        target: 'team_marketing',\n        params: {\n          cliente: interp.cliente,\n          oggetto: `[${interp.urgenza.toUpperCase()}] Anomalia segnalata - ${nome_cliente}`,\n          messaggio: interp.contesto\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'notifica_tecnico':\n      piano.push({\n        tipo: 'notifica',\n        target: 'team_tecnico',\n        params: {\n          cliente: interp.cliente,\n          oggetto: `[${interp.urgenza.toUpperCase()}] Intervento tecnico richiesto`,\n          messaggio: interp.contesto\n        },\n        priorità: punteggio\n      });\n      break;\n    case 'report':\n      piano.push({\n        tipo: 'report',\n        target: 'reportistica',\n        params: { cliente: interp.cliente, servizio: interp.servizio },\n        priorità: punteggio\n      });\n      break;\n    case 'escalation':\n      // Escalation: notifica P1 al manager on-call. La priorita riceve un\n      // boost di +50 cosi' l'ordinamento finale la mette in cima al piano.\n      // Il tipo 'notifica' riusa l'executor Notifica Team senza nuovi branch.\n      piano.push({\n        tipo: 'notifica',\n        target: 'manager_oncall',\n        params: {\n          cliente: interp.cliente,\n          oggetto: `[ESCALATION ${interp.urgenza.toUpperCase()}] ${interp.intento.replace(/_/g, ' ').toUpperCase()} - ${nome_cliente || 'cliente non specificato'}`,\n          messaggio: `Escalation richiesta. ${interp.motivazione_urgenza}. Contesto: ${interp.contesto}`\n        },\n        priorità: punteggio + 50\n      });\n      break;\n    default:\n      // Azioni non riconosciute confluiscono in un ticket generico\n      piano.push({\n        tipo: 'ticket',\n        target: 'sistema_ticketing',\n        params: {\n          titolo: 'Richiesta non classificata',\n          descrizione: dati.testo_originale,\n          urgenza: 'media'\n        },\n        priorità: 30\n      });\n  }\n}\n\n// Ordinamento per priorità decrescente: utile per la presentazione e per\n// l'esecuzione sequenziale fallback se una branch parallela non è disponibile.\npiano.sort((a, b) => b.priorità - a.priorità);\n\nreturn [{\n  json: {\n    ...dati,\n    decisione: {\n      piano,\n      richiede_approvazione,\n      punteggio_priorità: punteggio,\n      cliente_chiave: e_cliente_chiave,\n      generato_at: new Date().toISOString()\n    }\n  }\n}];"
       },
       "id": "b47d25a7-4c7e-40c8-9cbe-d8e596305b20",
       "name": "Agente Decisionale",
@@ -335,9 +335,9 @@
     },
     {
       "parameters": {
-        "content": "### Stage 3 - Gate approvazione\nPattern Send-and-Wait di n8n via Gmail. Email all'owner di processo con riepilogo del piano e due bottoni (Approvo / Rifiuto). Workflow in pausa fino al click.\n\nSu rifiuto: salto all'audit + risposta `nessuna_azione`. Su approvazione: prosegue all'esecuzione.\n\n**Tradeoff**: introduce latenza umana sui casi sensibili. Regola di gating da rivedere ciclicamente in base a falsi positivi vs mancate escalation.",
-        "height": 224,
-        "width": 508,
+        "content": "### Stage 3 - Gate approvazione\nSend-and-Wait via Gmail. Email all'owner con sintesi del piano + due bottoni (Approvo / Rifiuto). Workflow in pausa fino al click; `limitWaitTime=24h`.\n\n**Tre esiti distinti** (no false positives): `approvata` (click esplicito), `rifiutata` (click negativo), `timeout` (24h senza click). Collassare timeout in 'rifiutata' nasconderebbe escalation perse, il gate scatta proprio sui casi sensibili, dove un mancato click e' informazione critica per l'audit.\n\nApprovatore hardcoded `operations@digitserve.it` (stesso valore in mail e in audit per coerenza compliance). n8n blocca di default `$env.*` nelle espressioni; per override in deploy reali: editare le due stringhe oppure sbloccare l'accesso a env (`N8N_BLOCK_ENV_ACCESS_IN_NODE=false`) e tornare al pattern `$env.DIGITSERVE_APPROVER_EMAIL`.",
+        "height": 312,
+        "width": 636,
         "color": 6
       },
       "id": "068af204-f21f-483e-a33b-a9d76af590ec",
@@ -346,7 +346,7 @@
       "typeVersion": 1,
       "position": [
         17328,
-        4208
+        4096
       ]
     },
     {
@@ -387,7 +387,7 @@
     {
       "parameters": {
         "operation": "sendAndWait",
-        "sendTo": "={{ $env.DIGITSERVE_APPROVER_EMAIL || 'operations@digitserve.it' }}",
+        "sendTo": "operations@digitserve.it",
         "subject": "=[Approvazione richiesta] {{ $json.interpretazione.intento }} - cliente {{ $json.interpretazione.cliente?.nome || 'n/d' }}",
         "message": "=Una richiesta interna proveniente dal canale '{{ $json.canale }}' richiede approvazione prima dell'esecuzione automatica.\n\nMittente: {{ $json.mittente.nome }} ({{ $json.mittente.email }})\nUrgenza: {{ $json.interpretazione.urgenza.toUpperCase() }}\nMotivazione: {{ $json.interpretazione.motivazione_urgenza }}\nPunteggio priorità: {{ $json.decisione.punteggio_priorità }}/100\nCliente chiave: {{ $json.decisione.cliente_chiave ? 'si' : 'no' }}\nProvider LLM usato: {{ $json.interpretazione_meta.provider_usato }} ({{ $json.interpretazione_meta.modello }})\n\nTesto della richiesta:\n>>> {{ $json.testo_originale }} <<<\n\nPiano operativo proposto ({{ $json.decisione.piano.length }} azioni):\n{{ $json.decisione.piano.map((a, i) => (i+1) + '. ' + a.tipo.toUpperCase() + ' → ' + a.target + ' (priorità ' + a.priorità + ')').join('\\n') }}\n\nID correlazione: {{ $json.correlation_id }}",
         "approvalOptions": {
@@ -398,13 +398,12 @@
           }
         },
         "options": {
-          "appendAttribution": false,
           "limitWaitTime": {
             "values": {
-              "resumeUnit": "hours",
               "resumeAmount": 24
             }
-          }
+          },
+          "appendAttribution": false
         }
       },
       "id": "e6d79b62-7107-41bf-a1ec-23c0f26f29ce",
@@ -415,12 +414,12 @@
         17408,
         4464
       ],
-      "webhookId": "57b65a36-1227-4781-b763-69f28b44b661",
+      "disabled": true,
       "notes": "Pattern Send-and-Wait di n8n: invia un'email all'owner di processo con due bottoni (Approvo / Rifiuto) e mette l'esecuzione in pausa fino al click. La risposta torna sul workflow tramite un webhook autogenerato da n8n.\n\nLa scelta di Gmail (vs Slack o form) è dettata dal fatto che operations e responsabili decisionali leggono prima la mail; in produzione si può aggiungere un canale Slack come fallback.\n\nCredenziale: 'Gmail Operations DigitServe' va configurata localmente."
     },
     {
       "parameters": {
-        "jsCode": "// Cattura l'esito dell'approvazione e arricchisce il payload.\n// L'output del nodo Send-and-Wait varia leggermente per versione di n8n: in\n// genere espone $json.approved (boolean) o $json.data.approved. Gestiamo\n// entrambi i pattern.\n\nconst dati_orig = $('Agente Decisionale').first().json;\nconst risposta = $input.first().json;\nconst approvato = risposta.approved ?? risposta.data?.approved ?? false;\n\nreturn [{\n  json: {\n    ...dati_orig,\n    approvazione: {\n      richiesta: true,\n      esito: approvato ? 'approvata' : 'rifiutata',\n      timestamp: new Date().toISOString(),\n      approvatore: 'operations@digitserve.it'\n    }\n  }\n}];"
+        "jsCode": "// Cattura l'esito dell'approvazione e arricchisce il payload.\n// L'output del nodo Send-and-Wait varia leggermente per versione di n8n: in\n// genere espone $json.approved (boolean) o $json.data.approved. Il nodo\n// gestisce entrambi i pattern.\n//\n// Tre esiti distinti, non due:\n//   - approved === true   -> 'approvata'\n//   - approved === false  -> 'rifiutata'  (click esplicito su 'Rifiuto')\n//   - approved == null    -> 'timeout'    (limitWaitTime esaurito, n8n\n//                                          auto-resume senza click)\n// Collassare timeout in 'rifiutata' nasconderebbe casi di escalation persa,\n// problema reale perche' il gate triggera proprio su urgenza critica e\n// key-account.\n\nconst dati_orig = $('Agente Decisionale').first().json;\nconst risposta = $input.first().json;\nconst raw = risposta.approved ?? risposta.data?.approved;\n\nlet esito;\nif (raw === true) esito = 'approvata';\nelse if (raw === false) esito = 'rifiutata';\nelse esito = 'timeout';\n\n// Approvatore hardcoded per portabilita' del JSON. n8n blocca di default\n// l'accesso a $env.* nelle espressioni (N8N_BLOCK_ENV_ACCESS_IN_NODE=true).\n// Per override in deploy reali: editare questa stringa e il campo `sendTo`\n// di `Email Approvazione (Send & Wait)`, oppure sbloccare l'accesso a env\n// e tornare al pattern `$env.DIGITSERVE_APPROVER_EMAIL || 'operations@...'`.\nconst approvatore = 'operations@digitserve.it';\n\nreturn [{\n  json: {\n    ...dati_orig,\n    approvazione: {\n      richiesta: true,\n      esito,\n      timestamp: new Date().toISOString(),\n      approvatore\n    }\n  }\n}];"
       },
       "id": "1e116bf3-b6e0-40e2-b236-9558d04af6cd",
       "name": "Esito Approvazione",
@@ -458,9 +457,7 @@
       "notes": "Sul percorso 'no approvazione' marchiamo comunque l'evento come 'auto' nei metadati, in modo che l'audit log distingua gli automatismi dalle approvazioni manuali."
     },
     {
-      "parameters": {
-        "mode": "append"
-      },
+      "parameters": {},
       "id": "bdc03e41-d127-4429-9d91-6ee11c0ab12d",
       "name": "Merge - Branch approvazione",
       "type": "n8n-nodes-base.merge",
@@ -483,11 +480,12 @@
           "conditions": [
             {
               "id": "cond-rifiutata",
-              "leftValue": "={{ $json.approvazione.esito }}",
-              "rightValue": "rifiutata",
+              "leftValue": "={{ ['rifiutata', 'timeout'].includes($json.approvazione.esito) }}",
+              "rightValue": true,
               "operator": {
-                "type": "string",
-                "operation": "equals"
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
               }
             }
           ],
@@ -503,12 +501,26 @@
         18064,
         4624
       ],
-      "notes": "Se l'approvazione è stata rifiutata, saltiamo l'esecuzione e andiamo direttamente all'audit + risposta. Mantenere la richiesta tracciata anche quando non eseguita è parte del requisito di compliance."
+      "notes": "Blocca l'esecuzione su rifiuto esplicito OR timeout di approvazione. Entrambi i casi vanno all'audit + risposta con esito_complessivo distinto (`rifiutata` vs `timeout_approvazione`) e con `azioni_bloccate` valorizzato. Mantenere la richiesta tracciata anche quando non eseguita e' parte del requisito di compliance."
     },
     {
       "parameters": {
-        "content": "### Stage 4 - Esecuzione parallela\nSplit del piano in N item (uno per azione) → Switch instrada per `tipo` → 5 branch indipendenti che girano in parallelo.\n\n**Modalità demo (workflow attuale):** ogni executor è un Code node che simula la chiamata al sistema target e produce un `esito_azione` con riferimento mock realistico.\n\n**Produzione:** sostituire ciascun Code con HTTP Request verso il sistema reale (ServiceNow, Salesforce, Slack/Teams, sistema reportistica, ecc.). Schema dell'`esito_azione` invariato.\n\nMerge in modalità Append raccoglie gli esiti dai branch attivi.",
-        "height": 224,
+        "jsCode": "// Esegui Piano - dispatcher mock per le azioni del piano.\n//\n// Singolo nodo invece di SplitOut + Switch + 5 executor + Uniforma + Aggregate.\n// Motivazione: n8n con `executionOrder: v1` processa gli item depth-first dopo\n// uno SplitOut. Un fan-out a 5 branch seguito da aggregazione produce N run\n// indipendenti del downstream (uno per item) e nessun nodo a valle riesce a\n// vedere l'intero array di esiti in una sola esecuzione. Il dispatcher\n// concentrato qui rimuove la patologia, produce un singolo `esiti[]`\n// consumabile da Costruisci Riepilogo, e mantiene lo schema esito_azione\n// invariato.\n//\n// PASSAGGIO A PRODUZIONE: ognuno dei 5 handler diventa una chiamata HTTP\n// Request verso il sistema reale (ServiceNow, Salesforce, Slack/Teams,\n// sistema reportistica, queue interna del team data). Per preservare la\n// visualita' del canvas in produzione e' lecito uno Switch + 5 HTTP Request\n// paralleli SE il workflow finisce in un Code aggregator come questo (il\n// problema cross-iteration sparisce perche' non c'e' piu' SplitOut prima).\n\nconst dati = $input.first().json;\nconst piano = dati.decisione?.piano || [];\n\nconst makeId = (prefix) => prefix + '-' +\n  Date.now().toString(36).toUpperCase().slice(-6) + '-' +\n  Math.random().toString(36).slice(2, 6).toUpperCase();\n\nconst now = () => new Date().toISOString();\n\n// Handler per tipo. Schema esito_azione uniforme:\n// tipo / target / stato / riferimento / errore / timestamp / dettaglio_mock.\nconst handlers = {\n  ticket: (azione) => ({\n    tipo: 'ticket',\n    target: azione.target,\n    stato: 'eseguita',\n    riferimento: makeId('TKT'),\n    errore: null,\n    timestamp: now(),\n    dettaglio_mock: {\n      titolo: azione.params.titolo,\n      cliente: azione.params.cliente,\n      urgenza: azione.params.urgenza,\n      priorita: azione['priorità']\n    }\n  }),\n  crm: (azione) => ({\n    tipo: 'crm',\n    target: azione.target,\n    stato: 'eseguita',\n    riferimento: makeId('EVT'),\n    errore: null,\n    timestamp: now(),\n    dettaglio_mock: {\n      id_cliente: azione.params.cliente?.id_cliente || 'unknown',\n      evento: azione.params.evento,\n      canale_origine: azione.params.canale_origine\n    }\n  }),\n  notifica: (azione) => ({\n    tipo: 'notifica',\n    target: azione.target,\n    stato: 'eseguita',\n    riferimento: makeId('NTF'),\n    errore: null,\n    timestamp: now(),\n    dettaglio_mock: {\n      destinatario: azione.target,\n      oggetto: azione.params.oggetto\n    }\n  }),\n  report: (azione) => ({\n    tipo: 'report',\n    target: azione.target,\n    stato: 'eseguita',\n    riferimento: makeId('RPT'),\n    errore: null,\n    timestamp: now(),\n    dettaglio_mock: {\n      cliente: azione.params.cliente,\n      servizio: azione.params.servizio,\n      eta_completamento_h: 24\n    }\n  }),\n  analisi: (azione) => ({\n    tipo: 'analisi',\n    target: azione.target,\n    stato: 'accodata',\n    riferimento: makeId('ANL'),\n    errore: null,\n    timestamp: now(),\n    dettaglio_mock: {\n      coda: 'team_data',\n      servizio: azione.params?.servizio,\n      contesto: azione.params?.contesto\n    }\n  })\n};\n\n// Tipo sconosciuto: esito 'fallita' con errore esplicito, NON ticket\n// silenzioso cliente-facing. Previene regressioni se un nuovo tipo entra a\n// monte senza estendere il dispatcher.\nconst fallback = (azione) => ({\n  tipo: azione.tipo || 'sconosciuto',\n  target: azione.target || null,\n  stato: 'fallita',\n  riferimento: null,\n  errore: `tipo_azione_non_supportato: ${azione.tipo}`,\n  timestamp: now(),\n  dettaglio_mock: null\n});\n\nconst esiti = piano.map(azione => {\n  const h = handlers[azione.tipo];\n  return h ? h(azione) : fallback(azione);\n});\n\nreturn [{\n  json: {\n    ...dati,\n    esiti\n  }\n}];"
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Esegui Piano",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18368,
+        4624
+      ],
+      "notes": "Dispatcher mock single-node per le azioni del piano. Sostituisce il pattern SplitOut+Switch+5 executor+Uniforma+Aggregate che soffre della patologia di aggregazione cross-iteration di n8n executionOrder v1. Vedi commenti inline e Sticky Stage 4 per il rationale e la migrazione a produzione."
+    },
+    {
+      "parameters": {
+        "content": "### Stage 4 - Esecuzione\nSingolo Code node `Esegui Piano` itera `decisione.piano` e dispatcha ai 5 handler interni (`ticket`/`crm`/`notifica`/`report`/`analisi`). Produce un array `esiti` aggregato consumato da `Costruisci Riepilogo`.\n\n**Perche' single-node, non SplitOut + Switch + 5 branch + Aggregate.** n8n con `executionOrder: v1` processa gli item depth-first dopo SplitOut: ogni item attraversa tutto il downstream prima del successivo, e nessun nodo a valle vede l'intero array in una singola esecuzione. Fan-out + aggregate produce N run di Costruisci/Persisti/Respond, frammenta l'audit e rompe la risposta sincrona. Dispatcher concentrato rimuove la patologia in modo deterministico. Tipo non riconosciuto -> `stato: 'fallita'` con errore esplicito.\n\n**Vincolo brief \"consegna: file JSON\"** -> handler mock con riferimenti random realistici (TKT-/EVT-/NTF-/RPT-/ANL-). Migrazione produzione = sostituire ogni handler con HTTP Request al sistema reale (ServiceNow, Salesforce, Slack/Teams, sistema reportistica, queue interna del team data); schema `esito_azione` invariato. In produzione, SE i 5 handler diventano nodi HTTP separati, un Switch + 5 paralleli torna possibile (no SplitOut a monte = no patologia di aggregazione).",
+        "height": 360,
         "width": 720,
         "color": 6
       },
@@ -517,272 +529,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        18416,
+        18128,
         4064
       ]
     },
     {
       "parameters": {
-        "fieldToSplitOut": "decisione.piano",
-        "include": "allOtherFields",
-        "options": {
-          "destinationFieldName": "azione_corrente"
-        }
-      },
-      "id": "c844dd34-0209-40f3-bfb5-0596a10cc180",
-      "name": "Split - Una per azione",
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        18288,
-        4624
-      ],
-      "notes": "Trasforma il piano (array di azioni) in N item separati, uno per azione. Ogni item conserva tutti i campi originali (correlation_id, interpretazione, decisione...) per consentire ai branch a valle di costruire payload completi senza perdere contesto."
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "id": "r-ticket",
-                    "leftValue": "={{ $json.azione_corrente.tipo }}",
-                    "rightValue": "ticket",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "ticket"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "id": "r-crm",
-                    "leftValue": "={{ $json.azione_corrente.tipo }}",
-                    "rightValue": "crm",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "crm"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "id": "r-notifica",
-                    "leftValue": "={{ $json.azione_corrente.tipo }}",
-                    "rightValue": "notifica",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "notifica"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "id": "r-report",
-                    "leftValue": "={{ $json.azione_corrente.tipo }}",
-                    "rightValue": "report",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "report"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 1
-                },
-                "conditions": [
-                  {
-                    "id": "r-analisi",
-                    "leftValue": "={{ $json.azione_corrente.tipo }}",
-                    "rightValue": "analisi",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "analisi"
-            }
-          ]
-        },
-        "options": {
-          "fallbackOutput": "extra",
-          "renameFallbackOutput": "altro"
-        }
-      },
-      "id": "63ab24e4-cdf6-4d26-89dc-04d3f836332a",
-      "name": "Switch - Tipo azione",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3,
-      "position": [
-        18496,
-        4624
-      ],
-      "notes": "Routing multi-uscita per tipo di azione. Output named: ticket, crm, notifica, report, analisi, altro (fallback). Le azioni non riconosciute confluiscono nel ramo 'altro' che le converte in ticket di revisione."
-    },
-    {
-      "parameters": {
-        "jsCode": "// Esegui - Crea Ticket  (simulazione interna)\n//\n// Workflow autocontenuto: il nodo simula la creazione di un ticket nel sistema\n// aziendale e produce direttamente l'`esito_azione` nel formato uniforme atteso\n// dai nodi a valle.\n//\n// PASSAGGIO A PRODUZIONE: sostituire questo Code con un nodo HTTP Request\n// configurato sull'endpoint reale (Jira REST API v3, ServiceNow Table API, ecc.).\n// Lo schema dell'output non cambia: solo il body di chiamata.\n\nconst azione = $json.azione_corrente;\nconst ticket_id = 'TKT-' +\n  Date.now().toString(36).toUpperCase().slice(-6) + '-' +\n  Math.random().toString(36).slice(2, 6).toUpperCase();\n\nreturn [{\n  json: {\n    ...$json,\n    esito_azione: {\n      tipo: 'ticket',\n      target: azione.target,\n      stato: 'eseguita',\n      riferimento: ticket_id,\n      errore: null,\n      timestamp: new Date().toISOString(),\n      dettaglio_mock: {\n        titolo: azione.params.titolo,\n        cliente: azione.params.cliente,\n        urgenza: azione.params.urgenza,\n        priorità: azione.priorità\n      }\n    }\n  }\n}];"
-      },
-      "id": "b5358347-6d07-49a8-998c-02cfc68bbc41",
-      "name": "Esegui - Crea Ticket",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        18720,
-        4336
-      ],
-      "notes": "Simulazione interna del sistema di ticketing. In produzione: HTTP Request verso Jira/ServiceNow. L'esito_azione e gia nel formato finale."
-    },
-    {
-      "parameters": {
-        "jsCode": "// Esegui - Aggiorna CRM  (simulazione interna)\n//\n// Simula l'aggiunta di un evento allo storico cliente (Salesforce Activity,\n// HubSpot Engagement, schema equivalente in CRM proprietari).\n//\n// PASSAGGIO A PRODUZIONE: sostituire con HTTP Request, es.:\n//   PATCH /api/crm/clienti/{id}/storico  body: { evento, note, canale_origine }\n//   risposta:                             { id, evento_id, aggiornato_at }\n\nconst azione = $json.azione_corrente;\nconst id_cliente = (azione.params.cliente && azione.params.cliente.id_cliente) || 'unknown';\nconst evento_id = 'EVT-' +\n  Date.now().toString(36).toUpperCase().slice(-6) + '-' +\n  Math.random().toString(36).slice(2, 6).toUpperCase();\n\nreturn [{\n  json: {\n    ...$json,\n    esito_azione: {\n      tipo: 'crm',\n      target: azione.target,\n      stato: 'eseguita',\n      riferimento: evento_id,\n      errore: null,\n      timestamp: new Date().toISOString(),\n      dettaglio_mock: {\n        id_cliente,\n        evento: azione.params.evento,\n        canale_origine: azione.params.canale_origine\n      }\n    }\n  }\n}];"
-      },
-      "id": "c3c8317b-6864-40c1-aa11-1e5eeba9de06",
-      "name": "Esegui - Aggiorna CRM",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        18720,
-        4528
-      ],
-      "notes": "Simulazione interna dell'aggiornamento storico cliente. In produzione: HTTP Request verso Salesforce/HubSpot."
-    },
-    {
-      "parameters": {
-        "jsCode": "// Esegui - Notifica Team  (simulazione interna)\n//\n// Simula la consegna di una notifica al team interno (marketing o tecnico).\n//\n// PASSAGGIO A PRODUZIONE: sostituire con un nodo Slack, Microsoft Teams,\n// SendGrid, o un HTTP Request verso il sistema di notifiche scelto.\n\nconst azione = $json.azione_corrente;\nconst notifica_id = 'NTF-' +\n  Date.now().toString(36).toUpperCase().slice(-6) + '-' +\n  Math.random().toString(36).slice(2, 6).toUpperCase();\n\nreturn [{\n  json: {\n    ...$json,\n    esito_azione: {\n      tipo: 'notifica',\n      target: azione.target,\n      stato: 'eseguita',\n      riferimento: notifica_id,\n      errore: null,\n      timestamp: new Date().toISOString(),\n      dettaglio_mock: {\n        destinatario: azione.target,\n        oggetto: azione.params.oggetto\n      }\n    }\n  }\n}];"
-      },
-      "id": "be582a83-d79a-4da4-ba00-810827c75ef0",
-      "name": "Esegui - Notifica Team",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        18720,
-        4704
-      ],
-      "notes": "Simulazione interna della notifica al team. In produzione: nodo Slack/Teams/SendGrid o HTTP Request equivalente."
-    },
-    {
-      "parameters": {
-        "jsCode": "// Esegui - Programma Report  (simulazione interna)\n//\n// Simula l'accodamento di un job di reportistica asincrono.\n//\n// PASSAGGIO A PRODUZIONE: sostituire con HTTP Request verso il sistema di\n// reportistica aziendale; tipicamente la chiamata e accept-and-defer (HTTP 202)\n// e il report viene completato fuori banda.\n\nconst azione = $json.azione_corrente;\nconst report_id = 'RPT-' +\n  Date.now().toString(36).toUpperCase().slice(-6) + '-' +\n  Math.random().toString(36).slice(2, 6).toUpperCase();\n\nreturn [{\n  json: {\n    ...$json,\n    esito_azione: {\n      tipo: 'report',\n      target: azione.target,\n      stato: 'eseguita',\n      riferimento: report_id,\n      errore: null,\n      timestamp: new Date().toISOString(),\n      dettaglio_mock: {\n        cliente: azione.params.cliente,\n        servizio: azione.params.servizio,\n        eta_completamento_h: 24\n      }\n    }\n  }\n}];"
-      },
-      "id": "efd06fc1-42c7-494f-9544-b3acc4e10407",
-      "name": "Esegui - Programma Report",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        18720,
-        4880
-      ],
-      "notes": "Simulazione interna della programmazione di un report asincrono. In produzione: HTTP Request al sistema di reportistica."
-    },
-    {
-      "parameters": {
-        "jsCode": "// Ramo 'analisi': non è un'azione esterna ma un task interno per il team data.\n// Lo modelliamo come ticket interno con tag 'analisi-preliminare' invece di\n// esporre un endpoint dedicato: riduce la superficie di integrazione.\n// Lo schema di esito_azione e' allineato agli altri esecutori (stesse chiavi\n// tipo/target/stato/riferimento/errore/timestamp/dettaglio_mock); cambia solo\n// lo stato in 'accodata' per segnalare esecuzione asincrona.\n\nconst azione = $json.azione_corrente;\nconst coda_id = 'ANL-' +\n  Date.now().toString(36).toUpperCase().slice(-6) + '-' +\n  Math.random().toString(36).slice(2, 6).toUpperCase();\n\nreturn [{\n  json: {\n    ...$json,\n    esito_azione: {\n      tipo: 'analisi',\n      target: azione.target,\n      stato: 'accodata',\n      riferimento: coda_id,\n      errore: null,\n      timestamp: new Date().toISOString(),\n      dettaglio_mock: {\n        coda: 'team_data',\n        servizio: azione.params?.servizio,\n        contesto: azione.params?.contesto\n      }\n    }\n  }\n}];"
-      },
-      "id": "910818e7-5425-45e1-a8be-64a2def445b8",
-      "name": "Esegui - Accoda Analisi",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        18720,
-        5056
-      ],
-      "notes": "Le richieste di analisi non corrispondono a una chiamata HTTP esterna: vengono accodate alla queue interna del team data. Le modelliamo come task interni per evitare di confonderle con i ticket cliente-facing."
-    },
-    {
-      "parameters": {
-        "jsCode": "// Pass-through dei branch esecutivi.\n// Ogni branch a monte (Crea Ticket, Aggiorna CRM, Notifica Team, Programma\n// Report, Accoda Analisi) produce direttamente un `esito_azione` uniforme.\n// Questo nodo resta come punto di convergenza e hook per future estensioni:\n//   - arricchimento con metadati di rate-limiting,\n//   - injection di trace_id per distributed tracing,\n//   - validazione dello schema dell'esito prima dell'aggregazione.\n\nreturn $input.all();"
-      },
-      "id": "05ebcfe7-789f-4297-a1fc-666b7cb946d4",
-      "name": "Uniforma Esito Azione",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        18944,
-        4624
-      ],
-      "notes": "Pass-through, ogni branch a monte produce gia un esito_azione uniforme. Hook per future estensioni (rate-limit, tracing)."
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "1b22c86a-1cfe-409a-b4f4-86f8907209ff",
-      "name": "Merge - Aggrega Esiti",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
-      "position": [
-        19168,
-        4624
-      ],
-      "notes": "Aggrega gli esiti di tutte le azioni eseguite. `includeUnpaired=true` evita che azioni in branch non attivi facciano scartare l'intera esecuzione."
-    },
-    {
-      "parameters": {
-        "content": "### Stage 5 - Riepilogo, audit, risposta\n1. **Costruisci Riepilogo** assembla `audit_record` (verboso, archivio) e `risposta_sincrona` (compatta, chiamante).\n2. **Persisti Audit Log** simula la scrittura su archivio append-only. Produzione: ad esempio un Postgres dedicato.\n3. **Respond to Webhook** chiude il ciclo sincrono, restituisce solo `risposta_sincrona` (non l'audit completo) per non esporre dettagli interni.\n\n**Esito_complessivo conservativo**: anche un solo fallimento porta a `parziale`, mai falso `completata`.",
-        "height": 172,
-        "width": 876,
+        "content": "### Stage 5 - Riepilogo, audit, risposta\n1. **Costruisci Riepilogo** assembla `audit_record` (verboso, archivio) e `risposta_sincrona` (compatta, chiamante). Sette esiti distinti: `completata`, `completata_con_code`, `accodata`, `parziale`, `rifiutata`, `timeout_approvazione`, `nessuna_azione`. Sul ramo bloccato include `azioni_bloccate` (piano pianificato non eseguito) per non perdere la causa nell'audit.\n2. **Persisti Audit Log** simula write su archivio append-only (mock per vincolo \"file JSON\"). Produzione: Postgres dedicato, S3, Elasticsearch index immutabile.\n3. **Respond to Webhook** restituisce solo `risposta_sincrona` (no audit completo) per non esporre metadati interni al chiamante. Header `X-Correlation-Id` per riconciliazione client-side.\n\nEsito conservativo: anche una sola azione fallita -> `parziale`, mai falso `completata`.",
+        "height": 328,
+        "width": 524,
         "color": 6
       },
       "id": "0f0f0295-202a-485b-aa02-1cc31160fb28",
@@ -790,21 +545,21 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        19184,
-        4256
+        18896,
+        4192
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Costruzione del riepilogo strutturato e dell'audit record.\n// Output:\n//   - audit_record: snapshot completo destinato all'archivio immutabile.\n//   - risposta_sincrona: oggetto restituito al chiamante (subset utile).\n//\n// Aggreghiamo gli esiti dalle iterazioni precedenti. Il merge di n8n consegna\n// un singolo item con array dei dati ricevuti dai branch upstream.\n\nconst items = $input.all();\nconst esiti = items\n  .map(it => it.json.esito_azione)\n  .filter(Boolean);\n\nconst dati_base = items[0]?.json || {};\n\nconst totali = {\n  totali: esiti.length,\n  eseguite: esiti.filter(e => e.stato === 'eseguita').length,\n  fallite: esiti.filter(e => e.stato === 'fallita').length,\n  accodate: esiti.filter(e => e.stato === 'accodata').length,\n  sconosciute: esiti.filter(e => e.stato === 'sconosciuto').length\n};\n\nconst esito_complessivo = (\n  totali.fallite > 0 ? 'parziale' :\n  totali.totali === 0 ? 'nessuna_azione' :\n  totali.accodate > 0 && totali.eseguite === 0 ? 'accodata' :\n  totali.accodate > 0 ? 'completata_con_code' :\n  'completata'\n);\n\nconst audit_record = {\n  correlation_id: dati_base.correlation_id,\n  ricevuta_at: dati_base.ricevuta_at,\n  chiusa_at: new Date().toISOString(),\n  canale: dati_base.canale,\n  mittente: dati_base.mittente,\n  testo_originale: dati_base.testo_originale,\n  interpretazione: dati_base.interpretazione,\n  interpretazione_meta: dati_base.interpretazione_meta,\n  decisione: dati_base.decisione,\n  approvazione: dati_base.approvazione,\n  esiti,\n  totali,\n  esito_complessivo\n};\n\nconst risposta_sincrona = {\n  correlation_id: audit_record.correlation_id,\n  esito: esito_complessivo,\n  totali,\n  azioni: esiti.map(e => ({\n    tipo: e.tipo,\n    stato: e.stato,\n    riferimento: e.riferimento,\n    errore: e.errore\n  })),\n  approvazione: dati_base.approvazione,\n  provider_llm: dati_base.interpretazione_meta?.provider_usato,\n  messaggio: esito_complessivo === 'completata'\n    ? 'Tutte le azioni richieste sono state completate con successo.'\n    : esito_complessivo === 'completata_con_code'\n      ? 'Azioni sincrone completate; alcune azioni sono state messe in coda per esecuzione asincrona.'\n      : esito_complessivo === 'accodata'\n        ? 'Nessuna esecuzione sincrona; tutte le azioni sono state messe in coda.'\n        : esito_complessivo === 'parziale'\n          ? 'Alcune azioni sono fallite. Verificare il dettaglio nei log.'\n          : 'Nessuna azione è stata eseguita (richiesta rifiutata o vuota).'\n};\n\nreturn [{ json: { audit_record, risposta_sincrona } }];"
+        "jsCode": "// Costruzione del riepilogo strutturato e dell'audit record.\n// Output:\n//   - audit_record: snapshot completo destinato all'archivio immutabile.\n//   - risposta_sincrona: oggetto restituito al chiamante (subset utile).\n//\n// Due path di ingresso convergono qui:\n//   1. Path 'eseguito': arriva da Esegui Piano con array `esiti` gia'\n//      aggregato (un elemento per ogni azione del piano).\n//   2. Path 'bloccato': arriva direttamente dal IF di rifiuto/timeout senza\n//      passare dal dispatcher; non c'e' campo `esiti`.\n\nconst first = $input.first().json;\nconst eseguito = Array.isArray(first.esiti);\nconst esiti = eseguito ? first.esiti : [];\nconst dati_base = first;\n\nconst totali = {\n  totali: esiti.length,\n  eseguite: esiti.filter(e => e.stato === 'eseguita').length,\n  fallite: esiti.filter(e => e.stato === 'fallita').length,\n  accodate: esiti.filter(e => e.stato === 'accodata').length,\n  sconosciute: esiti.filter(e => e.stato === 'sconosciuto').length\n};\n\n// Esito complessivo. Il ramo bloccato distingue tre causali differenti per\n// non collassarle nell'audit (compliance: la causa del mancato esecuzione\n// deve essere ricostruibile).\nconst esito_approvazione = dati_base.approvazione?.esito;\nlet esito_complessivo;\nif (!eseguito) {\n  if (esito_approvazione === 'rifiutata') {\n    esito_complessivo = 'rifiutata';\n  } else if (esito_approvazione === 'timeout') {\n    esito_complessivo = 'timeout_approvazione';\n  } else {\n    esito_complessivo = 'nessuna_azione';\n  }\n} else {\n  esito_complessivo = (\n    totali.fallite > 0 ? 'parziale' :\n    totali.totali === 0 ? 'nessuna_azione' :\n    totali.accodate > 0 && totali.eseguite === 0 ? 'accodata' :\n    totali.accodate > 0 ? 'completata_con_code' :\n    'completata'\n  );\n}\n\n// Azioni bloccate: sul ramo no-execution riportiamo il piano che NON e' stato\n// eseguito, cosi' l'approvatore (o l'auditor) sa cosa era stato pianificato.\nconst azioni_bloccate = (!eseguito && Array.isArray(dati_base.decisione?.piano))\n  ? dati_base.decisione.piano.map(p => ({ tipo: p.tipo, target: p.target, priorita: p['priorità'] }))\n  : [];\n\nconst audit_record = {\n  correlation_id: dati_base.correlation_id,\n  ricevuta_at: dati_base.ricevuta_at,\n  chiusa_at: new Date().toISOString(),\n  canale: dati_base.canale,\n  mittente: dati_base.mittente,\n  testo_originale: dati_base.testo_originale,\n  interpretazione: dati_base.interpretazione,\n  interpretazione_meta: dati_base.interpretazione_meta,\n  decisione: dati_base.decisione,\n  approvazione: dati_base.approvazione,\n  esiti,\n  azioni_bloccate,\n  totali,\n  esito_complessivo\n};\n\nconst messaggi = {\n  completata: 'Tutte le azioni richieste sono state completate con successo.',\n  completata_con_code: 'Azioni sincrone completate; alcune azioni sono state messe in coda per esecuzione asincrona.',\n  accodata: 'Nessuna esecuzione sincrona; tutte le azioni sono state messe in coda.',\n  parziale: 'Alcune azioni sono fallite. Verificare il dettaglio nei log.',\n  rifiutata: `Richiesta rifiutata dall'approvatore. ${azioni_bloccate.length} azione/i pianificata/e non sono state eseguite.`,\n  timeout_approvazione: `Approvazione non pervenuta entro il timeout. ${azioni_bloccate.length} azione/i in attesa.`,\n  nessuna_azione: 'Nessuna azione e\\' stata eseguita.'\n};\n\nconst risposta_sincrona = {\n  correlation_id: audit_record.correlation_id,\n  esito: esito_complessivo,\n  totali,\n  azioni: esiti.map(e => ({\n    tipo: e.tipo,\n    stato: e.stato,\n    riferimento: e.riferimento,\n    errore: e.errore\n  })),\n  azioni_bloccate,\n  approvazione: dati_base.approvazione,\n  provider_llm: dati_base.interpretazione_meta?.provider_usato,\n  messaggio: messaggi[esito_complessivo] || messaggi.nessuna_azione\n};\n\nreturn [{ json: { audit_record, risposta_sincrona } }];"
       },
       "id": "ebff818c-9b18-4578-b2e3-ce19f1a86b34",
       "name": "Costruisci Riepilogo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        19376,
-        4624
+        18656,
+        4464
       ],
       "notes": "Aggregazione finale. Distinguiamo l'audit_record (verboso, completo, destinato all'archivio) dalla risposta_sincrona (compatta, leggibile, restituita al chiamante).\nL'esito_complessivo segue una logica conservativa: anche un solo fallimento porta a 'parziale', così che l'operatore non riceva un falso 'tutto ok'."
     },
@@ -817,7 +572,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        19600,
+        18896,
         4624
       ],
       "notes": "Simulazione interna della persistenza audit. In produzione: scrittura su archivio append-only (Postgres/Elasticsearch/S3 object lock)."
@@ -847,15 +602,15 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        19824,
+        19136,
         4624
       ],
       "notes": "Chiusura del ciclo sincrono. Restituiamo il subset 'risposta_sincrona' (non l'audit completo) per non esporre informazioni interne (es. punteggio_priorità, valutazioni del decisionale) al chiamante esterno."
     },
     {
       "parameters": {
-        "content": "### Note finali\n\n\n**Limiti noti**\n- LLM single-call: casi ambigui producono fallback. Mitigazione: LLM-as-judge su `parse_ok=false` o confidenza bassa.\n- Whitelist clienti chiave hardcoded: in produzione lookup CRM con cache di sessione.\n- Executor e audit simulati (Code). Sostituzione con HTTP in produzione, schema invariato.\n- Approval via email: latenza dipende dall'approvatore.\n\n**Direzioni possibili di evoluzione**\n- Job nightly di KPI dall'audit log (tempo medio, % automazione, fallimenti per tipo).\n- A/B fra Ollama e OpenAI con `provider` random su un campione di traffico.\n- Multilingua nativo (entrambi i modelli lo supportano), routing dell'approvazione nella lingua giusta.\n\n**Critica al disegno**\n- Architettura a stadi vs agente monolitico. Separato il flusso in tre passaggi distinti (interpretazione, decisione, esecuzione) invece di affidare tutto a un unico agente LLM. Costa qualche nodo in più ma rende ogni decisione ispezionabile sul canvas e ogni esito tracciato in modo verificabile.\n- Decisionale a regole vs LLM. Le regole sono meno adattabili dei modelli probabilistici, ma producono sempre lo stesso piano a parità di input e non hanno costo per esecuzione. Quando una richiesta esce dalle regole previste interviene un operatore umano via gate di approvazione, scelta più solida di un secondo LLM in serie sul piano d'azione.\n- Esecuzione parallela vs sequenziale. Lanciare le azioni contemporaneamente abbatte il tempo di risposta complessivo, ma se due esecutori aggiornano lo stesso oggetto possono crearsi incongruenze. Ogni richiesta porta con sé il correlation_id, che i sistemi a valle usano per riconoscere chiamate duplicate dello stesso evento ed evitare scritture ripetute.\n\n**Posizionamento rispetto alla teoria del Modulo 03**\n- Workflow deterministico, non agente ReAct/Plan-Execute/Reflexion. L'LLM è confinato a un solo step (interpretazione semantica) e non gestisce loop di ragionamento autonomo; tutto il routing successivo è espresso nel canvas n8n. Scelta funzionale al requisito di audit-ability e modalità ibrida richiesto dal brief: ogni decisione resta tracciata e revisionabile.\n- Stateless by design, niente memoria a corto o lungo termine. Ogni POST sul webhook è una richiesta isolata one-shot, quindi non sono presenti session store o vector store. La whitelist clienti chiave è l'unica forma di memoria semantica, gestita come costante; per evoluzioni multi-turn o cross-session servirebbe introdurre Redis (STM) e un vector store dedicato (LTM episodica/semantica).\n- Niente framework agentic (LangChain/LangGraph/CrewAI). Si è scelto HTTP Request diretto verso Ollama/OpenAI invece dei nodi `@n8n/n8n-nodes-langchain`, per controllare puntualmente prompt e parsing, mantenere portabilità su qualunque deployment n8n e non introdurre dipendenze Python in un contesto JSON-first. n8n stesso assume il ruolo di orchestration framework.\n\n\n---\n---\n\n\n### Stima esemplificativa dei KPI\n\n\nValori X% e Y% del brief sono \"da definire in fase di baseline\". Stima ragionata su benchmark di settore B2B servizi digitali, da validare su dati reali di DigitServe.\n\n\n**Baseline manuale ipotizzata**: ~25 min/richiesta (mix semplici 15 min e multi-azione 45 min), 60-100 richieste/giorno, omissioni manuali 8-12%.\n\n\n**Tempo workflow**: ~15-25s end-to-end senza approvazione, 5-10 min con approvazione.\n\n\n```\n  │ KPI                          │ Stima            │ Calcolo                                                                              │\n  ├──────────────────────────────┼──────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤\n  │ X = riduzione tempo medio    │ ~70% a regime    │ (25 - 7) / 25 ≈ 72%. Conservativo: -50% al rollout, -70% dopo 2-3 mesi di tuning.    │\n  │ Y = % azioni automatizzate   │ ~80%             │ 0.88 (copertura categorie) × 0.90 (% in modalità auto) ≈ 80%.                        │\n```",
-        "height": 832,
+        "content": "### Note finali\n\n**Limiti noti (demo)**\n- LLM single-call: casi ambigui producono fallback conservativo + HITL. Mitigazione futura: LLM-as-judge su `parse_ok=false` o su confidenza bassa.\n- Whitelist clienti chiave hardcoded; in produzione lookup CRM.\n- Executor e audit mock: vincolo \"Modalita' di consegna: file JSON\" non permette credenziali reali in un .json portabile.\n\n**Gap noti di produzione (fuori scope demo)**\n- **Idempotenza assente**: retry client su stesso `correlation_id` crea ticket/CRM duplicati. Mitigazione: dedup store (Redis `SET NX EX`) come primo step + `Idempotency-Key` header verso gli endpoint reali.\n- **`audit_id` non torna al client**: `Persisti Audit Log` produce ID interno ma non finisce in `risposta_sincrona` ne' in header. Wire-up al passaggio prod (header `X-Audit-Id`).\n- **Categorizzazione errori LLM**: `parse_ok=false` collassa 5xx, timeout, rate-limit, JSON malformato in un'unica causale. Per KPI di affidabilita' provider distinguere `parse_error` in classi.\n- **Cost bound**: nessun `max_tokens` su OpenAI ne' `num_predict` su Ollama; aggiungere cap espliciti + clamp `testo` in input.\n- **Observability strutturata**: `correlation_id` propagato nel payload ma non emesso come trace ID a sistema esterno (OTLP/Datadog). Da aggiungere come fire-and-forget post `Costruisci Riepilogo`.\n- **HA approvazioni**: `limitWaitTime=24h` persiste l'esecuzione su disk; restart single-node = perdita approvazioni pending. Backend Postgres + `EXECUTIONS_DATA_SAVE_ON_PROGRESS=true` raccomandati.\n\n**Critica al disegno**\n- Stadi separati vs agente LLM monolitico. Tre passaggi distinti (interpretazione → decisione → esecuzione) invece di un singolo agente LLM. Costa qualche nodo in più ma ogni step è ispezionabile sul canvas e ogni esito verificabile in audit. Coerente col requisito di tracciabilità.\n- Decisionale a regole vs LLM. Regole = piano riproducibile + zero costo. Casi fuori dal coperto regole gestiti dal gate HITL, scelta piu' solida di un secondo LLM in serie sul piano d'azione.\n- Esecuzione concentrata vs fan-out visivo. La pipeline canonica n8n SplitOut → Switch → executor paralleli → aggregate e' rotta su `executionOrder: v1` (vedi Stage 4). Dispatcher concentrato è ela patch deterministica; in produzione con executor HTTP la topologia \"visiva\" torna fattibile.\n\n- Workflow deterministico, non agente ReAct/Plan-Execute/Reflexion. LLM confinato a un solo step (interpretazione semantica). Scelta funzionale ai requisiti di auditability e modalita' ibrida.\n- Stateless by design: ogni POST e' isolato, nessun session/vector store. Whitelist clienti chiave e' l'unica forma di memoria semantica (costante). Per evoluzioni multi-turn servirebbe Redis (STM) + vector store dedicato (LTM episodica/semantica).\n- Niente framework agentic (LangChain/LangGraph/CrewAI): HTTP Request diretto a Ollama/OpenAI per controllo puntuale di prompt e parsing, evitare dipendenze Python, mantenere portabilita' del JSON. n8n stesso assume il ruolo di orchestration framework.\n\n\n---\n\n\n### Stima KPI\nX% e Y% del brief sono \"da definire in fase di baseline\". Stima ragionata su benchmark settore B2B servizi digitali, da validare su dati DigitServe reali.\n\n**X = riduzione tempo medio di presa in carico richiesta**\n  - Baseline manuale: 25 min/richiesta (media pesata: ~15 min semplici, ~45 min multi-azione)\n  - Tempo workflow: ~7 min/richiesta (15-25s pipeline LLM+decisional+executor; il resto e' buffer per revisione umana sui casi gate)\n  - Riduzione: (25 - 7) / 25 ≈ 72%\n  - Stima conservativa: -50% al rollout, -70% a regime dopo 2-3 mesi di tuning del decisionale e della whitelist gate\n\n  **Y = % azioni automatizzate (eseguite senza intervento manuale)**\n  - Y = copertura_categorie * frazione_no_HITL ≈ 0.88 * 0.90 ≈ 80%\n  - copertura_categorie ≈ 0.88: le 6 azioni mappate (ticket, crm, notifica_marketing, notifica_tecnico, report, analisi, escalation) coprono ~88% delle richieste interne tipiche B2B servizi digitali\n  - frazione_no_HITL ≈ 0.90: il gate HITL scatta solo su clienti chiave + critica + azioni sensibili, stimato ~10% del traffico",
+        "height": 916,
         "width": 1424,
         "color": 5
       },
@@ -864,15 +619,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        19024,
-        4816
+        18432,
+        5008
       ]
     },
     {
       "parameters": {
-        "content": "### Casi di test\n\nPer ognuno: `Listen for test event` sul webhook, poi curl. URL: `http://localhost:5678/webhook-test/digitserve-richiesta`. Header: `Content-Type: application/json`. Body sotto.\n\n**1. ACME, cliente chiave (gate triggerato)**\n```\n{\"canale\":\"form\",\"mittente\":{\"nome\":\"Marco Rossi\",\"ruolo\":\"account_manager\",\"email\":\"m.rossi@digitserve.it\"},\"testo\":\"Cliente: ACME. Servizio: campagna pubblicitaria. Anomalia: CTR molto basso da ieri. Azioni richieste: 1) analisi preliminare, 2) apertura ticket tecnico, 3) notifica al team marketing, 4) aggiornamento storico CRM.\",\"provider\":\"ollama\"}\n```\nAtteso: 4 azioni, `cliente_chiave=true`, `richiede_approvazione=true`. Si ferma sul gate (Gmail deattivato).\n\n**2. Routine senza approvazione**\n```\n{\"canale\":\"email\",\"mittente\":{\"nome\":\"Laura Bianchi\",\"ruolo\":\"customer_success\",\"email\":\"l.bianchi@digitserve.it\"},\"testo\":\"Aggiorna lo storico del cliente Beta s.r.l.: hanno chiesto formazione aggiuntiva per il modulo CRM.\",\"provider\":\"ollama\"}\n```\nAtteso: 1 azione `crm`, esecuzione automatica, `esito=completata`.\n\n**3. Critico bancario, branch Ollama (dati sensibili)**\n```\n{\"canale\":\"chat\",\"mittente\":{\"nome\":\"Davide Conti\",\"ruolo\":\"tech_lead\",\"email\":\"d.conti@digitserve.it\"},\"testo\":\"Down totale dell'integrazione SAP per il cliente BancaItalsud da 30 minuti. Apri ticket P1, notifica subito il team tecnico e fai escalation immediata.\"}\n```\nAtteso: urgenza `critica`, `richiede_approvazione=true`, piano [ticket, notifica_tecnico, escalation].\n\n**4. Ambiguo (test fallback parser)**\n```\n{\"canale\":\"email\",\"mittente\":{\"nome\":\"Anonimo\",\"ruolo\":\"sconosciuto\",\"email\":\"qa@digitserve.it\"},\"testo\":\"qualcosa non va, controllate per favore\"}\n```\nAtteso: interpretazione povera; se l'LLM non produce JSON valido il parser scatta in fallback (`parse_ok=false`) e l'Agente Decisionale forza `richiede_approvazione=true`. In demo (Gmail disattivato) il flusso si ferma sul gate di approvazione invece di aprire ticket automatici.\n\n**5. Multi-azione parallela senza approvazione**\n```\n{\"canale\":\"form\",\"mittente\":{\"nome\":\"Giulia Marino\",\"ruolo\":\"delivery_manager\",\"email\":\"g.marino@digitserve.it\"},\"testo\":\"Per il cliente DeltaTech aggiorna lo storico segnalando il rinnovo del contratto annuale, notifica il team tecnico per la pianificazione e programma un report mensile.\",\"provider\":\"ollama\"}\n```\nAtteso: 3 azioni in parallelo (crm, notifica_tecnico, report), `esito=completata`, `eseguite=3`.",
-        "height": 764,
-        "width": 1088,
+        "content": "### Casi di test\n\nPer ognuno: *Listen for test event* sul webhook, poi curl. URL `http://localhost:5678/webhook-test/digitserve-richiesta`. Header `Content-Type: application/json`. Demo senza Gmail: disattivare `Email Approvazione (Send & Wait)` (right-click → Deactivate).\n\n**1. ACME, cliente chiave + multi-azione (gate triggerato)**\n```\n{\"canale\":\"form\",\"mittente\":{\"nome\":\"Marco Rossi\",\"ruolo\":\"account_manager\",\"email\":\"m.rossi@digitserve.it\"},\"testo\":\"Cliente: ACME. Servizio: campagna pubblicitaria. Anomalia: CTR molto basso da ieri. Azioni richieste: 1) analisi preliminare, 2) apertura ticket tecnico, 3) notifica al team marketing, 4) aggiornamento storico CRM.\",\"provider\":\"ollama\"}\n```\nAtteso: 4 azioni, `cliente_chiave=true`, `richiede_approvazione=true`. Demo senza Gmail: si ferma sul gate; con `limitWaitTime` esaurito → `esito=timeout_approvazione`.\n\n**2. Routine senza approvazione**\n```\n{\"canale\":\"email\",\"mittente\":{\"nome\":\"Laura Bianchi\",\"ruolo\":\"customer_success\",\"email\":\"l.bianchi@digitserve.it\"},\"testo\":\"Aggiorna lo storico del cliente Beta s.r.l.: hanno chiesto formazione aggiuntiva per il modulo CRM.\",\"provider\":\"ollama\"}\n```\nAtteso: 1 azione `crm`, esecuzione automatica, `esito=completata`.\n\n**3. Critico bancario, escalation esplicita**\n```\n{\"canale\":\"chat\",\"mittente\":{\"nome\":\"Davide Conti\",\"ruolo\":\"tech_lead\",\"email\":\"d.conti@digitserve.it\"},\"testo\":\"Down totale dell'integrazione SAP per il cliente BancaItalsud da 30 minuti. Apri ticket P1, notifica subito il team tecnico e fai escalation immediata.\"}\n```\nAtteso: urgenza `critica`, `richiede_approvazione=true`, piano `[escalation (priorita+50 al manager_oncall), ticket, notifica_tecnico]`.\n\n**4. Fallback parser (input ambiguo)**\n```\n{\"canale\":\"email\",\"mittente\":{\"nome\":\"Anonimo\",\"ruolo\":\"sconosciuto\",\"email\":\"qa@digitserve.it\"},\"testo\":\"qualcosa non va, controllate per favore\"}\n```\nAtteso: interpretazione povera. Se LLM non produce JSON valido → `parse_ok=false`, decisionale forza `richiede_approvazione=true`, gate scatta sul ticket di revisione manuale.\n\n**5. Multi-azione (verifica aggregazione audit)**\n```\n{\"canale\":\"form\",\"mittente\":{\"nome\":\"Giulia Marino\",\"ruolo\":\"delivery_manager\",\"email\":\"g.marino@digitserve.it\"},\"testo\":\"Per il cliente DeltaTech aggiorna lo storico segnalando il rinnovo del contratto annuale, notifica il team tecnico per la pianificazione e programma un report mensile.\",\"provider\":\"ollama\"}\n```\nAtteso: 3 azioni (`crm`, `notifica_tecnico`, `report`), `esito=completata`, audit unico con `esiti` aggregato.",
+        "height": 706,
+        "width": 2640,
         "color": 4
       },
       "id": "3e447d24-5da3-4571-adcf-529f117c3a82",
@@ -880,15 +635,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        14384,
-        4688
+        15424,
+        5056
       ]
     },
     {
       "parameters": {
-        "content": "### Setup ed esecuzione\n\n**Prerequisiti**\n- n8n >= 1.40 (`npx n8n` o Docker)\n- Ollama con `llama3.2` scaricato (`ollama pull llama3.2`).\n- Opzionale: chiave OpenAI come credenziale Header Auth (header `Authorization`, value `Bearer sk-...`).\n- Opzionale: variabile d'ambiente `DIGITSERVE_APPROVER_EMAIL` per l'indirizzo che riceve le richieste di approvazione (fallback: `operations@digitserve.it`).\n\n**Procedura**\n1. *Workflows → Add workflow → Import from File*: selezionare il `.json`.\n2. **Demo senza Gmail**: disattivare il nodo `Email Approvazione (Send & Wait)` (right-click → Deactivate).\n3. Sul `Webhook` → *Listen for test event*. Mandare il curl di test.\n\n**Risposta tipo**\n```\n{\n  \"correlation_id\": \"...\",\n  \"esito\": \"completata\",\n  \"totali\": {\"totali\": 1, \"eseguite\": 1, ...},\n  \"azioni\": [{\"tipo\": \"crm\", \"stato\": \"eseguita\", \"riferimento\": \"EVT-...\"}],\n  \"provider_llm\": \"ollama\",\n  \"messaggio\": \"Tutte le azioni richieste sono state completate con successo.\"\n}\n```\n\n**Migrazione a produzione**\nSostituire i 5 Code executor (`Esegui - *`, `Persisti Audit Log`) con HTTP Request verso gli endpoint reali. Schema `esito_azione` invariato, nessuna modifica downstream.",
-        "height": 540,
-        "width": 864,
+        "content": "### Setup ed esecuzione\n\n**Prerequisiti**\n- n8n >= 1.40 (`npx n8n` o Docker)\n- Ollama con `llama3.2` (`ollama pull llama3.2`) o modello preferito.\n- Opt: chiave OpenAI come credenziale Header Auth (header `Authorization`, value `Bearer sk-...`). La chiave NON va nel JSON: letta dalla credential n8n al runtime.\n- Opt: credenziale Gmail OAuth2 per il gate HITL (`Email Approvazione (Send & Wait)`). Senza credenziali, disattivare il nodo per la demo (passa in auto-approva); destinatario hardcoded `operations@digitserve.it` nel JSON per portabilita'.\n\n**Procedura**\n1. *Workflows → Add workflow → Import from File*: selezionare il `.json`.\n2. **Demo senza Gmail**: disattivare `Email Approvazione (Send & Wait)` (right-click → Deactivate).\n3. Sul `Webhook` → *Listen for test event*. Curl di test dalla sticky `Casi di test`.\n\n**Risposta tipo**\n```\n{\n  \"correlation_id\": \"...\",\n  \"esito\": \"completata\",\n  \"totali\": {\"totali\": 2, \"eseguite\": 2, \"fallite\": 0, \"accodate\": 0, \"sconosciute\": 0},\n  \"azioni\": [{\"tipo\":\"ticket\",\"stato\":\"eseguita\",\"riferimento\":\"TKT-...\"}, ...],\n  \"azioni_bloccate\": [],\n  \"approvazione\": {\"richiesta\": false, \"esito\": \"auto\", \"approvatore\": \"workflow_auto\"},\n  \"provider_llm\": \"ollama\",\n  \"messaggio\": \"Tutte le azioni richieste sono state completate con successo.\"\n}\n```\n\n**Migrazione a produzione**\n- Handler in `Esegui Piano`: ogni `case` → HTTP Request al sistema reale (ServiceNow, Salesforce, Slack/Teams, sistema reportistica, queue interna). Schema `esito_azione` invariato.\n- `Persisti Audit Log`: HTTP Request a Postgres / S3 / Elasticsearch.\n- Vedi sticky `Note finali` per gap aperti (idempotenza, retry, observability, HA).",
+        "height": 678,
+        "width": 1072,
         "color": 4
       },
       "id": "af1967ea-7588-4b0d-ae67-d18cad70a70a",
@@ -896,8 +651,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        15504,
-        4912
+        14240,
+        4704
       ]
     }
   ],
@@ -1078,141 +833,7 @@
         ],
         [
           {
-            "node": "Split - Una per azione",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split - Una per azione": {
-      "main": [
-        [
-          {
-            "node": "Switch - Tipo azione",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch - Tipo azione": {
-      "main": [
-        [
-          {
-            "node": "Esegui - Crea Ticket",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Esegui - Aggiorna CRM",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Esegui - Notifica Team",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Esegui - Programma Report",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Esegui - Accoda Analisi",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Esegui - Crea Ticket",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Esegui - Crea Ticket": {
-      "main": [
-        [
-          {
-            "node": "Uniforma Esito Azione",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Esegui - Aggiorna CRM": {
-      "main": [
-        [
-          {
-            "node": "Uniforma Esito Azione",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Esegui - Notifica Team": {
-      "main": [
-        [
-          {
-            "node": "Uniforma Esito Azione",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Esegui - Programma Report": {
-      "main": [
-        [
-          {
-            "node": "Uniforma Esito Azione",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Esegui - Accoda Analisi": {
-      "main": [
-        [
-          {
-            "node": "Uniforma Esito Azione",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Uniforma Esito Azione": {
-      "main": [
-        [
-          {
-            "node": "Merge - Aggrega Esiti",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge - Aggrega Esiti": {
-      "main": [
-        [
-          {
-            "node": "Costruisci Riepilogo",
+            "node": "Esegui Piano",
             "type": "main",
             "index": 0
           }
@@ -1240,37 +861,41 @@
           }
         ]
       ]
+    },
+    "Esegui Piano": {
+      "main": [
+        [
+          {
+            "node": "Costruisci Riepilogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Rome",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
   },
-  "versionId": "b0440f59-a013-49a0-9421-e2b99724c293",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "b6e32e8ab883e6f4345fd421010ef581dde0769849f27fa8f279613082e13a2c"
+    "templateCredsSetupCompleted": true
   },
-  "id": "uIeFgGVIUGliLA9G",
   "tags": [
     {
-      "updatedAt": "2026-05-09T15:03:22.304Z",
-      "createdAt": "2026-05-09T15:03:22.304Z",
-      "id": "66enAxmGLD07Z6bF",
-      "name": "agentic-ai"
-    },
-    {
-      "updatedAt": "2026-05-09T15:03:22.316Z",
-      "createdAt": "2026-05-09T15:03:22.316Z",
-      "id": "CFDpWXvWO6Rb4Bxo",
       "name": "digitserve"
     },
     {
-      "updatedAt": "2026-05-09T15:03:22.311Z",
-      "createdAt": "2026-05-09T15:03:22.311Z",
-      "id": "vaV5K3v9W6ckbsCa",
       "name": "modulo-03"
+    },
+    {
+      "name": "agentic-ai"
     }
   ]
 }
