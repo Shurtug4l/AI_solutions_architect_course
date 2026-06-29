@@ -69,13 +69,13 @@ Regulatory frameworks (AI Act, GDPR), bias, explainability, and algorithmic acco
 
 ```text
 AI_solutions_architect_course/
-├── 000_certs/                       # Certificates per module
-├── 00_python_programming/           # Notes + PRJ (warehouse monitoring, stdlib)
-├── 01_machine_learning/             # Notes + exercises + PRJ (defective parts classification, sklearn)
-├── 02_large_language_models/        # Exercises + PRJ (hybrid RAG ChromaDB+BM25)
-├── 03_agentic_ai/                   # Notes + exercises + slides + PRJ (n8n DigitServe orchestrator)
-├── 04_business_case_AIPM/           # In progress
-├── 05_AI_cloud_services/            # In progress
-├── 06_AI_services_deployment/       # In progress
+├── 000_certs/                       # Module completion certificates (00-05)
+├── 00_python_programming/           # Notes + PRJ (warehouse monitoring, stdlib) - delivered
+├── 01_machine_learning/             # Notes + exercises + PRJ (defective parts classification, sklearn) - delivered
+├── 02_large_language_models/        # Exercises + PRJ (hybrid RAG ChromaDB+BM25) - delivered
+├── 03_agentic_ai/                   # Notes + exercises + slides + PRJ (n8n DigitServe orchestrator) - delivered
+├── 04_business_case_AIPM/           # Notes + slides + PRJ (OmniRetail AI governance platform) - delivered
+├── 05_AI_cloud_services/            # Notes + slides + exercises + PRJ (EnergoGrid hybrid multi-cloud) - module complete, capstone in revision
+├── 06_AI_services_deployment/       # Notes + slides - module in progress, capstone not started
 └── README.md
 ```
