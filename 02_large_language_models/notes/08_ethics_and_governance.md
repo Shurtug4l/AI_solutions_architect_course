@@ -370,5 +370,5 @@ The answer is never "the AI". It is always one or more of:
 - Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — secret hygiene, access control, the deployment side
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_sistema_rag_conoscenza_aziendale.py`) — uses a multilingual embedder for an Italian corpus; the licensing posture of the embedder is the kind of audit item this note demands
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — uses a multilingual embedder for an Italian corpus; the licensing posture of the embedder is the kind of audit item this note demands
 - Module 03 exercise 06 — episodic memory dict is structured precisely so it can be deleted per-user (GDPR Art 17 compliance shape)

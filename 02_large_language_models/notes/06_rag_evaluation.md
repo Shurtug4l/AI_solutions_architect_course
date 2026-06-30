@@ -424,5 +424,5 @@ Long-term retention of evaluation data also matters for compliance. GDPR-style a
 - Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) — RAGAS metrics also covered there from the agent-memory angle
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_sistema_rag_conoscenza_aziendale.py`) — confidence score from top-K similarity used as a proxy faithfulness signal
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — confidence score from top-K similarity used as a proxy faithfulness signal
 - Module 03 exercise 06 — the structured-extraction iteration story is a small evaluation loop in miniature: each fix was driven by a specific failure mode in the verify node's behaviour

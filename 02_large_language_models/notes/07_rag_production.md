@@ -465,5 +465,5 @@ The deck flags three practices:
 - Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — the HTTP-service wrapper around the agent + RAG
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_sistema_rag_conoscenza_aziendale.py`) — in-memory pipeline that would map cleanly onto these production primitives if it were to ship
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — in-memory pipeline that would map cleanly onto these production primitives if it were to ship
 - Module 03 exercise 07 — the deployment wrapper covered for a single-agent service

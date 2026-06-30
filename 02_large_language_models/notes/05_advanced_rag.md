@@ -421,5 +421,5 @@ Multimodal pipelines are heavier than text-only ones (more storage, slower index
 - Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) — Reranking, hybrid search and RAG vs CAG also covered there with the agent-memory lens
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_sistema_rag_conoscenza_aziendale.py`) — production-shaped hybrid retrieval with semantic + BM25 + recency, category and date filters
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — production-shaped hybrid retrieval with semantic + BM25 + recency, category and date filters
 - Module 03 exercise 06 (`06_ex_customer_support_rag_cag_episodic.ipynb`) — RAG + CAG fallback (modular pattern in miniature)

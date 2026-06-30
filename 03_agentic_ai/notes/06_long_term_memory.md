@@ -616,4 +616,4 @@ Each stage in this stack is optional. The smallest viable RAG is `chunk → embe
 
 ### Exercises that exercise the concepts in this note
 - [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) — full RAG pipeline (ChromaDB + nomic-embed-text), CAG fallback for off-topic queries, episodic memory with persistence-trigger
-- Also covered in module 02 capstone: `02_large_language_models/PRJ_rag_system_for_company_knowledge/PRJ_sistema_rag_conoscenza_aziendale.py` — hybrid sem + BM25 + recency, category filters, larger corpus
+- Also covered in module 02 capstone: `02_large_language_models/_PRJ_rag_system_for_company_knowledge/PRJ_rag_system_for_company_knowledge.py` — hybrid sem + BM25 + recency, category filters, larger corpus

@@ -378,5 +378,5 @@ In practice, both. LangChain's `Retrieval-QA` chain composes any LlamaIndex retr
 
 ### Related work in this repo
 - Module 02 exercise 04 (`04_ex_rag_chatbot_company_faq.ipynb`) — first hands-on RAG pipeline
-- Module 02 capstone (`PRJ_sistema_rag_conoscenza_aziendale.py`) — production-flavoured hybrid retrieval (sem + BM25 + recency, category filters)
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — production-flavoured hybrid retrieval (sem + BM25 + recency, category filters)
 - Module 03 exercise 06 (`06_ex_customer_support_rag_cag_episodic.ipynb`) — RAG + CAG fallback + episodic memory on Ollama

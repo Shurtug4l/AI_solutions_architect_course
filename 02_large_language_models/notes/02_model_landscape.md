@@ -301,4 +301,4 @@ Use leaderboards to **narrow** the candidate set; pick the final model with an e
 ### Related work in this repo
 - Module 02 exercises 03 and 04 (LangChain prompt pipeline, RAG chatbot) — use Ollama with `llama3.2` and `mistral` locally
 - Module 03 exercises 02-07 — settle on `qwen2.5:14b` for tool-calling and structured-output reliability
-- Module 02 PRJ (`PRJ_sistema_rag_conoscenza_aziendale.py`) — hybrid retrieval pipeline that could front any of these models
+- Module 02 PRJ (`PRJ_rag_system_for_company_knowledge.py`) — hybrid retrieval pipeline that could front any of these models
