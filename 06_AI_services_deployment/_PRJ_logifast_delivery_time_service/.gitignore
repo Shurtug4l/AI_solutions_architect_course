@@ -1,0 +1,8 @@
+# Artefatti locali (il servizio e i test li rigenerano)
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+venv/
+.venv/
+.env
