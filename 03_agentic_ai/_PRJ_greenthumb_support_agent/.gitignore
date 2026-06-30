@@ -1,0 +1,6 @@
+# Local test artifacts (the notebook is self-contained and regenerates kb/ and data/)
+.venv/
+.env
+kb/
+data/
+.DS_Store

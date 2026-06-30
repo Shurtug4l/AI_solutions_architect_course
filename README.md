@@ -74,6 +74,7 @@ AI_solutions_architect_course/
 ├── 01_machine_learning/             # Notes + exercises + PRJ (defective parts classification, sklearn) - delivered
 ├── 02_large_language_models/        # Exercises + PRJ (hybrid RAG ChromaDB+BM25) - delivered
 ├── 03_agentic_ai/                   # Notes + exercises + slides + PRJ (n8n DigitServe orchestrator) - delivered
+│                                   #   + practice capstone v2 (GreenThumb support agent, LangChain/LiteLLM ReAct + RAG + FastAPI, Colab notebook)
 ├── 04_business_case_AIPM/           # Notes + slides + PRJ (OmniRetail AI governance platform) - delivered
 ├── 05_AI_cloud_services/            # Notes + slides + exercises + PRJ (EnergoGrid hybrid multi-cloud) - module complete, capstone in revision
 ├── 06_AI_services_deployment/       # Notes + slides - module in progress, capstone not started
