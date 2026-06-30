@@ -26,7 +26,7 @@ This project replaces that spreadsheet with a command-line application that:
 
 HOW TO RUN
 ----------
-  python PRJ_Sistema_Monitoraggio_Ordini_Magazzino.py
+  python PRJ_warehouse_order_monitoring_system.py
 
 No external packages are required — only the Python standard library is used.
 On first run, the data/ directory is created automatically and seeded with

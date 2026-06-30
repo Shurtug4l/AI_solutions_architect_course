@@ -69,14 +69,16 @@ Regulatory frameworks (AI Act, GDPR), bias, explainability, and algorithmic acco
 
 ```text
 AI_solutions_architect_course/
-├── 000_certs/                       # Module completion certificates (00-05)
+├── 000_certs/                       # Module completion certificates (00-05, .pdf)
 ├── 00_python_programming/           # Notes + PRJ (warehouse monitoring, stdlib) - delivered
 ├── 01_machine_learning/             # Notes + exercises + PRJ (defective parts classification, sklearn) - delivered
-├── 02_large_language_models/        # Exercises + PRJ (hybrid RAG ChromaDB+BM25) - delivered
-├── 03_agentic_ai/                   # Notes + exercises + slides + PRJ (n8n DigitServe orchestrator) - delivered
-│                                   #   + practice capstone v2 (GreenThumb support agent, LangChain/LiteLLM ReAct + RAG + FastAPI, Colab notebook)
-├── 04_business_case_AIPM/           # Notes + slides + PRJ (OmniRetail AI governance platform) - delivered
-├── 05_AI_cloud_services/            # Notes + slides + exercises + PRJ (EnergoGrid hybrid multi-cloud) - module complete, capstone in revision
-├── 06_AI_services_deployment/       # Notes + slides - module in progress, capstone not started
+├── 02_large_language_models/        # Notes + exercises + PRJ (hybrid RAG, ChromaDB + BM25) - delivered
+├── 03_agentic_ai/                   # Notes + exercises + 2 PRJ (n8n DigitServe + GreenThumb) - both delivered
+│                                   #   GreenThumb = LangChain/LiteLLM ReAct + RAG + FastAPI notebook (2nd module-03 capstone)
+├── 04_business_case_AIPM/           # Notes + exercises + PRJ (OmniRetail AI governance platform) - delivered
+├── 05_AI_cloud_services/            # Notes + exercises + PRJ (EnergoGrid hybrid multi-cloud) - delivered
+├── 06_AI_services_deployment/       # Notes - module in progress, capstone not started
 └── README.md
 ```
+
+Note: slide decks (`.pptx`) and capstone Word sources (`.docx`) are kept local and gitignored, so they are not part of the published repository. The two document capstones (modules 04, 05) are shipped as `.pdf`.
