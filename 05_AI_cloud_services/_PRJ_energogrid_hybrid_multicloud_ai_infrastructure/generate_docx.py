@@ -38,7 +38,6 @@ Lingua: italiano (modulo non ancora consegnato).
 
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
 from docx import Document
@@ -65,6 +64,9 @@ FONT_FAMILY = "Aptos"
 FONT_FALLBACK = "Calibri"
 
 OUTPUT_FILE = "PRJ_energogrid_hybrid_multicloud_ai_infrastructure.docx"
+
+# Submission date, pinned (was date.today(): fixed to avoid drift across rebuilds).
+DOC_DATE = "2026-07-01"
 
 # Module relative path to the diagrams.
 DIAGRAMS_DIR = Path(__file__).parent / "diagrams"
@@ -407,7 +409,7 @@ def build_cover(doc):
     p.paragraph_format.space_after = Pt(2)
     r = p.add_run("Data  ")
     _set_run_font(r, size=10, bold=True, color=COLOR_NEUTRAL_DK)
-    r = p.add_run(date.today().isoformat())
+    r = p.add_run(DOC_DATE)
     _set_run_font(r, size=10, color=COLOR_PRIMARY)
 
     p = doc.add_paragraph()
@@ -512,7 +514,7 @@ def build_executive_summary(doc):
         "predittiva degli asset e ottimizzazione del bilanciamento - hanno "
         "ricaduta diretta su affidabilità della rete, costo del kilowattora "
         "consegnato e capacità di assorbire la variabilità delle "
-        "rinnovabili. Le tre iniziative condividono la stessa esigenza "
+        "rinnovabili. Tutte e tre condividono la stessa esigenza "
         "infrastrutturale: una piattaforma AI in grado di trattare dati di "
         "telemetria con vincoli stringenti di sovranità, di sostenere il "
         "ciclo di vita dei modelli su orizzonti pluriennali e di esporre "
@@ -531,7 +533,7 @@ def build_executive_summary(doc):
         "analytics su grandi volumi. Open source (Docker, Kubernetes, "
         "MLflow, Hugging Face) è la lingua franca che tiene insieme i tre "
         "ambienti pubblici con il perimetro privato, mitigando il lock-in "
-        "senza pagarne il prezzo di reinventare la ruota."
+        "senza costruire in casa un layer di astrazione proprietario."
     )
 
     add_paragraph(
@@ -539,9 +541,9 @@ def build_executive_summary(doc):
         "La proiezione concettuale a 5 anni indica un risparmio cumulato "
         "intorno al 20% rispetto a una baseline on-prem only, principalmente "
         "per la sostituzione del refresh hardware periodico con consumo "
-        "elastico cloud sui picchi di training. Il valore vero, però, non "
-        "è il taglio dei costi: è la flessibilità di provare nuovi "
-        "modelli senza acquistare GPU e l'allineamento con i requisiti "
+        "elastico cloud sui picchi di training. Il taglio dei costi, però, "
+        "è il beneficio minore: pesano di più la flessibilità di provare "
+        "nuovi modelli senza acquistare GPU e l'allineamento con i requisiti "
         "regolatori in evoluzione (NIS2 entrata in vigore nel 2024, EU AI "
         "Act, ISO 27019 per il settore energia). La roadmap raccomandata è "
         "a tre wave su 36 mesi, con gate decisionali a M9, M21 e M36 e "
@@ -680,8 +682,8 @@ def build_section_1(doc):
     add_heading(doc, "Requisiti non funzionali", level=2, numbered_prefix="1.4")
     add_paragraph(
         doc,
-        "I requisiti non funzionali rappresentano i vincoli che vincolano "
-        "le scelte architetturali più di qualunque preferenza tecnologica. "
+        "I requisiti non funzionali sono i vincoli che pesano sulle scelte "
+        "architetturali più di qualunque preferenza tecnologica. "
         "In un operatore di rete elettrica la priorità non è la novità "
         "del modello, è che il sistema operi 24 ore su 24 e non sia un "
         "vettore di compromissione dell'infrastruttura critica."
@@ -739,7 +741,7 @@ def build_section_2(doc):
         doc,
         "Il catalogo include le piattaforme PaaS dei tre principali "
         "hyperscaler e il sottoinsieme open source rilevante per il caso "
-        "EnergoGrid. La descrizione è deliberatamente di alto livello: il "
+        "EnergoGrid. La descrizione si mantiene di proposito a livello alto: il "
         "documento non valuta specifiche tecniche di servizio, ma il "
         "contributo di ciascun cluster alla strategia. La selezione "
         "all'interno di ciascun PaaS si limita ai servizi pertinenti al "
@@ -842,8 +844,8 @@ def build_section_2(doc):
                 numbered_prefix="2.4")
     add_paragraph(
         doc,
-        "La componente open source non è un'alternativa al cloud: è la "
-        "lingua franca che rende l'architettura portabile fra cloud e "
+        "La componente open source affianca il cloud invece di sostituirlo: "
+        "fa da strato comune che rende l'architettura portabile fra cloud e "
         "verso on-prem. Tre vantaggi strutturali ne giustificano la "
         "presenza in ogni layer: portabilità dei modelli e dei container, "
         "controllo del codice per audit di terze parti, riduzione del "
@@ -899,7 +901,7 @@ def build_section_3(doc):
 
     add_paragraph(
         doc,
-        "Il metodo è qualitativo su scala 1-5, dichiaratamente discreto. "
+        "Il metodo è qualitativo su scala 1-5, discreto per scelta. "
         "Una valutazione su scala continua avrebbe richiesto stime "
         "numeriche puntuali (per esempio euro / mese / req) che a livello "
         "concettuale sarebbero state pretese di precisione non "
@@ -1187,9 +1189,9 @@ def build_section_5(doc):
     add_paragraph(
         doc,
         "Cinque principi guidano ogni scelta architetturale a valle. "
-        "Non sono slogan: sono criteri di decisione binari che vengono "
-        "applicati in modo deterministico quando emergono ambiguità "
-        "sulla collocazione di un componente."
+        "Funzionano come criteri di decisione binari, applicati in modo "
+        "deterministico quando emerge un'ambiguità sulla collocazione di "
+        "un componente."
     )
 
     add_table(
@@ -1275,7 +1277,7 @@ def build_section_5(doc):
     add_paragraph(
         doc,
         "Il framework decisionale che assegna ciascun workload al "
-        "cluster corretto è deliberatamente semplice. Due sole domande, "
+        "cluster corretto è volutamente semplice. Due sole domande, "
         "applicate in ordine, conducono a una raccomandazione iniziale; "
         "i guardrail trasversali assicurano che la scelta non comprometta "
         "i principi della sezione 5.1."
@@ -1384,10 +1386,11 @@ def build_section_5(doc):
     add_callout(
         doc,
         "implicazione",
-        "Il modello scopre l'ovvio: ogni dominio ha un owner unico, ma "
-        "tre o quattro contributori. La governance non è un'aggiunta a "
-        "consuntivo, è la condizione perché la responsabilità non "
-        "evapori nei punti di contatto fra cluster (sezione 7)."
+        "La matrice mette in chiaro un punto facile da sottovalutare: "
+        "ogni dominio ha un owner unico ma tre o quattro contributori. "
+        "La governance va trattata come condizione di partenza: è ciò che "
+        "impedisce alla responsabilità di evaporare nei punti di contatto "
+        "fra cluster (sezione 7)."
     )
 
     _add_page_break(doc)
@@ -1456,7 +1459,7 @@ def build_section_6(doc):
     add_heading(doc, "TCO concettuale a 5 anni", level=2, numbered_prefix="6.2")
     add_paragraph(
         doc,
-        "La proiezione TCO è deliberatamente concettuale. Non vengono "
+        "La proiezione TCO resta a livello concettuale. Non vengono "
         "stimati euro puntuali per voce: l'incertezza intrinseca su "
         "volumi, prezzi unitari cloud e ciclo di refresh hardware "
         "renderebbe una stima numerica dettagliata fuorviante. L'obiettivo "
@@ -1499,7 +1502,7 @@ def build_section_6(doc):
         "L'hybrid porta driver di costo nascosti noti dalla letteratura "
         "cloud: egress cross-cloud, tooling di osservabilità unificato, "
         "operations multi-cloud, perdita di volume discount e GPU idle in "
-        "training. Sono presidiati esplicitamente nella mappa dei rischi "
+        "training. Sono coperti esplicitamente nella mappa dei rischi "
         "(sezione 8.3), che ne riporta mitigazione e owner."
     )
 
@@ -1726,10 +1729,10 @@ def build_section_8(doc):
 
     add_paragraph(
         doc,
-        "La sovrapposizione fra wave non è un'inefficienza: è "
-        "necessaria perché la wave successiva ha bisogno di alcune "
-        "fondamenta dalla precedente, e non si vuole sospendere lo "
-        "sviluppo per attendere la chiusura formale. La gestione di "
+        "La sovrapposizione fra wave è voluta: la wave successiva ha "
+        "bisogno di alcune fondamenta dalla precedente, e sospendere lo "
+        "sviluppo per attendere la chiusura formale costerebbe calendario "
+        "senza ridurre il rischio. La gestione di "
         "questa sovrapposizione è la responsabilità del program manager "
         "del capstone, supportata dai gate strategici dove le decisioni "
         "di proseguire o riallineare vengono prese formalmente."
@@ -2060,8 +2063,8 @@ def build_section_10(doc):
         "tecnico futuro.",
 
         "Investire nel team prima della tecnologia. Una piattaforma "
-        "ibrida che il team non sa operare è un rischio strategico, non "
-        "un'opportunità. Hiring senior in wave 1, formazione strutturata, "
+        "ibrida che il team non sa operare diventa un rischio strategico "
+        "a tutti gli effetti. Hiring senior in wave 1, formazione strutturata, "
         "partnership con system integrator solo per accelerare, non per "
         "sostituire la capacità interna.",
 
@@ -2158,7 +2161,7 @@ def build_annex_a(doc):
         ("PII",         "Personally Identifiable Information."),
         ("Prosumer",    "Utente che è contemporaneamente consumatore e produttore di energia (tipicamente fotovoltaico domestico)."),
         ("RAG",         "Retrieval-Augmented Generation. Pattern di LLM che attinge a una base di conoscenza esterna durante l'inferenza."),
-        ("RACI",        "Modello di responsabilità (Responsible, Accountable, Consulted, Informed)."),
+        ("RACI",        "Modello di riferimento per le responsabilità (Responsible, Accountable, Consulted, Informed); la matrice della sezione 5.4 ne adotta una variante semplificata."),
         ("RPO / RTO",   "Recovery Point Objective / Recovery Time Objective. Metriche di disaster recovery."),
         ("SageMaker",   "Piattaforma ML end-to-end di AWS."),
         ("SCADA",       "Supervisory Control And Data Acquisition. Sistema di supervisione e controllo dei processi industriali."),
@@ -2277,7 +2280,7 @@ def build_annex_c(doc):
              "Communication networks and systems for power utility automation",
              "Standard di comunicazione in substation"],
             ["Linee guida ENISA",
-             "Cloud Security for Healthcare Services / Energy Sector",
+             "Cloud Security guidance for the Energy Sector",
              "Best practice di sicurezza cloud per settori essenziali"],
             ["Direttiva (UE) 2019/944",
              "Norme comuni per il mercato interno dell'energia elettrica",
@@ -2290,7 +2293,7 @@ def build_annex_c(doc):
     add_paragraph(
         doc,
         "Le normative evolvono. La data di riferimento per le scelte di "
-        "questo documento è maggio 2026. Aggiornamenti delle norme (ad "
+        "questo documento è luglio 2026. Aggiornamenti delle norme (ad "
         "esempio l'adozione progressiva degli atti delegati dell'AI Act) "
         "vanno presidiati con cadenza almeno semestrale dalla funzione "
         "Governance & Compliance."
