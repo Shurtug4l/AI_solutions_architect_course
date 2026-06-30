@@ -1,0 +1,11 @@
+# Installazione FastAPI e dipendenze
+pip install fastapi pytest httpx
+
+# Lancio di pytest su unit_test.py
+pytest unit_test.py
+
+# Lancio di pytest su integration_test.py
+pytest integration_test.py
+
+# Lancio di pytest su test_api.py
+pytest test_api.py

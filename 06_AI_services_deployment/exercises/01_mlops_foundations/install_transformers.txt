@@ -1,0 +1,11 @@
+# installazione transformers per HuggingFace
+pip install transformers
+
+# per supporto PyTorch
+pip install transformers[torch]
+
+# per supporto TensorFlow
+pip install transformers[tf]
+
+# per installazione completa con tutte le dipendenze
+pip install transformers[all]

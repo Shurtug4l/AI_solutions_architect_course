@@ -1,0 +1,17 @@
+# Verifica che docker sia installato correttamente
+docker --version
+
+# Costruire il container (su Windows avviare Docker desktop)
+docker build -t my-python-app .
+
+# Avviare il container
+docker run -p 8080:8080 my-python-app
+
+# Per vedere i container in esecuzione
+docker ps
+
+# Per fermare un container
+docker stop <container_id>
+
+# Per rimuovere un container fermato
+docker rm <container_id>

@@ -1,0 +1,91 @@
+# 1. Configurazioni Iniziali
+# -----------------------------
+
+# Configura il tuo nome e email
+git config --global user.name "Il Tuo Nome"
+git config --global user.email "tua.email@esempio.com"
+
+# Verifica la configurazione
+git config --list
+
+# 2. Inizializzare un Repository
+# -----------------------------
+
+# Crea una nuova directory
+mkdir mio-progetto
+cd mio-progetto
+
+# Inizializza il repository
+git init
+
+# Verifica lo stato
+git status
+
+# Aggiungi file specifici
+git add nomefile.txt
+
+# Aggiungi tutti i file
+git add .
+
+# Rimuovi file dall'area di staging
+git reset nomefile.txt
+
+# 3. Commit, Pull e Push
+# -----------------------------
+
+# Crea un commit con messaggio
+git commit -m "Primo commit: aggiunto file principale"
+
+# Modifica l'ultimo commit
+git commit --amend -m "Nuovo messaggio per l'ultimo commit"
+
+# Visualizza la storia dei commit
+git log
+git log --oneline  # Versione compatta
+
+# Aggiungi un repository remoto
+git remote add origin https://github.com/username/repository.git
+
+# Verifica i repository remoti
+git remote -v
+
+# Scarica le modifiche dal repository remoto
+git pull origin main
+
+# Carica le tue modifiche sul repository remoto
+git push origin main
+
+# Push del primo commit
+git push -u origin main  # -u imposta il tracking
+
+# Scarica le modifiche dal repository remoto
+git pull origin main
+
+# Carica le tue modifiche sul repository remoto
+git push origin main
+
+# Push del primo commit
+git push -u origin main  # -u imposta il tracking
+
+# 4. file .gitignore
+# -----------------------------
+
+# Crea il file .gitignore
+touch .gitignore
+
+# Editare il file .gitignore
+
+# 5. Lavorare su un Branch
+# -----------------------------
+
+# Visualizza tutti i branch
+git branch
+
+# Crea un nuovo branch
+git branch feature-login
+
+# Passa a un altro branch
+git checkout feature-login
+
+# Elimina un branch
+git branch -d nome-branch

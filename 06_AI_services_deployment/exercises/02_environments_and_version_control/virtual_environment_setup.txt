@@ -1,0 +1,70 @@
+# 1. CREARE UN AMBIENTE VIRTUALE
+# -----------------------------
+
+# Verifica la versione di Python
+python --version
+
+# Crea una directory per il progetto
+mkdir mio_progetto
+cd mio_progetto
+
+# Crea l'ambiente virtuale
+python -m venv env
+
+# 2. ATTIVARE E DISATTIVARE L'AMBIENTE VIRTUALE
+# --------------------------------------------
+
+# Per Windows:
+# .\env\Scripts\activate
+
+# Per macOS e Linux:
+source env/bin/activate
+
+# Verifica l'ambiente attivo (dovrebbe mostrare il percorso dell'ambiente)
+which python
+which pip
+
+# Per disattivare l'ambiente:
+deactivate
+
+# 3. INSTALLARE MODULI
+# -------------------
+
+# Riattiva l'ambiente se necessario
+source env/bin/activate  # (per macOS/Linux)
+# .\env\Scripts\activate  # (per Windows)
+
+# Installa alcuni pacchetti di esempio
+pip install numpy
+pip install pandas
+pip install matplotlib
+
+# Installa una versione specifica
+pip install requests==2.25.1
+
+# 4. VERSIONE MODULI E REQUIREMENTS.TXT
+# -----------------------------------
+
+# Visualizza tutti i pacchetti installati
+pip list
+
+# Crea il file requirements.txt
+pip freeze > requirements.txt
+
+# Visualizza il contenuto del file
+cat requirements.txt
+
+# Come installare da requirements.txt in un nuovo ambiente
+# pip install -r requirements.txt
+
+# 5. ELIMINARE UN AMBIENTE VIRTUALE
+# -------------------------------
+
+# Prima disattiva l'ambiente
+deactivate
+
+# Per Windows:
+# cancellare la cartella
+
+# Per macOS e Linux:
+rm -rf env

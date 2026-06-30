@@ -1,0 +1,21 @@
+# Installazione FastAPI e dipendenze
+pip install fastapi uvicorn
+
+# Avvio applicazione app_get.py
+uvicorn app_get:app --reload
+
+# Avvio applicazione app_get_filters.py
+uvicorn app_get_filters:app --reload
+
+# Avvio applicazione app_post.py
+uvicorn app_get_filters:app --reload
+
+# Aggiunta città con add_city_post.py
+python add_city_post.py
+
+# Avvio applicazione app_post_with_error.py
+uvicorn app_post_with_error:app --reload
+
+# Aggiunta città con add_city_post.py
+python add_city_post.py
+python add_city_post.py

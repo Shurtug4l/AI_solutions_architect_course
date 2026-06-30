@@ -1,0 +1,7 @@
+# Comandi per registrare l'Immagine su Docker Hub
+
+docker login
+
+docker tag my-python-app yourusername/my-python-app:latest
+
+docker push yourusername/my-python-app:latest
