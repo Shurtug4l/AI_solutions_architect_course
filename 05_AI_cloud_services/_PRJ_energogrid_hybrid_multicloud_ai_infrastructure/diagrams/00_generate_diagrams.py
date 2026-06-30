@@ -168,13 +168,13 @@ def fig1_hybrid_architecture():
             ("Substation & meters", "AMI - PMU - time-series"),
             ("Edge inference",      "K3s - ONNX - low-latency"),
         ]),
-        (4.6, 1.1, "PRIVATE on-prem", ACCENT["amber"], [
+        (4.6, 1.1, "PRIVATE", ACCENT["amber"], [
             ("Data hub",        "Kafka - MinIO - TimescaleDB"),
             ("OSS ML platform", "K8s - MLflow - FastAPI"),
             ("Sovereign vault", "secrets - KMS - audit log"),
             ("Identity & SSO",  "AD - Keycloak - MFA"),
         ]),
-        (2.8, 1.1, "PUBLIC multi-cloud", ACCENT["blue"], [
+        (2.8, 1.1, "PUBLIC", ACCENT["blue"], [
             ("AWS landing zone",   "S3 - SageMaker - IoT Core"),
             ("Azure landing zone", "Blob - Azure ML - OpenAI"),
             ("GCP landing zone",   "BigQuery - Vertex AI"),
@@ -214,7 +214,7 @@ def fig1_hybrid_architecture():
     label(ax, 6.5, 0.25,
           "Flusso unidirezionale top-down. Cross-cloud assente per design: ogni "
           "use case è assegnato a un solo cloud.",
-          size=8.5, color=INK_MUTED)
+          size=8.5, color=INK_SOFT)
 
     ax.set_axis_off()
     save(fig, "01_hybrid_multicloud_architecture.png")
@@ -245,7 +245,7 @@ def fig2_edge_to_cloud_data_flow():
         ("Consumers",       "dispatcher, CRM,\naudit, reporting",      ACCENT["emerald"]),
     ]
 
-    w, h = 1.95, 1.7
+    w, h = 2.05, 1.7
     y = 1.7
     gap = 0.2
     x_start = 0.3
@@ -253,7 +253,7 @@ def fig2_edge_to_cloud_data_flow():
     for i, (head, body, accent) in enumerate(stages):
         x = x_start + i * (w + gap)
         box(ax, x, y, w, h, accent=accent)
-        label(ax, x + w / 2, y + h - 0.35, head, size=11, weight="bold")
+        label(ax, x + w / 2, y + h - 0.35, head, size=10, weight="bold")
         label(ax, x + w / 2, y + 0.55, body, size=9, color=INK_SOFT)
         if i < len(stages) - 1:
             arrow_h(ax, x + w + 0.02, x + w + gap - 0.02, y + h / 2,
@@ -262,7 +262,7 @@ def fig2_edge_to_cloud_data_flow():
     # Single caption strip for the drift loop, as text not arrow
     label(ax, 7.0, 0.8,
           "Loop di retraining attivato dal drift monitor (Sezione 7).",
-          size=9, color=INK_MUTED)
+          size=9, color=INK_SOFT)
 
     ax.set_axis_off()
     save(fig, "02_edge_to_cloud_data_flow.png")
@@ -419,13 +419,13 @@ def fig4_decision_tree():
         label(ax, x_r - label_r_offset, y_mid + 0.18, label_r, size=9, color=INK_SOFT, ha="right")
 
     # Root -> Q2 / Q3
-    split(Q1, Q2, Q3, "si'", "no")
+    split(Q1, Q2, Q3, "sì", "no")
     # Q2 -> Hybrid burst / OSS on-prem
-    split(Q2, L_hybrid, L_oss, "si'", "no")
+    split(Q2, L_hybrid, L_oss, "sì", "no")
     # Q3 -> PaaS pieno / Q4
-    split(Q3, L_paas, Q4, "si'", "no")
+    split(Q3, L_paas, Q4, "sì", "no")
     # Q4 -> PaaS curato / IaaS + OSS
-    split(Q4, L_curato, L_iaas, "no", "si'")
+    split(Q4, L_curato, L_iaas, "no", "sì")
 
     ax.set_axis_off()
     save(fig, "04_paas_iaas_oss_decision_tree.png")
@@ -491,19 +491,20 @@ def fig5_ml_lifecycle_hybrid():
 
     # Model registry bridge in the middle
     y_reg = 3.1
-    box(ax, 5.0, y_reg, 4.0, 0.7, fill=TINT["amber"], border=ACCENT["amber"], lw=1.3)
-    label(ax, 7.0, y_reg + 0.42, "Model registry condiviso",
+    box(ax, 6.0, y_reg, 4.0, 0.7, fill=TINT["amber"], border=ACCENT["amber"], lw=1.3)
+    label(ax, 8.0, y_reg + 0.42, "Model registry condiviso",
           size=10.5, weight="bold", color=ACCENT["amber"])
-    label(ax, 7.0, y_reg + 0.18, "promote-on-approval - audit log",
+    label(ax, 8.0, y_reg + 0.18, "promote-on-approval - audit log",
           size=8.8, color=INK_SOFT)
 
-    # Two vertical hand-offs: private validation -> registry, registry -> public training
-    arrow_v(ax, 7.0, y_priv, y_reg + 0.7, color=ACCENT["amber"], lw=1.4)
-    arrow_v(ax, 7.0, y_reg, y_pub + 1.1, color=ACCENT["amber"], lw=1.4)
+    # Two vertical hand-offs, centred on x=8.0 so they line up with the
+    # Validation box (top lane) and Online endpoint box (bottom lane) they connect.
+    arrow_v(ax, 8.0, y_priv, y_reg + 0.7, color=ACCENT["amber"], lw=1.4)
+    arrow_v(ax, 8.0, y_reg, y_pub + 1.1, color=ACCENT["amber"], lw=1.4)
 
     label(ax, 7.0, 0.4,
           "Un solo registry per entrambe le lane. Drift loop riportato in Sezione 7.",
-          size=9, color=INK_MUTED)
+          size=9, color=INK_SOFT)
 
     ax.set_axis_off()
     save(fig, "05_ml_lifecycle_hybrid.png")
@@ -870,7 +871,7 @@ def fig9_kpi_tree():
     label(ax, 6.5, 0.55,
           "Le metriche operative sono misurabili settimanalmente. Il valore di "
           "business si rivede in steering trimestrale.",
-          size=8.8, color=INK_MUTED)
+          size=8.8, color=INK_SOFT)
 
     ax.set_axis_off()
     save(fig, "09_kpi_tree.png")

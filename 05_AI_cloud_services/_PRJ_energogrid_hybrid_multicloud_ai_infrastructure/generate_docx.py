@@ -1227,8 +1227,9 @@ def build_section_5(doc):
 
     add_image(doc, "01_hybrid_multicloud_architecture.png",
               caption="Figura 5.1 - Architettura concettuale ibrida multi-cloud. "
-                      "Quattro layer (edge, private, public, consumers) connessi "
-                      "da control plane unificato e flussi dato classificati.",
+                      "Quattro layer (edge, private, public, consumers) collegati "
+                      "da flussi verticali unidirezionali top-down; cross-cloud "
+                      "assente per design.",
               width_cm=16.0)
 
     add_paragraph(
@@ -1245,9 +1246,8 @@ def build_section_5(doc):
 
     add_image(doc, "02_edge_to_cloud_data_flow.png",
               caption="Figura 5.2 - Flusso dati edge-to-cloud. Sei stadi "
-                      "di pipeline, governance e osservabilità "
-                      "trasversali, loop di retraining su drift come "
-                      "feedback dal serving al training.",
+                      "sequenziali dalla sorgente al consumer; il loop di "
+                      "retraining su drift è descritto nella sezione 7.",
               width_cm=16.0)
 
     add_table(
@@ -1284,8 +1284,9 @@ def build_section_5(doc):
     )
 
     add_image(doc, "04_paas_iaas_oss_decision_tree.png",
-              caption="Figura 5.3 - Framework decisionale per "
-                      "l'assegnazione di un workload AI a PaaS / IaaS+OSS / OSS on-prem.")
+              caption="Figura 5.3 - Framework decisionale per l'assegnazione "
+                      "di un workload AI: quattro domande, cinque esiti (hybrid "
+                      "burst, OSS on-prem, PaaS pieno, PaaS curato, IaaS+OSS).")
 
     add_paragraph(
         doc,
@@ -1345,9 +1346,9 @@ def build_section_5(doc):
 
     add_image(doc, "05_ml_lifecycle_hybrid.png",
               caption="Figura 5.4 - Lifecycle ML ibrido. Private e public "
-                      "lane condividono registry e loop di retraining su "
-                      "drift; i modelli scendono all'edge solo dopo "
-                      "approvazione esplicita.",
+                      "lane condividono un unico model registry; la "
+                      "promozione a produzione passa per approvazione "
+                      "esplicita (promote-on-approval).",
               width_cm=16.0)
 
     # 5.4
@@ -1582,8 +1583,9 @@ def build_section_7(doc):
 
     add_image(doc, "10_governance_domain_map.png",
               caption="Figura 7.1 - Mappa dei domini di governance "
-                      "multi-cloud. Principi al centro, domini sul cerchio "
-                      "intermedio, normative applicabili agli angoli.")
+                      "multi-cloud. Fascia dei principi in alto, sei domini "
+                      "nella griglia centrale, norme applicabili nella fascia "
+                      "inferiore.")
 
     add_table(
         doc,
@@ -1702,8 +1704,8 @@ def build_section_8(doc):
     add_image(doc, "07_migration_roadmap_waves.png",
               caption="Figura 8.1 - Roadmap di migrazione a tre wave su 36 mesi, "
                       "con tre workstream paralleli (infra & governance, ML "
-                      "platform & lifecycle, use case delivery), milestone "
-                      "trasversali e tre gate strategici.",
+                      "platform & lifecycle, use case delivery), sei milestone "
+                      "su timeline e tre gate strategici.",
               width_cm=16.0)
 
     add_table(
@@ -1872,7 +1874,7 @@ def build_section_9(doc):
 
     add_image(doc, "09_kpi_tree.png",
               caption="Figura 9.1 - Albero dei KPI di progetto. Valore di "
-                      "business in radice, tre KPI macro intermedi, nove "
+                      "business in radice, tre KPI macro intermedi, sei "
                       "metriche operative alle foglie.")
 
     add_heading(doc, "KPI di business", level=2, numbered_prefix="9.1")
