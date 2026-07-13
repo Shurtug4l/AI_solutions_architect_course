@@ -113,6 +113,7 @@ contro un registro fidato prima del load.
 
 ```
 _PRJ_logifast_delivery_time_service/
+  PRJ_logifast_delivery_time_service.pdf   # documento di consegna (sintesi; .docx sorgente gitignored)
   app.py                 # API Flask (layer di trasporto)
   model_service.py       # caricamento, validazione, predizione, metadati
   delivery.pkl           # artefatto del modello (sklearn 1.6.1)
@@ -120,7 +121,7 @@ _PRJ_logifast_delivery_time_service/
   notebooks/             # esplorazione e validazione del modello
   docs/                  # schema dati, specifica API, design MLOps
   tests/                 # test di integrazione (pytest)
-  report/                # report finale
+  report/                # report_finale.md, sorgente markdown della sintesi
 ```
 
 ## Test
