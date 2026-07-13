@@ -77,7 +77,8 @@ AI_solutions_architect_course/
 │                                   #   GreenThumb = LangChain/LiteLLM ReAct + RAG + FastAPI notebook (2nd module-03 capstone)
 ├── 04_business_case_AIPM/           # Notes + exercises + PRJ (OmniRetail AI governance platform) - delivered
 ├── 05_AI_cloud_services/            # Notes + exercises + PRJ (EnergoGrid hybrid multi-cloud) - delivered
-├── 06_AI_services_deployment/       # Notes + exercises - module in progress, capstone not started
+├── 06_AI_services_deployment/       # Notes + exercises + PRJ (LogiFast delivery-time service, Flask) - capstone pre-delivery
+├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local, gitignored) - module in progress, no capstone
 └── README.md
 ```
 
