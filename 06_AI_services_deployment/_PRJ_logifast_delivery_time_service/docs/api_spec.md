@@ -61,7 +61,9 @@ isolato come errore, gli altri vengono predetti.
 
 ## GET /health
 
-Stato operativo del servizio.
+Stato operativo del servizio (readiness). `status` e' `OK` con 200 se il modello e'
+caricato, `ERROR` con 503 se l'artefatto non e' disponibile: dietro un orchestratore
+serve a non ricevere traffico finche' il servizio non e' pronto.
 
 ```json
 { "status": "OK", "timestamp": "2026-07-01T07:49:00.152448+00:00" }
@@ -104,3 +106,4 @@ Gli errori bloccanti hanno sempre la stessa forma, con la lista puntuale dei pro
 | 400 | payload assente/non-JSON, campi mancanti, `service_type` non valido, body batch non lista |
 | 404 | endpoint inesistente |
 | 500 | errore interno non previsto (loggato lato server) |
+| 503 | modello non disponibile (`/health` risponde `ERROR`, `/predict` e `/predict/batch` rifiutano) |

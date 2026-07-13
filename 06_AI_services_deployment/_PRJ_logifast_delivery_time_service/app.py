@@ -92,7 +92,10 @@ def create_app(model_path: str | None = None) -> Flask:
 
     @app.get("/health")
     def health():
-        return jsonify(status="OK", timestamp=datetime.now(timezone.utc).isoformat())
+        # Readiness: OK se il modello e' caricato, ERROR/503 altrimenti (traccia: OK/ERROR).
+        ready = service.ready
+        return jsonify(status="OK" if ready else "ERROR",
+                       timestamp=datetime.now(timezone.utc).isoformat()), (200 if ready else 503)
 
     @app.get("/model")
     def model_info():
@@ -100,6 +103,8 @@ def create_app(model_path: str | None = None) -> Flask:
 
     @app.post("/predict")
     def predict():
+        if not service.ready:
+            return jsonify(status="error", errors=["modello non disponibile"]), 503
         payload = request.get_json(silent=True)
         if payload is None:
             return jsonify(status="error", errors=["body JSON assente o non valido"]), 400
@@ -112,6 +117,8 @@ def create_app(model_path: str | None = None) -> Flask:
 
     @app.post("/predict/batch")
     def predict_batch():
+        if not service.ready:
+            return jsonify(status="error", errors=["modello non disponibile"]), 503
         payload = request.get_json(silent=True)
         if not isinstance(payload, list):
             return jsonify(status="error", errors=["il body deve essere una lista di record"]), 400

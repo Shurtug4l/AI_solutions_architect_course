@@ -87,3 +87,20 @@ def test_predict_batch_mixed(client):
     body = client.post("/predict/batch", json=[good, bad]).get_json()
     assert body["count"] == 2
     assert [item["status"] for item in body["results"]] == ["ok", "error"]
+
+
+def test_health_error_when_model_missing(tmp_path):
+    # Artefatto assente: il servizio parte lo stesso (load resiliente) e /health
+    # segnala ERROR/503 invece di crashare. Dimostra il readiness path.
+    app = create_app(model_path=str(tmp_path / "missing.pkl"))
+    app.testing = True
+    response = app.test_client().get("/health")
+    assert response.status_code == 503
+    assert response.get_json()["status"] == "ERROR"
+
+
+def test_predict_unavailable_when_model_missing(tmp_path):
+    app = create_app(model_path=str(tmp_path / "missing.pkl"))
+    app.testing = True
+    response = app.test_client().post("/predict", json=_valid_record())
+    assert response.status_code == 503

@@ -76,24 +76,40 @@ class DeliveryModelService:
     def __init__(self, model_path: Path | str = MODEL_PATH):
         self.model_path = Path(model_path)
         self.loaded_at = datetime.now(timezone.utc)
-        self.artifact_sha256 = self._sha256(self.model_path)
-        if self.artifact_sha256 != EXPECTED_SHA256:
-            logger.warning("SHA-256 dell'artefatto inatteso: provenienza non verificata")
+        self.artifact_sha256: str | None = None
+        self.load_error: str | None = None
         if sklearn.__version__ != PINNED_SKLEARN:
             logger.warning("scikit-learn runtime %s diverso dal pin %s: unpickle non garantito",
                            sklearn.__version__, PINNED_SKLEARN)
+        try:
+            self.artifact_sha256 = self._sha256(self.model_path)
+            if self.artifact_sha256 != EXPECTED_SHA256:
+                logger.warning("SHA-256 dell'artefatto inatteso: provenienza non verificata")
+            with open(self.model_path, "rb") as fh:
+                self.model = pickle.load(fh)
+            # Introspezione del ColumnTransformer per esporre le categorie note.
+            pre = self.model.named_steps["preprocess"]
+            self.feature_names = list(pre.feature_names_in_)
+            self._known: dict[str, set[str]] = {}
+            for _name, encoder, cols in pre.transformers_:
+                if hasattr(encoder, "categories_"):
+                    for col, cats in zip(cols, encoder.categories_):
+                        self._known[col] = set(map(str, cats))
+        except Exception as exc:
+            # Load resiliente: se l'artefatto manca o non si deserializza, l'app parte
+            # comunque e /health segnala ERROR (readiness probe), invece di andare in
+            # crash-loop. Dietro un orchestratore e' il comportamento corretto: restare
+            # ispezionabili e non ricevere traffico finche' non si e' pronti.
+            logger.exception("caricamento del modello fallito")
+            self.model = None
+            self.load_error = str(exc)
+            self.feature_names = []
+            self._known = {}
 
-        with open(self.model_path, "rb") as fh:
-            self.model = pickle.load(fh)
-
-        # Introspezione del ColumnTransformer per esporre le categorie note.
-        pre = self.model.named_steps["preprocess"]
-        self.feature_names = list(pre.feature_names_in_)
-        self._known: dict[str, set[str]] = {}
-        for _name, encoder, cols in pre.transformers_:
-            if hasattr(encoder, "categories_"):
-                for col, cats in zip(cols, encoder.categories_):
-                    self._known[col] = set(map(str, cats))
+    @property
+    def ready(self) -> bool:
+        """True se l'artefatto e' caricato e il servizio puo' predire."""
+        return self.model is not None
 
     # ── Helper ────────────────────────────────────────────────────────────────
     @staticmethod

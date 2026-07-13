@@ -1,10 +1,13 @@
-# Runtime
+# Richiede Python >= 3.12 (vincolo di numpy 2.5.0)
+# Runtime del servizio (pin esatti: riproducibilita' del deploy)
 Flask==3.1.3
 scikit-learn==1.6.1        # pin obbligatorio: versione con cui delivery.pkl e' serializzato
 pandas==3.0.3
 numpy==2.5.0
-gunicorn==26.0.0          # WSGI server per il deploy in produzione
+gunicorn==26.0.0           # WSGI server per il deploy in produzione
 
-# Sviluppo e test
+# Test
 pytest==9.1.1
-requests==2.34.2
+
+# Notebook di esplorazione/validazione (non richiesto dal servizio, quindi range non pin)
+matplotlib>=3.8

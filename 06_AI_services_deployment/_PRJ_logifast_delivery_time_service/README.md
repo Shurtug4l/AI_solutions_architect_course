@@ -6,6 +6,8 @@ ordine a partire dai dati noti alla presa in carico.
 
 ## Avvio rapido
 
+Richiede Python 3.12+ (numpy 2.5 non supporta la 3.11).
+
 ```bash
 python -m venv venv
 source venv/bin/activate
@@ -52,6 +54,15 @@ curl -X POST http://localhost:8080/predict -H "Content-Type: application/json" -
   "warnings": [],
   "input": { "...": "record validato" }
 }
+```
+
+Predizione batch (lista di ordini; un record malformato non fa cadere gli altri):
+
+```bash
+curl -X POST http://localhost:8080/predict/batch -H "Content-Type: application/json" -d '[
+  {"pickup_location":"Milano","delivery_location":"Roma","pickup_datetime":"2026-07-01T09:30:00","weight":5.0,"service_type":"Express"},
+  {"pickup_location":"Napoli","delivery_location":"Torino","pickup_datetime":"2026-07-01T10:00:00","weight":3.2,"service_type":"Premium"}
+]'
 ```
 
 L'intervallo e' largo (banda di ~22.5 ore, pari all'RMSE sulla validazione
