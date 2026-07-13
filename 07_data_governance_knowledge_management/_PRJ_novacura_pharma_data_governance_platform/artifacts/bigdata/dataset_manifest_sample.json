@@ -1,0 +1,79 @@
+{
+  "_comment": "Manifest campione di un dataset distribuito del lakehouse NovaCura. Aggancia il data plane (file fisici) al control plane (catalogo SQL, artefatto 01) e alla lineage (artefatto 03). Il suo hash canonico e registrato su pipeline_run.input_manifest_hash. Valori illustrativi (vedi Nota metodologica del report).",
+  "manifest_version": "1.0",
+  "dataset_urn": "urn:novacura:lab:assay_measurements",
+  "catalog_ref": {
+    "dataset_id": 2,
+    "domain": "lab",
+    "owner": "owner.lab@novacura.example",
+    "steward": "steward.lab@novacura.example",
+    "custodian": "custodian.platform@novacura.example"
+  },
+  "physical": {
+    "format": "delta",
+    "location": "s3://novacura-lake/gold/lab/assay_measurements",
+    "medallion_layer": "gold",
+    "delta_version": 412,
+    "snapshot_timestamp": "2026-06-10T02:41:00Z",
+    "file_count": 96,
+    "size_bytes": 2734891520,
+    "compression": "zstd"
+  },
+  "partitioning": {
+    "keys": ["assay_type", "run_date"],
+    "z_order": ["compound_id"],
+    "partition_count": 214
+  },
+  "schema": {
+    "schema_version": 3,
+    "fields": [
+      {"name": "measurement_id", "type": "string", "required": true, "semantic_tag": null, "sensitivity": "confidential", "description": "Identificativo univoco della misura."},
+      {"name": "compound_id", "type": "string", "required": true, "semantic_tag": "compound", "vocabulary": "CHEMBL", "sensitivity": "confidential", "description": "Composto testato, codice ChEMBL."},
+      {"name": "target_id", "type": "string", "required": true, "semantic_tag": "target", "vocabulary": "UNIPROT", "sensitivity": "confidential", "description": "Target molecolare, accession UniProt."},
+      {"name": "assay_type", "type": "string", "required": true, "semantic_tag": null, "sensitivity": "internal", "allowed_values": ["binding", "functional", "cytotoxicity"], "description": "Tipologia di saggio."},
+      {"name": "readout", "type": "string", "required": true, "semantic_tag": null, "sensitivity": "internal", "allowed_values": ["IC50", "EC50", "Ki", "pct_inhibition"], "description": "Grandezza misurata."},
+      {"name": "value", "type": "double", "required": true, "unit": "nM", "sensitivity": "confidential", "description": "Valore misurato."},
+      {"name": "value_qualifier", "type": "string", "required": false, "allowed_values": ["=", "<", ">"], "sensitivity": "internal", "description": "Qualificatore (censura a sinistra/destra)."},
+      {"name": "run_date", "type": "date", "required": true, "sensitivity": "internal", "description": "Data di esecuzione del run."},
+      {"name": "quality_flag", "type": "string", "required": true, "allowed_values": ["pass", "warn", "fail"], "sensitivity": "internal", "description": "Esito del DQ gate Bronze->Silver."}
+    ]
+  },
+  "quality": {
+    "dq_gate": "silver_to_gold",
+    "evaluated_at": "2026-06-10T02:39:00Z",
+    "dimensions": [
+      {"dimension": "completeness", "field": "value", "threshold": 99.0, "measured": 99.7, "passed": true},
+      {"dimension": "validity", "field": "readout", "threshold": 100.0, "measured": 100.0, "passed": true},
+      {"dimension": "uniqueness", "field": "measurement_id", "threshold": 100.0, "measured": 100.0, "passed": true},
+      {"dimension": "consistency", "field": "value", "threshold": 98.0, "measured": 98.9, "passed": true, "note": "unita nM coerente tra run dopo conversione"}
+    ],
+    "overall_score": 99.4,
+    "band": "green"
+  },
+  "governance": {
+    "sensitivity_class": "confidential",
+    "phi": false,
+    "gxp_relevant": true,
+    "policies": ["POL-CLS-01", "POL-ACC-01"],
+    "retention": {"period": "15 years", "legal_basis": "GLP; policy IP interna", "disposal": "archive_cold"},
+    "access_roles": ["data_owner", "data_steward", "model_owner", "qa_gxp"],
+    "column_masking": []
+  },
+  "lineage": {
+    "produced_by_run": 1,
+    "pipeline": "PIPE-REPURPOSE-01",
+    "code_version": "a1b2c3d4",
+    "upstream": [
+      {"dataset_urn": "urn:novacura:lab:assay_measurements", "layer": "silver"}
+    ],
+    "downstream": [
+      {"node": "urn:novacura:features:repurpose_v3", "type": "feature_set"}
+    ]
+  },
+  "integrity": {
+    "content_hash_algo": "sha256",
+    "content_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "signed_by": "custodian.platform@novacura.example",
+    "note": "content_hash e SHA-256 della lista ordinata (path, size, file_hash) delle parti Parquet; e il valore registrato su pipeline_run.input_manifest_hash per legare la run a questo stato esatto."
+  }
+}

@@ -1,0 +1,187 @@
+# =============================================================================
+# NovaCura Pharma - Knowledge graph di dominio: campione di triple (Turtle/RDF)
+# =============================================================================
+#
+# Campione che illustra il modello concettuale (kg_conceptual_model.md) su un
+# caso concreto di drug repurposing. Due parti:
+#   - T-box: l'ontologia (classi e proprieta con vincoli), nota 05.
+#   - A-box: le istanze, un'ipotesi di repurposing con evidenza reificata e
+#            provenienza per fatto.
+#
+# Caso illustrativo (vedi Nota metodologica del report): sirolimus, gia
+# immunosoppressore, come candidato per la linfangioleiomiomatosi (LAM, malattia
+# rara), via inibizione di mTOR. Codici e identita da vocabolari reali
+# (ChEMBL, Orphanet, UniProt, MedDRA); la struttura del grafo e illustrativa.
+#
+# Provenienza: si usa PROV-O (prov:wasDerivedFrom) perche la provenienza sui
+# fatti e un requisito di dominio, non un ornamento. Ogni nodo di evidenza
+# dichiara la fonte da cui deriva.
+# =============================================================================
+
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov:   <http://www.w3.org/ns/prov#> .
+@prefix nc:     <https://kg.novacura.example/ontology#> .
+@prefix ncr:    <https://kg.novacura.example/resource/> .
+@prefix chembl: <https://www.ebi.ac.uk/chembl/compound_report_card/> .
+@prefix orpha:  <http://www.orpha.net/ORDO/Orphanet_> .
+@prefix uniprot:<https://www.uniprot.org/uniprotkb/> .
+
+# -----------------------------------------------------------------------------
+# T-BOX: ontologia (classi)
+# -----------------------------------------------------------------------------
+
+nc:Compound      a owl:Class ; rdfs:label "Composto" .
+nc:Target        a owl:Class ; rdfs:label "Target molecolare" .
+nc:Disease       a owl:Class ; rdfs:label "Malattia" .
+nc:Trial         a owl:Class ; rdfs:label "Studio clinico" .
+nc:Assay         a owl:Class ; rdfs:label "Saggio di laboratorio" .
+nc:AdverseEvent  a owl:Class ; rdfs:label "Evento avverso" .
+nc:Publication   a owl:Class ; rdfs:label "Pubblicazione" .
+nc:Evidence      a owl:Class ; rdfs:label "Evidenza (reificata)" .
+
+# -----------------------------------------------------------------------------
+# T-BOX: proprieta oggetto (relazioni) con dominio e codominio
+# -----------------------------------------------------------------------------
+
+nc:targets a owl:ObjectProperty ;
+    rdfs:domain nc:Compound ; rdfs:range nc:Target ;
+    rdfs:label "agisce su" .
+
+nc:associatedWith a owl:ObjectProperty ;
+    rdfs:domain nc:Target ; rdfs:range nc:Disease ;
+    rdfs:label "associato a" .
+
+nc:indicatedFor a owl:ObjectProperty ;
+    rdfs:domain nc:Compound ; rdfs:range nc:Disease ;
+    rdfs:label "indicato per" .
+
+nc:repurposingCandidateFor a owl:ObjectProperty ;
+    rdfs:domain nc:Compound ; rdfs:range nc:Disease ;
+    rdfs:label "candidato al repurposing per" .
+# Vincolo (T-box): disgiunto da nc:indicatedFor (un composto gia indicato per
+# una malattia non e candidato al repurposing per la stessa).
+nc:repurposingCandidateFor owl:propertyDisjointWith nc:indicatedFor .
+
+nc:tests a owl:ObjectProperty ; rdfs:domain nc:Assay ; rdfs:range nc:Compound .
+nc:against a owl:ObjectProperty ; rdfs:domain nc:Assay ; rdfs:range nc:Target .
+nc:reportedFor a owl:ObjectProperty ; rdfs:domain nc:AdverseEvent ; rdfs:range nc:Compound .
+nc:reports a owl:ObjectProperty ; rdfs:domain nc:Publication ; rdfs:range nc:Evidence .
+
+nc:supports a owl:ObjectProperty ;
+    rdfs:domain nc:Evidence ;
+    rdfs:label "sostiene l'ipotesi" .
+nc:refutes a owl:ObjectProperty ;
+    rdfs:domain nc:Evidence ;
+    rdfs:label "contraddice l'ipotesi" .
+
+# T-BOX: proprieta dato
+nc:confidence a owl:DatatypeProperty ; rdfs:range xsd:decimal .
+nc:direction  a owl:DatatypeProperty ; rdfs:range xsd:string .
+nc:strength   a owl:DatatypeProperty ; rdfs:range xsd:string .
+nc:validationStatus a owl:DatatypeProperty ; rdfs:range xsd:string .
+nc:sourceDataset a owl:DatatypeProperty ; rdfs:range xsd:string .
+
+# -----------------------------------------------------------------------------
+# A-BOX: istanze
+# -----------------------------------------------------------------------------
+
+# Entita di dominio, con identita agganciata ai vocabolari standard.
+ncr:sirolimus a nc:Compound ;
+    rdfs:label "Sirolimus" ;
+    owl:sameAs chembl:CHEMBL1201631 ;
+    nc:atcCode "L04AA10" .
+
+ncr:mTOR a nc:Target ;
+    rdfs:label "mTOR" ;
+    owl:sameAs uniprot:P42345 ;
+    nc:geneSymbol "MTOR" .
+
+ncr:LAM a nc:Disease ;
+    rdfs:label "Linfangioleiomiomatosi" ;
+    owl:sameAs orpha:3253 ;
+    nc:prevalenceClass "rare" .
+
+# Relazioni di dominio.
+ncr:sirolimus nc:targets ncr:mTOR .
+ncr:mTOR nc:associatedWith ncr:LAM .
+
+# L'ipotesi di repurposing: e un'asserzione governata, non un fatto nudo.
+# validationStatus = "asserted" significa che uno steward l'ha validata (vedi
+# nota critica del modello concettuale); un'ipotesi solo proposta resterebbe
+# "proposed" e non entrerebbe nel Gold.
+ncr:sirolimus nc:repurposingCandidateFor ncr:LAM .
+
+# --- Evidenza reificata a favore, da una pubblicazione -----------------------
+ncr:pub_18836093 a nc:Publication ;
+    rdfs:label "MILES trial - sirolimus in LAM" ;
+    nc:pmid "18836093" ;
+    nc:year "2011"^^xsd:gYear .
+
+ncr:ev_clinical_01 a nc:Evidence ;
+    nc:direction "support" ;
+    nc:strength "clinical" ;
+    nc:confidence "0.82"^^xsd:decimal ;
+    nc:validationStatus "asserted" ;
+    nc:sourceDataset "urn:novacura:literature:evidence_annotations" ;
+    nc:supports ncr:sirolimus ;
+    prov:wasDerivedFrom ncr:pub_18836093 .
+
+ncr:pub_18836093 nc:reports ncr:ev_clinical_01 .
+
+# --- Evidenza reificata a favore, da un assay --------------------------------
+ncr:assay_233 a nc:Assay ;
+    nc:assayType "functional" ;
+    nc:readout "IC50" ;
+    nc:value "1.4"^^xsd:decimal ;
+    nc:unit "nM" ;
+    nc:tests ncr:sirolimus ;
+    nc:against ncr:mTOR .
+
+ncr:ev_assay_01 a nc:Evidence ;
+    nc:direction "support" ;
+    nc:strength "preclinical" ;
+    nc:confidence "0.75"^^xsd:decimal ;
+    nc:validationStatus "asserted" ;
+    nc:sourceDataset "urn:novacura:lab:assay_measurements" ;
+    nc:supports ncr:sirolimus ;
+    prov:wasDerivedFrom ncr:assay_233 .
+
+# --- Segnale di farmacovigilanza (da leggere come penalita, non ostativo) ----
+ncr:ae_stomatitis a nc:AdverseEvent ;
+    rdfs:label "Stomatite" ;
+    nc:meddraPt "Stomatitis" ;
+    nc:seriousness "non_serious" ;
+    nc:reportedFor ncr:sirolimus ;
+    nc:sourceDataset "urn:novacura:pv:icsr_reactions" .
+
+# --- Un'evidenza contraria, di bassa confidenza, per mostrare la bidirezionalita
+ncr:ev_counter_01 a nc:Evidence ;
+    nc:direction "refute" ;
+    nc:strength "weak" ;
+    nc:confidence "0.30"^^xsd:decimal ;
+    nc:validationStatus "asserted" ;
+    nc:sourceDataset "urn:novacura:literature:evidence_annotations" ;
+    nc:refutes ncr:sirolimus ;
+    prov:wasDerivedFrom ncr:pub_18836093 .
+
+# =============================================================================
+# Nota di lettura critica (per il valutatore)
+# =============================================================================
+# - La reificazione dell'evidenza (nodi nc:Evidence separati) e cio che permette
+#   di appendere provenienza, direzione e confidenza a ogni singolo pezzo di
+#   supporto. Un modello che appendesse la provenienza all'arco
+#   repurposingCandidateFor non potrebbe portare due evidenze in disaccordo sullo
+#   stesso arco, che e il caso normale nel repurposing.
+# - owl:sameAs verso ChEMBL/Orphanet/UniProt aggancia i nodi locali all'identita
+#   globale: il grafo NovaCura e interoperabile con risorse esterne, non un'isola.
+# - nc:validationStatus e la governance del grafo resa dato: distingue conoscenza
+#   validata da uno steward (asserted) da estrazione automatica non ancora
+#   verificata (proposed). Il RAG governato interroga solo il sottografo asserted.
+# - Limite: questo campione e piccolo e coerente per costruzione. Su un grafo
+#   reale i vincoli T-box (es. propertyDisjointWith) vanno verificati da un
+#   reasoner in fase di caricamento; qui sono dichiarati ma non forzati da un
+#   motore di inferenza.
+# =============================================================================
