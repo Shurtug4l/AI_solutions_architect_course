@@ -6,7 +6,7 @@ A reproducible ML system rests on three layered version controls: **environment*
 
 **Git** is non-negotiable for code. The mental model that matters in practice: a Git **repository** is a content-addressed graph of **commits**; each commit points to a **tree** (a snapshot of the working directory) and to one or more parent commits; **branches** are just movable labels on commits, **tags** are immovable ones, **HEAD** is the "where you are now" pointer. Most day-to-day commands (`add`, `commit`, `push`, `pull`, `merge`, `rebase`) become predictable once that graph is internalised. The collaboration pattern is feature-branch → pull request → review → merge to `main`, with `main` always deployable. ML-specific issues are: notebooks generate huge diffs (use `nbstripout` or `jupytext`), and binary artefacts do not belong in Git (use `.gitignore` + cloud storage + DVC / `git-lfs`).
 
-**Versioning the model** is the third layer and the one MLOps adds. A trained model is the output of a stochastic process over data, so versioning the *file* is not enough; you need lineage from the artefact back to the **(data, code, hyperparameters)** that produced it. The **model registry** is the standard structure: a model has a name and a sequence of *versions*, each version has metadata (training metrics, parameters, lineage), and *stages* (Staging / Production / Archived) move versions through a promotion workflow. The OSS reference is **MLflow Model Registry**; managed equivalents are **Vertex Model Registry**, **SageMaker Model Registry**, **Azure ML Model Registry**, and **Hugging Face Hub** (for open-source distribution). The registry is the API between the data scientist who trains and the ML engineer who deploys; without it, the handoff degrades into shared files.
+**Versioning the model** is the third layer and the one MLOps adds. A trained model is the output of a stochastic process over data, so versioning the *file* is not enough; you need lineage from the artefact back to the **(data, code, hyperparameters)** that produced it. The **model registry** is the standard structure: a model has a name and a sequence of *versions*, each version has metadata (training metrics, parameters, lineage), and *aliases* (mutable named pointers like `champion` / `challenger`) point at specific versions for promotion and rollback. (The older *stages* Staging / Production / Archived are deprecated since MLflow 2.9, replaced by aliases + tags.) The OSS reference is **MLflow Model Registry**; managed equivalents are **Vertex Model Registry**, **SageMaker Model Registry**, **Azure ML Model Registry**, and **Hugging Face Hub** (for open-source distribution). The registry is the API between the data scientist who trains and the ML engineer who deploys; without it, the handoff degrades into shared files.
 
 ## Cheatsheet
 
@@ -27,8 +27,9 @@ A reproducible ML system rests on three layered version controls: **environment*
 | **`nbstripout`** | Strips notebook outputs at commit time | Mandatory for collaborative notebooks |
 | **`git-lfs`** | Pointer + remote storage for large files | When you must keep binaries in Git |
 | **DVC** | Git for data, on top of S3/GCS/Azure Blob | The pragmatic data-versioning entry point |
-| **MLflow Model Registry** | OSS model catalogue with stages | The reference implementation |
-| **Model stage** | Lifecycle marker on a version | Staging → Production → Archived |
+| **MLflow Model Registry** | OSS model catalogue with aliases + tags | The reference implementation |
+| **Model alias** | Mutable named pointer to a version | `champion`, `challenger` (replaces deprecated stages) |
+| **Model tag** | Key/value metadata on a version | `validation=passed`, promotion signals |
 | **Model lineage** | Pointer from artefact to training data + code commit | What lets you reproduce a model six months later |
 
 ---
@@ -37,13 +38,13 @@ A reproducible ML system rests on three layered version controls: **environment*
 
 > An "environment" is a set of installed Python interpreter version + libraries + (sometimes) system packages. Isolation prevents your project's installs from polluting other projects or the system Python.
 
-### Level 0 — system Python
+### Level 0 - system Python
 
 The default `python3` shipped with the OS. Installing libraries into it is what you do as a learner; in any real project it leads to conflicts, permission errors (`sudo pip`), and broken upgrades.
 
 **Rule: never use the system Python for projects.**
 
-### Level 1 — `venv` (stdlib)
+### Level 1 - `venv` (stdlib)
 
 ```bash
 python3 -m venv .venv
@@ -51,6 +52,7 @@ source .venv/bin/activate     # on macOS / Linux
 .venv\Scripts\activate.bat    # on Windows
 pip install -r requirements.txt
 deactivate
+rm -rf .venv               # tearing one down is just deleting the directory
 ```
 
 What `venv` actually does: creates a directory `.venv/` with a Python interpreter symlink and a `site-packages/` of its own. Activating it prepends `.venv/bin` to `PATH` so `python` and `pip` point to the venv copies. Nothing magical.
@@ -60,7 +62,7 @@ What `venv` does *not* solve:
 - Cross-platform reproducibility (a `requirements.txt` built on macOS may not resolve identically on Linux).
 - Dependency resolution (pip's resolver is now decent but doesn't produce a lockfile by default).
 
-### Level 2 — `conda` / `mamba` / `micromamba`
+### Level 2 - `conda` / `mamba` / `micromamba`
 
 `conda` is a package manager *and* an environment manager. It can install non-Python binaries (CUDA, MKL, GDAL, GEOS, FFmpeg) from the `conda-forge` channel, which `pip` cannot do cleanly.
 
@@ -74,7 +76,7 @@ Where `conda` matters: ML research projects with GPU stacks, geospatial librarie
 
 The trap: mixing `conda install` and `pip install` in the same environment can create inconsistencies. Rule of thumb: install everything you can via conda first; only fall back to pip for libraries that are not on conda-forge.
 
-### Level 3 — modern dependency managers (`poetry`, `uv`)
+### Level 3 - modern dependency managers (`poetry`, `uv`)
 
 These wrap `pip`/`pip-tools` and add:
 - A single project config file (`pyproject.toml`) per PEP 518/621.
@@ -102,7 +104,7 @@ uv pip compile requirements.in    # produces a lockfile
 uv pip sync requirements.lock.txt # exact install
 ```
 
-`uv` is roughly 10–100× faster than `pip` + `pip-tools` and is drop-in compatible. Many teams are migrating in 2025.
+`uv` is roughly 10-100x faster than `pip` + `pip-tools` and is drop-in compatible. Many teams are migrating in 2025.
 
 ### Picking between them
 
@@ -135,17 +137,19 @@ This is the manual lockfile pattern. `pip-tools` (`pip-compile`) automates it.
 **With Poetry / uv**, the lockfile is built in and updated automatically by `poetry lock` / `uv pip compile`.
 
 Always commit:
-- `pyproject.toml` (or `requirements.in`) — the high-level intent.
-- The lockfile — the exact resolution.
+- `pyproject.toml` (or `requirements.in`) - the high-level intent.
+- The lockfile - the exact resolution.
 
 Never commit:
-- The `.venv` directory itself — large, OS-specific, regenerable.
+- The `.venv` directory itself - large, OS-specific, regenerable.
 
 ---
 
 ## Git: the model that makes commands predictable
 
 > The vast majority of Git confusion comes from not having a clear mental model of the underlying graph. With the graph internalised, every command becomes "move this pointer here".
+
+**Git is not GitHub.** Git is the distributed version-control system that runs locally: every clone holds the full history and works offline. GitHub (like GitLab, Bitbucket, Gitea) is a hosting service that stores a remote copy and layers collaboration on top: pull requests, issues, CI, access control. Git works with no GitHub at all; a remote is just another Git repo that happens to live on a server.
 
 ### The four objects
 
@@ -162,22 +166,22 @@ Never commit:
 |---|---|
 | **Branch** | A movable name pointing to a commit. `main`, `develop`, `feature/login` are all branches. |
 | **HEAD** | The "you are here" pointer. Normally points to a branch (e.g., `main`); when detached it points directly at a commit. |
-| **Remote** | A named pointer to another repo (`origin` by default). `origin/main` is a *remote-tracking* branch — a local cache of where `main` was on `origin` at the last fetch. |
+| **Remote** | A named pointer to another repo (`origin` by default). `origin/main` is a *remote-tracking* branch - a local cache of where `main` was on `origin` at the last fetch. |
 
 ### The graph operations
 
 ```
                                        │
 A ───► B ───► C  (main)                ▼ C'  ◄── HEAD (detached) after checkout C'
-              │                        
-              └── D ───► E  (feature)  
+              │
+              └── D ───► E  (feature)
 ```
 
 - `git add` stages a change into the index (staging area).
 - `git commit` creates a new commit on the current branch, with HEAD's commit as parent.
 - `git checkout <branch>` moves HEAD to point at that branch and updates the working directory.
 - `git merge <other>` creates a *merge commit* with two parents (or fast-forwards if no divergence).
-- `git rebase <other>` replays your commits on top of `<other>` — rewrites history.
+- `git rebase <other>` replays your commits on top of `<other>` - rewrites history.
 - `git pull` = `git fetch` + `git merge` (or `--rebase` for the rebase variant).
 - `git push` updates the remote branch to match your local one.
 
@@ -224,7 +228,7 @@ __pycache__/
 .vscode/
 .idea/
 
-# Models and large data — these live in cloud storage + DVC
+# Models and large data - these live in cloud storage + DVC
 *.pkl
 *.pt
 *.onnx
@@ -254,7 +258,7 @@ The rule: **anything regenerable, large, or sensitive should not be in Git.** Co
 
 ## Versioning the model
 
-> The model file is one piece of the artefact. Without lineage to its inputs, it is not reproducible — and not auditable.
+> The model file is one piece of the artefact. Without lineage to its inputs, it is not reproducible - and not auditable.
 
 ### What "versioning a model" requires
 
@@ -267,7 +271,7 @@ The rule: **anything regenerable, large, or sensitive should not be in Git.** Co
 | **Environment** | Python version, library lockfile, CUDA version |
 | **Metrics** | Training and held-out evaluation metrics |
 | **Signature** | Input/output schema (often Pydantic / MLflow signature) |
-| **Stage** | Staging, Production, Archived |
+| **Alias / tags** | `champion` / `challenger` pointer + k/v metadata (replaces stages) |
 | **Approvals** | Who signed off, when |
 
 A bare `.pkl` on a shared drive carries none of this. A model registry stores all of it as a single record indexed by `(model_name, version)`.
@@ -277,14 +281,14 @@ A bare `.pkl` on a shared drive carries none of this. A model registry stores al
 ```
 registry/
    └── my-recommender/
-         ├── v1   (Archived)   trained 2024-11-03, AUC 0.81, commit a1b2c3
-         ├── v2   (Production) trained 2025-02-14, AUC 0.84, commit d4e5f6
-         └── v3   (Staging)    trained 2025-03-22, AUC 0.86, commit 7g8h9i
+         ├── v1                trained 2024-11-03, AUC 0.81, commit a1b2c3
+         ├── v2   @champion    trained 2025-02-14, AUC 0.84, commit d4e5f6
+         └── v3   @challenger  trained 2025-03-22, AUC 0.86, commit 7g8h9i
 ```
 
-The deploy pipeline reads from `(my-recommender, Production)`; promotion is a metadata change, not a file copy. Rollback is "set v2 back to Production". Audit is "show me what was deployed on a given date".
+The deploy pipeline reads from `my-recommender@champion`; promotion is reassigning the `champion` alias, a metadata change, not a file copy. Rollback is "point `champion` back at v2". Audit is "show me what was deployed on a given date".
 
-### MLflow Model Registry — the OSS reference
+### MLflow Model Registry - the OSS reference
 
 ```python
 import mlflow
@@ -301,17 +305,17 @@ mlflow.register_model(
     name="my-recommender",
 )
 
-# Promote to Production
+# Promote: point the champion alias at the validated version
 client = mlflow.MlflowClient()
-client.transition_model_version_stage(
+client.set_registered_model_alias(
     name="my-recommender",
+    alias="champion",
     version=3,
-    stage="Production",
-    archive_existing_versions=True,
 )
+client.set_model_version_tag("my-recommender", 3, "validation", "passed")
 ```
 
-The deploy job then loads `models:/my-recommender/Production` — never a path on disk.
+The deploy job then loads `models:/my-recommender@champion` - never a path on disk. (The older `transition_model_version_stage` + `models:/name/Production` API is deprecated since MLflow 2.9.)
 
 ### Managed equivalents
 
@@ -323,7 +327,7 @@ The deploy job then loads `models:/my-recommender/Production` — never a path o
 | OSS / hybrid | MLflow Model Registry (self-hosted or via Databricks) |
 | Open distribution | Hugging Face Hub |
 
-All of them implement the same contract: `(name, version, stage, metadata, artefact URI)`. The choice follows the rest of the cloud stack.
+All of them implement the same contract: `(name, version, alias or stage, metadata, artefact URI)`. The choice follows the rest of the cloud stack.
 
 ### Data versioning (DVC, briefly)
 
@@ -361,7 +365,7 @@ This binds the data version to the code commit. The model version stored in the 
    Artefact + metrics + lineage
         │
         ▼
-   Model Registry (versioned, staged)
+   Model Registry (versioned, aliased)
         │
         ▼
    Deploy (pulls from registry, builds Docker image, ships)
@@ -379,8 +383,8 @@ If any of the three (code, env, data) is missing from the lineage, the deployed 
 | **Add a dependency** | `poetry add foo` (or `uv pip install foo` + update lockfile), commit `pyproject.toml` + lockfile |
 | **Daily branch-and-PR** | `git checkout -b feature/x` → work → `git push -u origin feature/x` → open PR → review → merge |
 | **Pin a working environment for reproducibility** | Generate a lockfile, commit it, install with `--no-deps` from the lockfile in CI/Docker |
-| **Version a new model** | Train inside an MLflow run, log artefacts and metrics, `register_model` with metadata, transition to Staging, run validation, promote to Production |
-| **Roll back a model** | `transition_model_version_stage` of the prior version back to Production; the deploy job picks it up on next reconcile |
+| **Version a new model** | Train inside an MLflow run, log artefacts and metrics, `register_model` with metadata, tag it `challenger`, run validation, then move the `champion` alias to it |
+| **Roll back a model** | Point the `champion` alias back at the prior version; the deploy job picks it up on next reconcile |
 | **Clean a notebook before commit** | `nbstripout` filter installed once; `git add` strips outputs automatically |
 
 ---
@@ -423,11 +427,11 @@ If any of the three (code, env, data) is missing from the lineage, the deployed 
 ## See also
 
 ### Other notes
-- [01_mlops_foundations.md](01_mlops_foundations.md) — why versioning matters in the MLOps maturity model
-- [07_containerization_with_docker.md](07_containerization_with_docker.md) — the next layer of reproducibility (system packages, runtime)
-- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) — how the lockfile + registry plug into CI/CD
+- [01_mlops_foundations.md](01_mlops_foundations.md) - why versioning matters in the MLOps maturity model
+- [07_containerization_with_docker.md](07_containerization_with_docker.md) - the next layer of reproducibility (system packages, runtime)
+- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) - how the lockfile + registry plug into CI/CD
 
 ### Cross-module
-- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) — the experimental workflow that experiment tracking digitises
-- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) — versioning concerns specific to LLM RAG systems (embedding model versions, index versions)
-- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) — SageMaker Model Registry, the managed twin of MLflow on AWS
+- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) - the experimental workflow that experiment tracking digitises
+- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) - versioning concerns specific to LLM RAG systems (embedding model versions, index versions)
+- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) - SageMaker Model Registry, the managed twin of MLflow on AWS

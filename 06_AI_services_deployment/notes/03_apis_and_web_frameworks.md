@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-An **API** (Application Programming Interface) is a contract: a caller invokes a procedure, parameters cross a boundary, a result comes back. On the public web that boundary is **HTTP**: a stateless request/response protocol where requests carry a **method** (verb), a **URL** (resource address), **headers** (metadata), and an optional **body** (payload). The dominant convention for web APIs is **REST** (Representational State Transfer), which maps **resources** to URLs and **operations** to HTTP methods (`GET` retrieve, `POST` create, `PUT` replace, `PATCH` update, `DELETE` remove). REST is a *style*, not a spec — pragmatic implementations relax the purist constraints. An **endpoint** is the concrete URL+method that exposes one operation (e.g., `POST /predict`). Status codes carry the outcome: 2xx success, 3xx redirect, 4xx client error, 5xx server error.
+An **API** (Application Programming Interface) is a contract: a caller invokes a procedure, parameters cross a boundary, a result comes back. On the public web that boundary is **HTTP**: a stateless request/response protocol where requests carry a **method** (verb), a **URL** (resource address), **headers** (metadata), and an optional **body** (payload). The dominant convention for web APIs is **REST** (Representational State Transfer), which maps **resources** to URLs and **operations** to HTTP methods (`GET` retrieve, `POST` create, `PUT` replace, `PATCH` update, `DELETE` remove). REST is a *style*, not a spec - pragmatic implementations relax the purist constraints. An **endpoint** is the concrete URL+method that exposes one operation (e.g., `POST /predict`). Status codes carry the outcome: 2xx success, 3xx redirect, 4xx client error, 5xx server error.
 
 In Python, two web frameworks dominate ML serving: **Flask** and **FastAPI**. **Flask** is the older minimalist micro-framework (2010); routing is done with decorators, request/response is plain dictionaries, the runtime is **WSGI** (synchronous). It is small, well-documented, and has a huge ecosystem of extensions; the downside is that you build everything around it (validation, OpenAPI, async) by hand. **FastAPI** (2018) is the modern alternative: it sits on **ASGI** (async-capable), uses **Pydantic** for request/response validation via Python type hints, and generates **interactive OpenAPI / Swagger UI** automatically. The combination of type-driven validation, async support, and free OpenAPI documentation makes FastAPI the de facto choice for new model-serving APIs. Flask still wins on simplicity and for projects already invested in its ecosystem.
 
 **Pydantic** is the core that makes FastAPI ergonomic. You declare request and response schemas as Python classes inheriting from `BaseModel`; FastAPI uses them to (1) parse and validate incoming JSON, (2) serialise outgoing responses, (3) generate the OpenAPI spec, (4) populate the interactive docs at `/docs`. Validation errors become structured 422 responses automatically. The pattern eliminates the boilerplate that Flask requires (`request.get_json()`, manual key checking, manual type coercion).
 
-**Async functions** (`async def`) matter when the server spends most of its time *waiting* for I/O — database queries, HTTP calls to other services, LLM inference over network, message-queue reads. Async lets one worker handle many concurrent requests by yielding control during I/O waits. They do *not* help for **CPU-bound** work (numerical training, heavy numpy/PyTorch inference); for that you use synchronous endpoints (which FastAPI runs in a threadpool) or offload to a worker process / model server. The rule: `async def` when you `await` something, plain `def` when you do not.
+**Async functions** (`async def`) matter when the server spends most of its time *waiting* for I/O - database queries, HTTP calls to other services, LLM inference over network, message-queue reads. Async lets one worker handle many concurrent requests by yielding control during I/O waits. They do *not* help for **CPU-bound** work (numerical training, heavy numpy/PyTorch inference); for that you use synchronous endpoints (which FastAPI runs in a threadpool) or offload to a worker process / model server. The rule: `async def` when you `await` something, plain `def` when you do not.
 
 ## Cheatsheet
 
@@ -51,8 +51,8 @@ Accept: application/json
 {"features": [1.2, 3.4, 5.6]}
 ```
 
-- **Method**: `POST` — describes the intent.
-- **Path**: `/v1/predict` — what resource/operation.
+- **Method**: `POST` - describes the intent.
+- **Path**: `/v1/predict` - what resource/operation.
 - **Headers**: `Content-Type` describes the body, `Authorization` carries credentials, `Accept` says what the client wants back.
 - **Body**: JSON payload.
 
@@ -66,7 +66,7 @@ X-Request-Id: 4f8e2c1a
 {"prediction": 0.87, "label": "positive"}
 ```
 
-- **Status code**: 200 — success.
+- **Status code**: 200 - success.
 - **Headers**: response metadata.
 - **Body**: the returned payload.
 
@@ -136,7 +136,7 @@ The URL is a hierarchy of nouns. Verbs in URLs (`/getUser`, `/createUser`) are a
 
 ### REST for ML serving
 
-For inference, the resource model is awkward — a prediction is not really a "resource" you GET. Three common pragmatic patterns:
+For inference, the resource model is awkward - a prediction is not really a "resource" you GET. Three common pragmatic patterns:
 
 | Pattern | Endpoint | Notes |
 |---|---|---|
@@ -186,7 +186,34 @@ if __name__ == "__main__":
 | `request.get_json()` | Parse the JSON body |
 | `jsonify(...)` | Serialise a dict to a JSON response |
 | Return tuple | `(body, status_code)` for custom status codes |
-| `app.run(...)` | Built-in dev server — never use in production (use Gunicorn / uWSGI) |
+| `app.run(...)` | Built-in dev server - never use in production (use Gunicorn / uWSGI) |
+
+### Serialization and deserialization
+
+**Serialization** turns a Python object into a wire format (a dict, then a JSON string); **deserialization** is the reverse, JSON into validated Python. Flask does neither for you beyond `jsonify` (dict to JSON) and `request.get_json()` (JSON to dict). The stdlib primitives are `json.dumps` / `json.loads`; `jsonify` wraps `dumps` and sets the `application/json` content type.
+
+For anything past a flat dict, the idiomatic Flask answer is **Marshmallow** (via `flask-marshmallow`): declare a schema once, use it to both validate input and shape output.
+
+```python
+from marshmallow import Schema, fields, ValidationError
+
+class PredictSchema(Schema):
+    features = fields.List(fields.Float(), required=True)
+    model_id = fields.Str(load_default="default")
+
+schema = PredictSchema()
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        data = schema.load(request.get_json())   # deserialize + validate
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+    # ... call the model ...
+    return jsonify(schema.dump({"prediction": 0.87}))  # serialize
+```
+
+`fields.Nested(OtherSchema)` composes schemas for nested objects. This is the manual equivalent of what Pydantic gives FastAPI for free: the reason the FastAPI section is shorter is that validation and serialization are the framework's job there, not yours.
 
 ### Strengths
 
@@ -359,7 +386,7 @@ With async, one worker can handle thousands of concurrent slow-but-waiting reque
 | CPU-bound: numpy matmul, PyTorch inference, image processing | plain `def` | FastAPI runs it in a threadpool; async would block the event loop |
 | Mixed: model inference on GPU is technically "I/O" to the GPU | plain `def`, or async + `run_in_executor` | Simpler to keep sync unless you have a measured reason |
 
-The trap: declaring an endpoint `async def` and then calling a *blocking* library (sync `requests`, sync `psycopg2`, sync sklearn predict) — the event loop blocks and async gives you nothing. Either use async clients (`httpx`, `asyncpg`) or keep the endpoint sync.
+The trap: declaring an endpoint `async def` and then calling a *blocking* library (sync `requests`, sync `psycopg2`, sync sklearn predict) - the event loop blocks and async gives you nothing. Either use async clients (`httpx`, `asyncpg`) or keep the endpoint sync.
 
 ### Async clients to know
 
@@ -484,11 +511,11 @@ Other middleware worth knowing: GZip compression, request ID injection, rate lim
 ## See also
 
 ### Other notes
-- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) — applying these primitives to actual model inference endpoints
-- [06_api_security_and_authentication.md](06_api_security_and_authentication.md) — securing the endpoints designed here
-- [07_containerization_with_docker.md](07_containerization_with_docker.md) — packaging the API for shipping
+- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) - applying these primitives to actual model inference endpoints
+- [06_api_security_and_authentication.md](06_api_security_and_authentication.md) - securing the endpoints designed here
+- [07_containerization_with_docker.md](07_containerization_with_docker.md) - packaging the API for shipping
 
 ### Cross-module
-- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) — production patterns for RAG endpoints (streaming, async fan-out)
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — exposing agentic systems via APIs and the stateful/stateless tradeoff
-- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) — managed inference endpoints (SageMaker Endpoint) that abstract the framework choice
+- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) - production patterns for RAG endpoints (streaming, async fan-out)
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - exposing agentic systems via APIs and the stateful/stateless tradeoff
+- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) - managed inference endpoints (SageMaker Endpoint) that abstract the framework choice

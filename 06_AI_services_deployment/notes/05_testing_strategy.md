@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-Testing for an ML system is testing on two layers at once: the **code** that runs the model (HTTP handlers, preprocessing, postprocessing, integrations) and the **model itself** as a stochastic object. The code layer uses the standard software testing pyramid — many fast **unit tests**, fewer **integration tests** that hit a real API or DB, a small set of **end-to-end** tests through the deployed service. The model layer adds tests that no software engineer trained on classical pyramids would think to write: **data validation** (schema, ranges, null rates), **invariance** tests (a small permutation of inputs that *should not* change the prediction), **directional** tests (a change that *should* move the prediction one way), **minimum performance** thresholds on a held-out set, and **degradation** tests against the previously deployed model.
+Testing for an ML system is testing on two layers at once: the **code** that runs the model (HTTP handlers, preprocessing, postprocessing, integrations) and the **model itself** as a stochastic object. The code layer uses the standard software testing pyramid - many fast **unit tests**, fewer **integration tests** that hit a real API or DB, a small set of **end-to-end** tests through the deployed service. The model layer adds tests that no software engineer trained on classical pyramids would think to write: **data validation** (schema, ranges, null rates), **invariance** tests (a small permutation of inputs that *should not* change the prediction), **directional** tests (a change that *should* move the prediction one way), **minimum performance** thresholds on a held-out set, and **degradation** tests against the previously deployed model.
 
 **Pytest** is the de facto Python testing tool. Its core primitives are functions named `test_*`, **fixtures** for shared setup/teardown, **parametrize** for table-driven tests, **markers** for selecting subsets, and **plugins** for everything else (`pytest-cov`, `pytest-asyncio`, `pytest-mock`, `pytest-xdist` for parallel runs). The conventions worth enforcing from day one: tests live in a sibling `tests/` directory mirroring `src/`; one test file per module; `conftest.py` for shared fixtures; tests are independent and runnable in any order. Test discovery is automatic if names follow the convention; you do not register tests anywhere.
 
-**Linting and formatting** keep the code in a state that is readable to anyone who picks it up. **Black** (formatter, opinionated, no config) handles style — quotes, line lengths, trailing commas — leaving zero room for bikeshedding. **Ruff** (linter + formatter, Rust-based, very fast) is replacing the older stack of `flake8` + `isort` + `pyupgrade` + `pylint` in 2024–2025; it covers ~700 rules across all of those tools and is fast enough to run on save. **mypy** (or **pyright**) is the type checker; with FastAPI/Pydantic codebases the type discipline is already there, so mypy in `--strict` mode catches real bugs at the cost of some boilerplate. The full quality gate is `ruff check --fix && ruff format && mypy && pytest` — usually wired into pre-commit hooks and the CI pipeline.
+**Linting and formatting** keep the code in a state that is readable to anyone who picks it up. **Black** (formatter, opinionated, no config) handles style - quotes, line lengths, trailing commas - leaving zero room for bikeshedding. **Ruff** (linter + formatter, Rust-based, very fast) is replacing the older stack of `flake8` + `isort` + `pyupgrade` + `pylint` in 2024-2025; it covers ~700 rules across all of those tools and is fast enough to run on save. **mypy** (or **pyright**) is the type checker; with FastAPI/Pydantic codebases the type discipline is already there, so mypy in `--strict` mode catches real bugs at the cost of some boilerplate. The full quality gate is `ruff check --fix && ruff format && mypy && pytest` - usually wired into pre-commit hooks and the CI pipeline.
 
-**API testing** uses FastAPI's `TestClient` (sync) or `httpx.AsyncClient` (async) against the app object — no live server needed. The pattern is to spin up the app with mocked external dependencies (model, DB, third-party APIs), send requests, and assert on the response. **ML-model testing** is more nuanced: a unit test on `model.predict(X)` checking equality is fragile (floating-point, library versions); instead, assert on **invariants** (output shape, range, monotonicity), **distributional properties** (mean prediction on a known dataset within a band), and **regression** (predictions on a frozen test set are within a tolerance of a baseline). The full picture is a **CI step that downloads a frozen evaluation set, runs the model, and fails the build if metrics drop below a threshold** — this is what gates a new model version from being promoted.
+**API testing** uses FastAPI's `TestClient` (sync) or `httpx.AsyncClient` (async) against the app object - no live server needed. The pattern is to spin up the app with mocked external dependencies (model, DB, third-party APIs), send requests, and assert on the response. **ML-model testing** is more nuanced: a unit test on `model.predict(X)` checking equality is fragile (floating-point, library versions); instead, assert on **invariants** (output shape, range, monotonicity), **distributional properties** (mean prediction on a known dataset within a band), and **regression** (predictions on a frozen test set are within a tolerance of a baseline). The full picture is a **CI step that downloads a frozen evaluation set, runs the model, and fails the build if metrics drop below a threshold** - this is what gates a new model version from being promoted.
 
 ## Cheatsheet
 
@@ -17,6 +17,8 @@ Testing for an ML system is testing on two layers at once: the **code** that run
 | **Unit test** | Tests one function in isolation | Fast (ms), no I/O |
 | **Integration test** | Tests components together | DB, real HTTP, slower |
 | **End-to-end test** | Tests the full deployed system | Slowest, fewest |
+| **Smoke test** | A few critical-path checks after deploy | Fast go/no-go, not exhaustive |
+| **UAT** (user acceptance) | Business validates against real requirements | Manual sign-off gate before release |
 | **Test pyramid** | Many unit, fewer integration, fewest E2E | The right shape for the suite |
 | **Pytest** | The Python testing framework | Default for any new project |
 | **Fixture** | `@pytest.fixture` for shared setup | Parameter dependency injection |
@@ -31,7 +33,7 @@ Testing for an ML system is testing on two layers at once: the **code** that run
 | **FastAPI `TestClient`** | Sync client for testing FastAPI apps | The default for FastAPI tests |
 | **Data validation test** | Schema/ranges/nulls on the dataset | Great Expectations, Pandera, custom asserts |
 | **Invariance test** | Output should not change under irrelevant input change | "Capitalising a name should not change credit score" |
-| **Directional test** | Output should move with a directional change | "Higher income should not decrease default risk" |
+| **Directional test** | Output should move with a directional change | "Higher income should not increase default risk" |
 | **Regression test** (ML) | Predictions match the baseline within tolerance | Catch silent model changes in CI |
 
 ---
@@ -40,19 +42,19 @@ Testing for an ML system is testing on two layers at once: the **code** that run
 
 ```
                        ┌─────────────────────┐
-                       │       E2E           │   <— very few
+                       │       E2E           │   < - very few
                        │ (deployed system)   │
                        └─────────────────────┘
                   ┌─────────────────────────────┐
-                  │     Integration             │   <— some
+                  │     Integration             │   < - some
                   │ (API + model + dependencies)│
                   └─────────────────────────────┘
             ┌─────────────────────────────────────────┐
-            │            Unit                          │   <— many
+            │            Unit                          │   < - many
             │ (functions, validators, transformers)    │
             └─────────────────────────────────────────┘
             ┌─────────────────────────────────────────┐
-            │       Data + Model validation            │   <— a layer ML adds
+            │       Data + Model validation            │   < - a layer ML adds
             │ (schemas, ranges, invariances, drift)    │
             └─────────────────────────────────────────┘
 ```
@@ -171,12 +173,14 @@ markers = [
 ```python
 # pip install pytest-asyncio
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from myapp.api import app
 
 @pytest.mark.asyncio
 async def test_async_endpoint():
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    # httpx >= 0.28 dropped the app= shortcut; wrap the app in ASGITransport
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         r = await client.get("/health")
         assert r.status_code == 200
 ```
@@ -309,7 +313,7 @@ def test_predict_invalid_length():
     assert r.status_code == 422   # Pydantic validation error
 ```
 
-The `TestClient` runs FastAPI's ASGI app in-process — no network, no port, very fast.
+The `TestClient` runs FastAPI's ASGI app in-process - no network, no port, very fast.
 
 ### Overriding dependencies (mocking the model)
 
@@ -525,11 +529,11 @@ The pre-commit hooks run a subset locally so the fast loop is tight. The nightly
 ## See also
 
 ### Other notes
-- [02_environments_and_version_control.md](02_environments_and_version_control.md) — pinning the test environment so tests are reproducible
-- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) — the serving code being tested
-- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) — where the quality gate runs on every push
+- [02_environments_and_version_control.md](02_environments_and_version_control.md) - pinning the test environment so tests are reproducible
+- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) - the serving code being tested
+- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) - where the quality gate runs on every push
 
 ### Cross-module
-- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) — the evaluation metrics the performance test gates on
-- Module 02 [06_rag_evaluation.md](../../02_large_language_models/notes/06_rag_evaluation.md) — RAG-specific evaluation that translates into automated tests
-- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) — the business metrics that the performance tests reflect
+- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) - the evaluation metrics the performance test gates on
+- Module 02 [06_rag_evaluation.md](../../02_large_language_models/notes/06_rag_evaluation.md) - RAG-specific evaluation that translates into automated tests
+- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) - the business metrics that the performance tests reflect

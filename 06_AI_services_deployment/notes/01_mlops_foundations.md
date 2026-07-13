@@ -4,9 +4,9 @@
 
 MLOps is the discipline of running ML systems in production. It exists because the workflow that ships software does not work for models: a model's behaviour depends on *data* as much as on code, training drifts over time, the codebase is multi-language (Python notebook + serving container + infra YAML), and the artefact (`.pkl`, `.pt`, `.onnx`) is not the source of truth. The source of truth is the **(data, code, hyperparameters)** tuple. MLOps borrows DevOps primitives (version control, CI/CD, monitoring) and extends them with three ML-specific concerns: **data versioning** (the dataset is part of the artefact and silently changes when the source system changes), **model versioning and registry** (trained weights need provenance, lineage and approval workflows), and **drift monitoring** (the model degrades when the live data distribution shifts away from the training distribution).
 
-The **MLOps maturity model** (Google / Microsoft framing) ranks teams on three levels. **L0** is a notebook a person runs by hand and a model that gets emailed around — fragile, irreproducible, the default for early-stage teams. **L1** introduces an automated ML pipeline (training, evaluation, deployment) with data and model registry as first-class citizens — the productive plateau for most teams. **L2** adds CI/CD on the pipeline itself: every change to the code, data, or feature pipeline triggers automated retraining and deployment — the rare configuration for high-frequency retraining workloads (recommendation systems, fraud detection, ad ranking). Climbing the levels costs engineering time; the right level is the one that matches the *retraining cadence* and the *blast radius* of a bad model, not what looks impressive.
+The **MLOps maturity model** comes in two framings: Google's 3 levels (detailed below) and Microsoft/Azure's 5 levels (the scale the slides use). In the Google framing it ranks teams on three levels. **L0** is a notebook a person runs by hand and a model that gets emailed around - fragile, irreproducible, the default for early-stage teams. **L1** introduces an automated ML pipeline (training, evaluation, deployment) with data and model registry as first-class citizens - the productive plateau for most teams. **L2** adds CI/CD on the pipeline itself: every change to the code, data, or feature pipeline triggers automated retraining and deployment - the rare configuration for high-frequency retraining workloads (recommendation systems, fraud detection, ad ranking). Climbing the levels costs engineering time; the right level is the one that matches the *retraining cadence* and the *blast radius* of a bad model, not what looks impressive.
 
-The **ML engineer / data scientist split** is institutional, not skill-based. The data scientist owns the model (feature engineering, training, evaluation, model card). The ML engineer owns the *system around the model* (data pipelines, serving infrastructure, monitoring, retraining triggers). The handoff is the model artefact plus the metadata needed to reproduce it. In small teams a single person wears both hats; in scaled organisations the split formalises and the friction concentrates at the handoff — the **model registry** (MLflow, SageMaker Model Registry, Vertex Model Registry, Weights & Biases) is the standard interface for managing it.
+The **ML engineer / data scientist split** is institutional, not skill-based. The data scientist owns the model (feature engineering, training, evaluation, model card). The ML engineer owns the *system around the model* (data pipelines, serving infrastructure, monitoring, retraining triggers). The handoff is the model artefact plus the metadata needed to reproduce it. In small teams a single person wears both hats; in scaled organisations the split formalises and the friction concentrates at the handoff - the **model registry** (MLflow, SageMaker Model Registry, Vertex Model Registry, Weights & Biases) is the standard interface for managing it.
 
 The **MLOps toolchain** is layered: Python + Jupyter for experimentation; Git + GitHub + **Codespaces** for code collaboration and reproducible dev environments; **Hugging Face** as the de facto registry for open-source models, datasets and Spaces; Docker for shipping the runtime; GitHub Actions for CI/CD; MLflow / W&B for experiment tracking; FastAPI / Flask for serving; Prometheus / Grafana for monitoring; Airflow / Prefect for orchestration. The trap is using an L2 stack at L0 (overengineering) or running L2 workloads on L0 tooling (silent risk): the maturity of the tooling must match the maturity of the team and the criticality of the workload.
 
@@ -38,9 +38,9 @@ The **MLOps toolchain** is layered: Python + Jupyter for experimentation; Git + 
 
 A traditional software change is deterministic: same code + same inputs → same outputs. A model change is probabilistic and has at least three moving parts you must version together to reproduce it:
 
-1. **Code** — the training script, preprocessing, model definition.
-2. **Data** — the exact dataset version used for training and evaluation.
-3. **Configuration** — hyperparameters, random seeds, environment versions (Python, CUDA, libraries).
+1. **Code** - the training script, preprocessing, model definition.
+2. **Data** - the exact dataset version used for training and evaluation.
+3. **Configuration** - hyperparameters, random seeds, environment versions (Python, CUDA, libraries).
 
 If any of the three drifts, the artefact you ship is no longer the artefact you tested. The classic incident is "the model passed offline evaluation last month but is now broken in prod"; nine times out of ten the cause is a change in the upstream data, not the code.
 
@@ -48,7 +48,7 @@ If any of the three drifts, the artefact you ship is no longer the artefact you 
 
 | Failure mode | What happens | What MLOps adds |
 |---|---|---|
-| **Training–serving skew** | Features computed differently at training and inference | Shared feature pipeline, feature store, contract tests |
+| **Training-serving skew** | Features computed differently at training and inference | Shared feature pipeline, feature store, contract tests |
 | **Concept drift** | The relationship between input and output changes (e.g., user behaviour shifts) | Drift monitors on predictions/labels, automated retrain triggers |
 | **Data drift** | The input distribution changes (e.g., a new source system emits different values) | Drift monitors on input features, alerting before the model accuracy drops |
 
@@ -58,9 +58,9 @@ The cost of *not* doing MLOps is paid in incidents and silent degradation. The c
 
 ## The MLOps maturity model
 
-> Three levels, originally a Google whitepaper, popularised by Microsoft. They describe what is automated and where the boundary between humans and machines sits.
+> Two taxonomies are in common use. Google's has 3 levels (0-2, detailed below); Microsoft/Azure's has 5 levels (0-4, mapped at the end of this section). Both describe what is automated and where the boundary between humans and machines sits. This module's slides use the 5-level framing.
 
-### Level 0 — Manual process
+### Level 0 - Manual process
 
 ```
 Data scientist              ML engineer / nobody
@@ -81,7 +81,7 @@ What is true at L0:
 
 L0 is fine for **exploration** and **single-shot models** that do not need to be retrained. It is a problem the moment the model needs to be updated or audited.
 
-### Level 1 — ML pipeline automation
+### Level 1 - ML pipeline automation
 
 ```
    Git commit
@@ -117,7 +117,7 @@ What changes at L1:
 
 L1 is the productive plateau for **most** production ML systems. It buys you reproducibility, automated retraining, and a clean rollback path. The cost is real but bounded.
 
-### Level 2 — CI/CD pipeline automation
+### Level 2 - CI/CD pipeline automation
 
 L2 puts **the pipeline itself** under CI/CD. A change to the feature pipeline, the training code, or the dataset triggers automated build, test, and deployment of the *pipeline*, which then trains, evaluates, registers, and deploys the model.
 
@@ -130,6 +130,29 @@ When L2 is overengineering:
 - Models are retrained quarterly or less.
 - The team is fewer than ~5 ML engineers total.
 - Audit and compliance demand human approval gates anyway.
+
+### The 5-level framing (Microsoft / Azure)
+
+The slides follow the Microsoft/Azure scale, which splits the same progression into five levels. The extra granularity separates "automating training" from "automating deployment", which the Google model folds into one.
+
+| Level | Name | What is automated | Google-3 equivalent |
+|---|---|---|---|
+| 0 | No MLOps | nothing; manual, script-driven, hard to reproduce | L0 |
+| 1 | DevOps, no MLOps | app build and test automated, but no ML pipeline | L0 (still) |
+| 2 | Automated training | training pipeline automated, reproducible, versioned | L1 (partial) |
+| 3 | Automated model deployment | model promotion to production automated, A/B testable | L1 (full) |
+| 4 | Full MLOps | automated retraining loop, drift-triggered, self-healing | L2 |
+
+Reading the two together: the Google L1 plateau spans Microsoft levels 2-3 (training automated, then deployment automated); Google L2 (CI/CD on the pipeline itself) is Microsoft level 4. The number is not the point, the still-manual handoffs are.
+
+**Assessing a team's level** is not only a technology question. Three axes move together:
+- **People**: dedicated ML platform / production roles, or one person doing everything?
+- **Process**: are retraining, promotion, and rollback defined procedures or ad-hoc?
+- **Technology**: is the tooling (registry, pipeline, monitoring) actually in place and used?
+
+A team can own an L4 stack and still operate at L0 if the people and process are not there. Tooling maturity must match the team and the criticality of the workload.
+
+**Quantifying the level** borrows the DORA signals plus model-specific ones: deployment lead time, release frequency, change failure rate, mean time to recovery, and for the model the retraining latency and the time to detect a quality regression.
 
 ---
 
@@ -154,7 +177,7 @@ The **handoff** is the model artefact plus the metadata the engineer needs to re
 
 The **model registry** is the right place to attach all of the above to the artefact, so the handoff happens through a stable interface rather than a Slack message.
 
-In small teams (≤5 people) one person typically does both. The split formalises around 10-20 ML people. At scale (50+) the ML engineer role splits further into *ML platform engineer* (builds the MLOps platform) and *ML production engineer* (operates models on it).
+In small teams (<=5 people) one person typically does both. The split formalises around 10-20 ML people. At scale (50+) the ML engineer role splits further into *ML platform engineer* (builds the MLOps platform) and *ML production engineer* (operates models on it).
 
 ---
 
@@ -182,9 +205,9 @@ In small teams (≤5 people) one person typically does both. The split formalise
 
 **GitHub** is the code and CI/CD backbone for the majority of teams (the alternative is GitLab, with equivalent features). Beyond `git push`, the relevant primitives are:
 
-- **Pull requests** with required reviews and status checks — the natural place to gate model changes.
-- **GitHub Actions** — CI/CD runner; the standard for ML pipelines that are simple enough to live inside a workflow file (training inside Actions is fine for small models; for larger workloads, Actions triggers the cloud pipeline).
-- **Codespaces** — managed cloud dev environments defined by `.devcontainer/devcontainer.json`. One click opens a containerised VS Code with the exact Python version, dependencies, and tooling specified by the repo. The point is *eliminating the "works on my machine" failure mode* for collaborative ML projects, where setup is otherwise painful.
+- **Pull requests** with required reviews and status checks - the natural place to gate model changes.
+- **GitHub Actions** - CI/CD runner; the standard for ML pipelines that are simple enough to live inside a workflow file (training inside Actions is fine for small models; for larger workloads, Actions triggers the cloud pipeline).
+- **Codespaces** - managed cloud dev environments defined by `.devcontainer/devcontainer.json`. One click opens a containerised VS Code with the exact Python version, dependencies, and tooling specified by the repo. The point is *eliminating the "works on my machine" failure mode* for collaborative ML projects, where setup is otherwise painful.
 
 A minimal `.devcontainer/devcontainer.json` for an ML repo:
 
@@ -215,10 +238,10 @@ A minimal `.devcontainer/devcontainer.json` for an ML repo:
 | **Spaces** | Hosted apps (Gradio, Streamlit, static, Docker) | Live demos, quick UIs, shareable artefacts |
 
 What HF buys you, in this module's context:
-- A canonical place to pull pretrained models with versioning and reproducible checkpoints (`transformers.AutoModel.from_pretrained("…", revision="…")`).
+- A canonical place to pull pretrained models with versioning and reproducible checkpoints (`transformers.AutoModel.from_pretrained("...", revision="...")`).
 - A free-tier model registry alternative to MLflow/SageMaker MR for the early stages.
 - A zero-infra way to ship a demo: push to Spaces, get a live URL.
-- Inference Endpoints (paid) for managed serving of HF models without standing up your own infra — the HF equivalent of SageMaker Endpoints.
+- Inference Endpoints (paid) for managed serving of HF models without standing up your own infra - the HF equivalent of SageMaker Endpoints.
 
 What HF is *not*:
 - A complete MLOps platform. There is no pipeline orchestration, drift monitoring, or feature store. It coexists with the rest of the stack.
@@ -278,7 +301,7 @@ This is the architecture every cloud sells in slightly different boxes. Build it
 |---|---|---|
 | Notebook-only workflow at L0 stays at L0 forever | Every retraining is a one-off project | Promote the notebook to a script and a pipeline as soon as it is stable |
 | Model artefact shipped without metadata | Cannot reproduce, cannot audit | Always register; never deploy a model not in the registry |
-| Training–serving skew | Offline metrics good, online metrics bad | Share preprocessing code between training and serving (same Python module, same Docker image) |
+| Training-serving skew | Offline metrics good, online metrics bad | Share preprocessing code between training and serving (same Python module, same Docker image) |
 | Data drift not monitored | Silent accuracy degradation | Statistical tests on inputs (PSI, KL divergence) + alarms wired to retraining |
 | Monitoring only infra metrics | Endpoint is healthy, predictions are wrong | Add model-quality metrics (accuracy on ground truth, distribution of predictions) |
 | Tools chosen for L2 at L0 | Team drowns in YAML | Pick the simplest stack that solves the next bottleneck, not the most complete one |
@@ -308,12 +331,12 @@ This is the architecture every cloud sells in slightly different boxes. Build it
 ## See also
 
 ### Other notes
-- [02_environments_and_version_control.md](02_environments_and_version_control.md) — the practical version-control layer underneath MLOps (Git, venv, model registries)
-- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) — how the registered model becomes a live endpoint
-- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) — the automation layer that climbs from L0 to L1 to L2
-- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) — monitoring, orchestration, and the runtime side of MLOps
+- [02_environments_and_version_control.md](02_environments_and_version_control.md) - the practical version-control layer underneath MLOps (Git, venv, model registries)
+- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) - how the registered model becomes a live endpoint
+- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) - the automation layer that climbs from L0 to L1 to L2
+- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) - monitoring, orchestration, and the runtime side of MLOps
 
 ### Cross-module
-- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) — the business view of model drift and lifecycle that this note frames technically
-- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) — how SageMaker concretises the L1 pipeline pattern on AWS
-- Module 05 [06_paas_vs_iaas_vs_oss_decision_framework.md](../../05_AI_cloud_services/notes/06_paas_vs_iaas_vs_oss_decision_framework.md) — when a managed MLOps platform is the right pick vs building your own
+- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) - the business view of model drift and lifecycle that this note frames technically
+- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) - how SageMaker concretises the L1 pipeline pattern on AWS
+- Module 05 [06_paas_vs_iaas_vs_oss_decision_framework.md](../../05_AI_cloud_services/notes/06_paas_vs_iaas_vs_oss_decision_framework.md) - when a managed MLOps platform is the right pick vs building your own

@@ -2,11 +2,11 @@
 
 ## TL;DR
 
-**CI/CD** is two distinct disciplines under one acronym. **CI** (Continuous Integration) means every change is merged frequently into a shared branch and automatically validated: lint, type check, unit tests, integration tests, build, security scan. **CD** is overloaded — it can mean **Continuous Delivery** (every green build produces a deployable artefact, deploy itself is one-click) or **Continuous Deployment** (every green build *is* deployed automatically). The pipeline that runs all of this is the **deployment pipeline**: a directed sequence of stages, each gating the next, run on every push by a **CI runner**. The standard for modern teams is **GitHub Actions** (or GitLab CI, Azure Pipelines, Jenkins, CircleCI, Argo Workflows for Kubernetes-native, Cloud Build / CodePipeline for cloud-tied) — they differ in syntax, not in the underlying pattern.
+**CI/CD** is two distinct disciplines under one acronym. **CI** (Continuous Integration) means every change is merged frequently into a shared branch and automatically validated: lint, type check, unit tests, integration tests, build, security scan. **CD** is overloaded - it can mean **Continuous Delivery** (every green build produces a deployable artefact, deploy itself is one-click) or **Continuous Deployment** (every green build *is* deployed automatically). The pipeline that runs all of this is the **deployment pipeline**: a directed sequence of stages, each gating the next, run on every push by a **CI runner**. The standard for modern teams is **GitHub Actions** (or GitLab CI, Azure Pipelines, Jenkins, CircleCI, Argo Workflows for Kubernetes-native, Cloud Build / CodePipeline for cloud-tied) - they differ in syntax, not in the underlying pattern.
 
-A canonical CI/CD pipeline for an ML service has roughly seven stages: **(1) check out code**, **(2) lint + format + type-check**, **(3) unit tests**, **(4) integration tests** (FastAPI `TestClient` + mocked dependencies), **(5) build the Docker image** (with cache reuse), **(6) scan the image** for CVEs + scan code for secrets, **(7) push the image** to a registry, **(8) deploy** to staging, **(9) run smoke tests** against staging, **(10) promote to production**. The first 7 are CI; the last 3 are CD. The transition from "CI green" to "production live" is where most teams park a manual approval gate, especially for ML where a new model version can change behaviour subtly.
+A canonical CI/CD pipeline for an ML service has roughly ten stages: **(1) check out code**, **(2) lint + format + type-check**, **(3) unit tests**, **(4) integration tests** (FastAPI `TestClient` + mocked dependencies), **(5) build the Docker image** (with cache reuse), **(6) scan the image** for CVEs + scan code for secrets, **(7) push the image** to a registry, **(8) deploy** to staging, **(9) run smoke tests** against staging, **(10) promote to production**. The first 7 are CI; the last 3 are CD. The transition from "CI green" to "production live" is where most teams park a manual approval gate, especially for ML where a new model version can change behaviour subtly.
 
-**ML pipelines have concerns standard software CI/CD does not**: the model is part of the artefact and changes independently of code; the data version is part of the lineage; performance gates (AUC ≥ 0.85 on the frozen test set) are part of the pass/fail criteria; some models cost money to retrain or are too large for CI runners. The pragmatic split: **code CI** runs on every push (fast, no GPU, mocks the model); **model CI** runs on model-related changes or on a schedule (slow, can use GPU, runs full training + evaluation); **deploy CD** is gated on both, plus on the model registry stage. Tools that fit this pattern: GitHub Actions for code CI; Vertex / SageMaker / Kubeflow pipelines for model CI; Argo CD / Flux / Spinnaker for declarative GitOps-style deploys.
+**ML pipelines have concerns standard software CI/CD does not**: the model is part of the artefact and changes independently of code; the data version is part of the lineage; performance gates (AUC >= 0.85 on the frozen test set) are part of the pass/fail criteria; some models cost money to retrain or are too large for CI runners. The pragmatic split: **code CI** runs on every push (fast, no GPU, mocks the model); **model CI** runs on model-related changes or on a schedule (slow, can use GPU, runs full training + evaluation); **deploy CD** is gated on both, plus on the model registry stage. Tools that fit this pattern: GitHub Actions for code CI; Vertex / SageMaker / Kubeflow pipelines for model CI; Argo CD / Flux / Spinnaker for declarative GitOps-style deploys.
 
 The **branch and release strategy** decides how changes flow to production. **GitHub Flow** (one long-lived `main`, feature branches, deploy from `main`) is the simplest and the default for most teams; it pairs with continuous deployment naturally. **GitFlow** (separate `develop`, `release/*`, `hotfix/*` branches) is heavier and suits teams with formal release windows. **Trunk-based development** (everyone commits to `main` daily, short-lived branches if any) requires high test coverage but unlocks the fastest deployment cadence. For ML, the choice tracks the model retraining cadence: trunk-based suits L2 maturity; GitHub Flow is the right default for L1; GitFlow appears in regulated environments with mandatory release approvals.
 
@@ -61,7 +61,7 @@ With CD:
 - Bisecting a regression is easier (each change shipped alone).
 - Rollback is "redeploy the previous image", routine.
 
-The deeper benefit: **the deployment pipeline becomes the place where engineering standards are enforced**. Test coverage, type safety, security scans, performance benchmarks — anything you put in a gate is what the team actually does.
+The deeper benefit: **the deployment pipeline becomes the place where engineering standards are enforced**. Test coverage, type safety, security scans, performance benchmarks - anything you put in a gate is what the team actually does.
 
 ---
 
@@ -255,7 +255,7 @@ What's new:
       name: staging
       url: https://staging.api.example.com
     steps:
-      - run: echo "Deploy to staging…"
+      - run: echo "Deploy to staging..."
       # kubectl / helm / terraform / cloud-run / ECS update goes here
 
   deploy-prod:
@@ -264,7 +264,7 @@ What's new:
     environment:
       name: production           # has required reviewers configured in repo settings
     steps:
-      - run: echo "Deploy to prod…"
+      - run: echo "Deploy to prod..."
 ```
 
 The **environment** is a GitHub concept that adds gates: required reviewers, wait timers, branch restrictions, environment-specific secrets. It's the right place to put the human approval before production.
@@ -545,12 +545,12 @@ jobs:
 ## See also
 
 ### Other notes
-- [01_mlops_foundations.md](01_mlops_foundations.md) — the maturity model that CI/CD operationalises
-- [05_testing_strategy.md](05_testing_strategy.md) — the gates that run in CI
-- [06_api_security_and_authentication.md](06_api_security_and_authentication.md) — secret scanning and dependency vulnerabilities in CI
-- [07_containerization_with_docker.md](07_containerization_with_docker.md) — the build and push that CI automates
-- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) — what CD ultimately hands off to
+- [01_mlops_foundations.md](01_mlops_foundations.md) - the maturity model that CI/CD operationalises
+- [05_testing_strategy.md](05_testing_strategy.md) - the gates that run in CI
+- [06_api_security_and_authentication.md](06_api_security_and_authentication.md) - secret scanning and dependency vulnerabilities in CI
+- [07_containerization_with_docker.md](07_containerization_with_docker.md) - the build and push that CI automates
+- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) - what CD ultimately hands off to
 
 ### Cross-module
-- Module 04 [07_project_management_methodologies.md](../../04_business_case_AIPM/notes/07_project_management_methodologies.md) — release cadence and the trade-offs between waterfall, agile, and trunk-based shipping
-- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) — managed pipeline runners (SageMaker Pipelines) and how they integrate with GitHub Actions
+- Module 04 [07_project_management_methodologies.md](../../04_business_case_AIPM/notes/07_project_management_methodologies.md) - release cadence and the trade-offs between waterfall, agile, and trunk-based shipping
+- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) - managed pipeline runners (SageMaker Pipelines) and how they integrate with GitHub Actions

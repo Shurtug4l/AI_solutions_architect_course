@@ -4,11 +4,11 @@
 
 A production ML deployment has three concerns that the development setup does not: a **production-grade serving stack** (not `uvicorn --reload`), a **monitoring stack** (not `print()`), and a **pipeline orchestrator** (not "I'll run the training script next month"). The serving stack splits responsibilities: a **WSGI/ASGI worker** (Gunicorn + Uvicorn workers for FastAPI, Gunicorn alone for Flask) runs the Python app with multiple processes and proper signal handling; a **reverse proxy** (NGINX, Caddy, Traefik, or the cloud's managed load balancer) terminates TLS, applies routing rules, enforces rate limits, and shields the Python workers from slow clients and large bodies. For Python on Linux the canonical pair is **NGINX → Gunicorn(Uvicorn workers) → FastAPI**, each layer doing one job well.
 
-**Deployment options for Python APIs** fall on a spectrum from "you operate everything" to "platform operates everything". **Bare VMs** (EC2, Compute Engine, Azure VM) give full control and the most operational burden. **Container orchestrators** (Kubernetes, ECS, Nomad) automate scheduling, scaling, and self-healing but require platform expertise. **Serverless containers** (Cloud Run, AWS App Runner, Azure Container Apps) run a container with autoscaling-to-zero behind a managed load balancer — usually the right default for stateless inference services with bursty traffic. **PaaS-style** (Vercel, Render, Fly.io, Heroku, Railway) bundle the deploy story with primitives that fit web apps; Vercel is the Next.js / serverless-function story most often used for the frontend, but supports Python functions in a more limited shape. Fully **managed ML endpoints** (SageMaker Endpoint, Vertex Endpoint, Azure ML Online Endpoint, Hugging Face Inference Endpoints) abstract the serving stack entirely — you provide the model and the inference handler, the platform provides everything else.
+**Deployment options for Python APIs** fall on a spectrum from "you operate everything" to "platform operates everything". **Bare VMs** (EC2, Compute Engine, Azure VM) give full control and the most operational burden. **Container orchestrators** (Kubernetes, ECS, Nomad) automate scheduling, scaling, and self-healing but require platform expertise. **Serverless containers** (Cloud Run, AWS App Runner, Azure Container Apps) run a container with autoscaling-to-zero behind a managed load balancer - usually the right default for stateless inference services with bursty traffic. **PaaS-style** (Vercel, Render, Fly.io, Heroku, Railway) bundle the deploy story with primitives that fit web apps; Vercel is the Next.js / serverless-function story most often used for the frontend, but supports Python functions in a more limited shape. Fully **managed ML endpoints** (SageMaker Endpoint, Vertex Endpoint, Azure ML Online Endpoint, Hugging Face Inference Endpoints) abstract the serving stack entirely - you provide the model and the inference handler, the platform provides everything else.
 
-**Monitoring in production** has four layers. **Infrastructure** (CPU, memory, disk, network) — the operating-system metrics, scraped by node exporters and visualised in dashboards. **Application** (request rate, latency percentiles, error rate, in-flight requests) — emitted by the FastAPI app via Prometheus instrumentation. **Business / model** (prediction distribution, accuracy on ground truth, drift signals) — emitted by custom metrics and processed by drift libraries (Evidently, NannyML) or the cloud's managed offering. **Tracing** (distributed traces across services) — emitted with OpenTelemetry, collected by Jaeger / Tempo / Datadog / Honeycomb. The reference open-source stack is **Prometheus + Grafana + Loki + Tempo** ("the PLG stack"), all run in containers via **`docker compose`** for development. For production the same stack runs in Kubernetes or as a managed service (Grafana Cloud, Datadog, Honeycomb, New Relic).
+**Monitoring in production** has four layers. **Infrastructure** (CPU, memory, disk, network) - the operating-system metrics, scraped by node exporters and visualised in dashboards. **Application** (request rate, latency percentiles, error rate, in-flight requests) - emitted by the FastAPI app via Prometheus instrumentation. **Business / model** (prediction distribution, accuracy on ground truth, drift signals) - emitted by custom metrics and processed by drift libraries (Evidently, NannyML) or the cloud's managed offering. **Tracing** (distributed traces across services) - emitted with OpenTelemetry, collected by Jaeger / Tempo / Datadog / Honeycomb. The reference open-source stack is **Prometheus + Grafana + Loki + Tempo** ("the PLG stack"), all run in containers via **`docker compose`** for development. For production the same stack runs in Kubernetes or as a managed service (Grafana Cloud, Datadog, Honeycomb, New Relic).
 
-**Pipeline orchestration** sits one layer above the deployed services: it runs the workflows that periodically *produce* what the services consume — training pipelines, evaluation runs, batch inference jobs, data refreshes. The two patterns are **time-based** (cron-like: run nightly) and **event-driven** (run when new data arrives, when drift is detected, when a model is registered). Tools: **Airflow** is the elder statesman, Python-first, mature, heavy; **Prefect** is the modern Python-first, lighter, "negative engineering" focus; **Dagster** is asset-centric (the data, not the task, is the unit); **Kubeflow Pipelines** and the cloud-native **Vertex / SageMaker / Azure ML Pipelines** are Kubernetes-native, ML-focused. For most ML teams in 2025, the choice is between Prefect (lean) and the cloud's native pipeline service (integrated). Airflow remains the default at large organisations with existing investment.
+**Pipeline orchestration** sits one layer above the deployed services: it runs the workflows that periodically *produce* what the services consume - training pipelines, evaluation runs, batch inference jobs, data refreshes. The two patterns are **time-based** (cron-like: run nightly) and **event-driven** (run when new data arrives, when drift is detected, when a model is registered). Tools: **Airflow** is the elder statesman, Python-first, mature, heavy; **Prefect** is the modern Python-first, lighter, "negative engineering" focus; **Dagster** is asset-centric (the data, not the task, is the unit); **Kubeflow Pipelines** and **Vertex Pipelines** (KFP-based) are Kubernetes-native; **SageMaker Pipelines** and **Azure ML Pipelines** are managed services, not Kubernetes-native. All are ML-focused. For most ML teams in 2025, the choice is between Prefect (lean) and the cloud's native pipeline service (integrated). Airflow remains the default at large organisations with existing investment.
 
 ## Cheatsheet
 
@@ -118,7 +118,7 @@ gunicorn \
 
 | Workload | Rule of thumb |
 |---|---|
-| CPU-bound (sklearn predict, ONNX, light PyTorch) | `2 × CPU + 1` |
+| CPU-bound (sklearn predict, ONNX, light PyTorch) | `2 x CPU + 1` |
 | Memory-heavy (large model in memory) | Fewer, to fit RAM; consider `--preload` to share memory |
 | GPU-bound | `1` per GPU; batching inside |
 | I/O-bound (calling LLM APIs) | Async handlers + more workers, profile to find the knee |
@@ -339,6 +339,14 @@ The cloud's managed monitoring (CloudWatch, Cloud Monitoring, Azure Monitor) cov
 
 The drift libraries (Evidently, NannyML, WhyLabs) compute these from a stream of inputs and predictions, compared to a reference window.
 
+**Data drift vs concept drift** are not the same failure, and the distinction drives the response:
+- **Data drift** (covariate shift): the input distribution `P(X)` moves. The world sends different inputs than training saw. The three metrics above (input / output / label distribution) catch this.
+- **Concept drift**: the relationship `P(y|X)` moves. The same input now maps to a different correct answer, even if `P(X)` is unchanged. A fraud pattern that used to be benign turns malicious; a price model breaks when the market re-rates. Distribution metrics can look stable while accuracy quietly rots, so concept drift is only reliably caught against **ground-truth labels** once they arrive (hence the lag).
+
+**Data-quality monitoring** sits upstream of drift and is cheaper to act on: null or missing rates per feature, values out of the expected range, new or unseen categorical levels, schema violations. A broken feature pipeline usually shows here first, before it shows as drift.
+
+**Bias, fairness, and explainability monitoring** is a regulatory requirement, not just good practice: the EU AI Act expects high-risk systems to be monitored for discriminatory outcomes and to keep decisions explainable in production. Track performance and error rates **sliced by protected attribute** (not just the aggregate), watch those slices for divergence over time, and log feature attributions (SHAP or the model's own) so a contested decision can be reconstructed. The **feedback loop** that supplies the ground-truth labels (automatic, human-in-the-loop, or none) is what makes all of the above measurable; design it explicitly rather than assuming labels appear.
+
 ### Tracing layer
 
 A trace shows a request's full path: API gateway → FastAPI handler → DB query → upstream API → response. Latency hot spots become obvious. The standard:
@@ -393,7 +401,7 @@ A baseline dashboard for a model API:
 
 ### Loki: logs
 
-Log aggregation, label-based (not full-text indexing) — far cheaper than ELK at scale. Apps send logs via stdout to a sidecar (Promtail, Fluent Bit, Vector) which ships them to Loki.
+Log aggregation, label-based (not full-text indexing) - far cheaper than ELK at scale. Apps send logs via stdout to a sidecar (Promtail, Fluent Bit, Vector) which ships them to Loki.
 
 ### Tempo: traces
 
@@ -622,14 +630,14 @@ Wiring an event-driven retrain on drift: monitoring detects drift → emits an e
 ## See also
 
 ### Other notes
-- [01_mlops_foundations.md](01_mlops_foundations.md) — the MLOps maturity model that monitoring + orchestration operationalise
-- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) — the serving code this stack runs in production
-- [06_api_security_and_authentication.md](06_api_security_and_authentication.md) — TLS termination and auth at the proxy
-- [07_containerization_with_docker.md](07_containerization_with_docker.md) — the image that ends up behind the proxy
-- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) — the pipeline that pushes images and triggers deploys
+- [01_mlops_foundations.md](01_mlops_foundations.md) - the MLOps maturity model that monitoring + orchestration operationalise
+- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) - the serving code this stack runs in production
+- [06_api_security_and_authentication.md](06_api_security_and_authentication.md) - TLS termination and auth at the proxy
+- [07_containerization_with_docker.md](07_containerization_with_docker.md) - the image that ends up behind the proxy
+- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) - the pipeline that pushes images and triggers deploys
 
 ### Cross-module
-- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) — production patterns specific to LLM/RAG endpoints (caching, streaming, autoscaling)
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — running stateful agents in production
-- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) — SageMaker Endpoints and the AWS monitoring stack
-- Module 05 [07_hybrid_and_multi_cloud_patterns.md](../../05_AI_cloud_services/notes/07_hybrid_and_multi_cloud_patterns.md) — when production deployment spans clouds and what changes
+- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) - production patterns specific to LLM/RAG endpoints (caching, streaming, autoscaling)
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - running stateful agents in production
+- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) - SageMaker Endpoints and the AWS monitoring stack
+- Module 05 [07_hybrid_and_multi_cloud_patterns.md](../../05_AI_cloud_services/notes/07_hybrid_and_multi_cloud_patterns.md) - when production deployment spans clouds and what changes

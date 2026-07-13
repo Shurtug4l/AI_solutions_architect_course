@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-Serving a model is taking a trained artefact and exposing it as a callable, reliable, observable service. The dominant pattern in Python is a **FastAPI** application that loads the model once at startup, validates the input with a **Pydantic** schema, runs inference, and returns a structured response. The full picture has more moving parts than the demo: a **reverse proxy** in front (NGINX) handling TLS and routing, a **WSGI/ASGI process manager** (Gunicorn with Uvicorn workers) running the Python app, a **container** wrapping the runtime (Docker), and a **monitoring layer** capturing latency, error rate, and prediction distributions. The model itself is loaded from a **model registry** (MLflow, SageMaker MR, Vertex MR, HF Hub) — never from a path on a developer's laptop.
+Serving a model is taking a trained artefact and exposing it as a callable, reliable, observable service. The dominant pattern in Python is a **FastAPI** application that loads the model once at startup, validates the input with a **Pydantic** schema, runs inference, and returns a structured response. The full picture has more moving parts than the demo: a **reverse proxy** in front (NGINX) handling TLS and routing, a **WSGI/ASGI process manager** (Gunicorn with Uvicorn workers) running the Python app, a **container** wrapping the runtime (Docker), and a **monitoring layer** capturing latency, error rate, and prediction distributions. The model itself is loaded from a **model registry** (MLflow, SageMaker MR, Vertex MR, HF Hub) - never from a path on a developer's laptop.
 
 The **synchronous vs asynchronous** decision for the prediction handler is decided by the workload shape, not by preference. For **CPU- or GPU-bound inference** (sklearn, PyTorch forward pass, ONNX Runtime), the handler should be a plain `def`: FastAPI runs it in a threadpool and the event loop stays free for other I/O. For **inference that fans out to remote services** (LLM API, embedding API, vector DB, feature store), `async def` with `httpx` / `asyncpg` is a real win because the handler spends most of its time waiting. The trap is `async def` with blocking calls inside, which gives you nothing and silently stalls the event loop. The rule: `async def` only when you `await`; otherwise sync.
 
-**Batching** is the single biggest performance lever for ML inference. Most frameworks are far more efficient processing 32 inputs at once than 32 sequential single-input calls (matrix kernels amortise overhead). At low traffic, single-request serving is fine. At higher traffic, two patterns dominate: **dynamic batching** at the server (collect requests for a few milliseconds, batch them, return individual responses — Triton and BentoML do this natively) and **batch endpoints** (`POST /predict/batch` accepting an array, used for offline or near-real-time pipelines). The API design pattern that fits both: accept either a single instance or a list and return matching shape.
+**Batching** is the single biggest performance lever for ML inference. Most frameworks are far more efficient processing 32 inputs at once than 32 sequential single-input calls (matrix kernels amortise overhead). At low traffic, single-request serving is fine. At higher traffic, two patterns dominate: **dynamic batching** at the server (collect requests for a few milliseconds, batch them, return individual responses - Triton and BentoML do this natively) and **batch endpoints** (`POST /predict/batch` accepting an array, used for offline or near-real-time pipelines). The API design pattern that fits both: accept either a single instance or a list and return matching shape.
 
-**Production model serving** has shape-distinct concerns beyond a working endpoint. **Cold start** (first request after deploy is slow because the model is not loaded) — solved by loading at startup, not lazily. **Memory footprint** (a 7B-parameter LLM is 14 GB in fp16) — solved by picking the right serving infra and quantising. **Concurrency** (`workers × threads_per_worker` for Gunicorn) — tuned to CPU count and inference cost. **Resilience** (a single slow request must not block others) — solved by timeouts and a process manager that recycles workers. **Observability** — `/health`, `/ready`, structured logs, request IDs, latency histograms exposed to Prometheus. Real serving is "model + API + supervisor + proxy + observability", not "FastAPI + `model.pkl`".
+**Production model serving** has shape-distinct concerns beyond a working endpoint. **Cold start** (first request after deploy is slow because the model is not loaded) - solved by loading at startup, not lazily. **Memory footprint** (a 7B-parameter LLM is 14 GB in fp16) - solved by picking the right serving infra and quantising. **Concurrency** (`workers x threads_per_worker` for Gunicorn) - tuned to CPU count and inference cost. **Resilience** (a single slow request must not block others) - solved by timeouts and a process manager that recycles workers. **Observability** - `/health`, `/ready`, structured logs, request IDs, latency histograms exposed to Prometheus. Real serving is "model + API + supervisor + proxy + observability", not "FastAPI + `model.pkl`".
 
 ## Cheatsheet
 
@@ -23,13 +23,13 @@ The **synchronous vs asynchronous** decision for the prediction handler is decid
 | **Batching** | Process N inputs in one model call | Largest single lever for throughput |
 | **Dynamic batching** | Server-side batching across concurrent requests | Triton, BentoML, vLLM do it for you |
 | **Batch endpoint** | `POST /predict/batch` accepting a list | Pragmatic alternative to dynamic batching |
-| **Workers** | OS processes running the app (Gunicorn `-w`) | Tune to `2 × CPU + 1` for CPU-bound; 1 for GPU |
+| **Workers** | OS processes running the app (Gunicorn `-w`) | Tune to `2 x CPU + 1` for CPU-bound; 1 for GPU |
 | **Threads** | Threads per worker | Useful for I/O-bound, less for CPU-bound |
 | **`/health`** | Liveness probe | "Is the process up?" |
 | **`/ready`** | Readiness probe | "Is the model loaded and serving?" |
 | **Request ID** | Per-request identifier propagated through logs | Mandatory for tracing |
 | **Streaming response** | Send chunks before the full result | LLM token streaming, large CSV exports |
-| **Model registry pull** | Load model by `(name, stage)` not by file path | The L1 baseline |
+| **Model registry pull** | Load model by `name@alias` not by file path | The L1 baseline |
 
 ---
 
@@ -111,7 +111,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000 --workers 1   # dev
 gunicorn -k uvicorn.workers.UvicornWorker -w 4 -b 0.0.0.0:8000 app:app   # prod-ish
 ```
 
-For real production this still sits behind NGINX and inside Docker — see notes 07 and 09.
+For real production this still sits behind NGINX and inside Docker - see notes 07 and 09.
 
 ---
 
@@ -127,7 +127,7 @@ Three variations and what they cost:
 | **Lazy-load on first hit** | Slow (cold start) | OK | Acceptable for rare endpoints |
 | **Load at startup** (`lifespan`) | OK | OK | Default for any real service |
 
-The cost of loading at startup is a slower deploy (the process needs the model in memory before it accepts traffic) — which is *exactly* what `/ready` is for. The orchestrator should not route traffic to a pod until `/ready` returns 200.
+The cost of loading at startup is a slower deploy (the process needs the model in memory before it accepts traffic) - which is *exactly* what `/ready` is for. The orchestrator should not route traffic to a pod until `/ready` returns 200.
 
 For large models (LLMs, big embedding models), startup time is in the minutes. Use a readiness probe with generous timeouts and document the expected boot time.
 
@@ -140,16 +140,16 @@ import mlflow.sklearn
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # The deploy-time contract: this version is what's currently "Production"
-    app.state.model = mlflow.sklearn.load_model("models:/my-recommender/Production")
-    app.state.model_version = mlflow.MlflowClient().get_latest_versions(
-        name="my-recommender", stages=["Production"]
-    )[0].version
+    # The deploy-time contract: whichever version the champion alias points at
+    app.state.model = mlflow.sklearn.load_model("models:/my-recommender@champion")
+    app.state.model_version = mlflow.MlflowClient().get_model_version_by_alias(
+        name="my-recommender", alias="champion"
+    ).version
     yield
 ```
 
 What this buys you:
-- Rollback is a registry stage transition, not a redeploy.
+- Rollback is a registry alias reassignment, not a redeploy.
 - Audit ("what was in prod on 2025-04-12?") is one query.
 - The deploy job has no knowledge of the file path; the registry is the indirection.
 
@@ -198,7 +198,7 @@ async def multi(req: PredictRequest):
     return ensemble([r.json() for r in results])
 ```
 
-The async pattern here cuts latency from sum-of-3 to max-of-3 — a real, measurable gain.
+The async pattern here cuts latency from sum-of-3 to max-of-3 - a real, measurable gain.
 
 ### What *not* to do
 
@@ -211,6 +211,40 @@ async def bad(req: PredictRequest):
 ```
 
 Either switch to `httpx`, or change the handler to `def` and let FastAPI use the threadpool.
+
+### Deferring work: `BackgroundTasks`
+
+`async def` is about not blocking the event loop *during* the request. A different need is returning *before* slow work finishes: fire-and-forget side effects (logging, sending a notification, writing an audit row) or kicking off a longer job. FastAPI's `BackgroundTasks` runs the callable after the response is sent, in the same process.
+
+```python
+from fastapi import BackgroundTasks
+
+@app.post("/predict", status_code=202)
+def predict(req: PredictRequest, bg: BackgroundTasks):
+    bg.add_task(write_audit_log, req.model_dump())
+    return {"status": "accepted"}
+```
+
+The ceiling: it runs in-process, so it dies with the worker and does not survive a restart or scale across machines. For durable background work (model retraining, batch jobs) the honest answer is a task queue with its own workers: Celery or RQ on Redis, or Arq for async. `BackgroundTasks` is for cheap, best-effort side effects, not for jobs you cannot afford to lose.
+
+### Structuring routes: `APIRouter`
+
+A single `app.py` stops scaling past a handful of endpoints. `APIRouter` splits routes into modules mounted onto the app, with a shared prefix and tags.
+
+```python
+# routers/predict.py
+from fastapi import APIRouter
+router = APIRouter(prefix="/models", tags=["prediction"])
+
+@router.post("/{model_id}/predict")
+def predict(model_id: str, req: PredictRequest): ...
+
+# main.py
+from routers import predict
+app.include_router(predict.router)
+```
+
+The endpoint now lives at `/models/{model_id}/predict`. This is the standard way to keep a growing service navigable and to attach auth or dependencies per router.
 
 ---
 
@@ -258,9 +292,9 @@ This is the pragmatic compromise: same endpoint serves both real-time single-ins
 ### Dynamic batching at the server
 
 For high-traffic inference, the right tool is a model server that does **dynamic batching**: collect concurrent requests for a few milliseconds, run them as one batch, return individual responses. Options:
-- **NVIDIA Triton Inference Server** — multi-framework, gRPC + HTTP, production-grade.
-- **BentoML** — Python-first, integrates batching into the framework.
-- **vLLM** / **TGI** — LLM-specific with continuous batching tuned to autoregressive generation.
+- **NVIDIA Triton Inference Server** - multi-framework, gRPC + HTTP, production-grade.
+- **BentoML** - Python-first, integrates batching into the framework.
+- **vLLM** / **TGI** - LLM-specific with continuous batching tuned to autoregressive generation.
 
 When traffic is low enough that single-request serving meets latency targets, skip the complexity.
 
@@ -329,8 +363,8 @@ Without timeouts, a single slow request can hang a worker indefinitely.
 
 | Endpoint | Returns 200 when | Used by |
 |---|---|---|
-| `/health` | The process is responsive | Liveness probe — restart the container if this fails |
-| `/ready` | The model is loaded and dependencies are reachable | Readiness probe — route traffic only when this is 200 |
+| `/health` | The process is responsive | Liveness probe - restart the container if this fails |
+| `/ready` | The model is loaded and dependencies are reachable | Readiness probe - route traffic only when this is 200 |
 
 Without the split, restarts cause traffic to hit a not-yet-loaded process and produce errors.
 
@@ -368,7 +402,7 @@ Out of the box you get request count, latency histograms, and in-flight requests
 
 ## Putting it together for an ML model deployment
 
-The slides at the end of the module (61–63) describe the canonical "deploy an ML model" pattern:
+The slides at the end of the module (61-63) describe the canonical "deploy an ML model" pattern:
 
 1. **Train** the model offline; log to MLflow / W&B / SageMaker Experiments; register in the model registry.
 2. **Wrap** the artefact in a FastAPI app with:
@@ -404,7 +438,7 @@ The shape of the FastAPI app does not change much for different model types; the
 |---|---|---|
 | Model loaded in handler | Latency spikes, memory waste | `lifespan` / `on_event("startup")` |
 | `async def` with blocking calls | Event loop stalled, mysterious latency | Use async clients or sync handlers |
-| Path-based model load | Cannot rollback, no lineage | Load from model registry by `(name, stage)` |
+| Path-based model load | Cannot rollback, no lineage | Load from model registry by `name@alias` |
 | Same endpoint for sync and batch with no size cap | OOM on a maliciously large request | Cap with `max_length` in Pydantic |
 | Multiple Gunicorn workers on GPU | OOM, throughput collapse | 1 worker per GPU; use dynamic batching |
 | No request timeout | One slow request hangs a worker | `--timeout` in Gunicorn |
@@ -435,12 +469,12 @@ The shape of the FastAPI app does not change much for different model types; the
 ## See also
 
 ### Other notes
-- [03_apis_and_web_frameworks.md](03_apis_and_web_frameworks.md) — HTTP, REST, Flask vs FastAPI primitives
-- [07_containerization_with_docker.md](07_containerization_with_docker.md) — packaging the serving app into a deployable artefact
-- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) — NGINX, Gunicorn, monitoring, the runtime side
+- [03_apis_and_web_frameworks.md](03_apis_and_web_frameworks.md) - HTTP, REST, Flask vs FastAPI primitives
+- [07_containerization_with_docker.md](07_containerization_with_docker.md) - packaging the serving app into a deployable artefact
+- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) - NGINX, Gunicorn, monitoring, the runtime side
 
 ### Cross-module
-- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) — the offline evaluation that precedes serving
-- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) — production patterns specific to RAG endpoints (caching, streaming, scaling)
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — exposing agentic workflows through APIs
-- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) — SageMaker Endpoints, the managed twin of this pattern on AWS
+- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) - the offline evaluation that precedes serving
+- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) - production patterns specific to RAG endpoints (caching, streaming, scaling)
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - exposing agentic workflows through APIs
+- Module 05 [02_aws_ai_ml_stack.md](../../05_AI_cloud_services/notes/02_aws_ai_ml_stack.md) - SageMaker Endpoints, the managed twin of this pattern on AWS

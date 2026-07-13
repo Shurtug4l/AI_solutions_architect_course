@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-A **container** is a process (or group of processes) isolated from the host using Linux kernel features — **namespaces** for visibility (PID, network, mount, user, IPC, UTS) and **cgroups** for resource limits (CPU, memory, IO). It packages the application together with its dependencies (libraries, system binaries, configuration) into an **image**, which is a read-only filesystem snapshot. The runtime then starts a writable layer on top of the image and runs the entrypoint. Containers are not virtual machines: they share the host kernel and start in milliseconds, but they are isolated enough that "it works on my machine" stops being a meaningful sentence. **Docker** is the tool that built the mainstream developer experience around containers; the underlying runtime is now usually `containerd` / `runc`, and Kubernetes coordinates them at scale.
+A **container** is a process (or group of processes) isolated from the host using Linux kernel features - **namespaces** for visibility (PID, network, mount, user, IPC, UTS) and **cgroups** for resource limits (CPU, memory, IO). It packages the application together with its dependencies (libraries, system binaries, configuration) into an **image**, which is a read-only filesystem snapshot. The runtime then starts a writable layer on top of the image and runs the entrypoint. Containers are not virtual machines: they share the host kernel and start in milliseconds, but they are isolated enough that "it works on my machine" stops being a meaningful sentence. **Docker** is the tool that built the mainstream developer experience around containers; the underlying runtime is now usually `containerd` / `runc`, and Kubernetes coordinates them at scale.
 
-A **Dockerfile** is a sequence of instructions that produce an image. Each instruction creates a **layer** (cached, content-addressed). The order of instructions matters for cache reuse: put rarely-changing things first (system packages, dependencies) and frequently-changing things last (your code). For Python ML services, the canonical pattern is **multi-stage builds**: a "builder" stage installs dependencies and (optionally) compiles wheels; a "runtime" stage copies only what is needed onto a slim base image. The result is a smaller, less-vulnerable image — typically 200–500 MB instead of 1.5+ GB. **`.dockerignore`** is the partner of `.gitignore`: it tells the daemon which files in the build context to ignore, which keeps builds fast and prevents shipping secrets or virtual environments into the image.
+A **Dockerfile** is a sequence of instructions that produce an image. Each instruction creates a **layer** (cached, content-addressed). The order of instructions matters for cache reuse: put rarely-changing things first (system packages, dependencies) and frequently-changing things last (your code). For Python ML services, the canonical pattern is **multi-stage builds**: a "builder" stage installs dependencies and (optionally) compiles wheels; a "runtime" stage copies only what is needed onto a slim base image. The result is a smaller, less-vulnerable image - typically 200-500 MB instead of 1.5+ GB. **`.dockerignore`** is the partner of `.gitignore`: it tells the daemon which files in the build context to ignore, which keeps builds fast and prevents shipping secrets or virtual environments into the image.
 
-**Building, registering, and instantiating** are the three verbs. **`docker build`** turns a Dockerfile + context into an image. **`docker push`** uploads it to a **registry** (Docker Hub, GitHub Container Registry, ECR, GCR, ACR) where it gets an immutable digest and human-readable tags. **`docker run`** instantiates a container from an image — passing port mappings, volume mounts, environment variables, and resource limits. In CI/CD the loop is build → tag with the commit SHA → push to a registry → the deploy job pulls by digest and runs. **`docker compose`** orchestrates multiple containers locally (app + DB + redis + message queue) from a `docker-compose.yml`; it is a development primitive, not a production one — Kubernetes (or managed equivalents like ECS, Cloud Run) handles production.
+**Building, registering, and instantiating** are the three verbs. **`docker build`** turns a Dockerfile + context into an image. **`docker push`** uploads it to a **registry** (Docker Hub, GitHub Container Registry, ECR, GCR, ACR) where it gets an immutable digest and human-readable tags. **`docker run`** instantiates a container from an image - passing port mappings, volume mounts, environment variables, and resource limits. In CI/CD the loop is build → tag with the commit SHA → push to a registry → the deploy job pulls by digest and runs. **`docker compose`** orchestrates multiple containers locally (app + DB + redis + message queue) from a `docker-compose.yml`; it is a development primitive, not a production one - Kubernetes (or managed equivalents like ECS, Cloud Run) handles production.
 
-For ML serving the layer that matters is **what goes in the image and what does not**. Code, lockfile, the model artefact (or a script that pulls it from the registry), and a runtime command. **Not** in the image: secrets (injected as env vars or via a secret store at runtime), data (mounted as a volume or read from cloud storage), credentials. **Not in the same image**: training code and serving code, when they have very different dependency footprints — the serving image should be minimal, the training image can be fat. **Base image** choice matters: `python:3.11-slim` is the right default; `python:3.11` is fat (full Debian); `python:3.11-alpine` is small but breaks compiled wheels (musl libc vs glibc); `nvidia/cuda:12.X-cudnn-runtime` is the starting point for GPU inference. The image is the deployment artefact; treat it like a versioned, signed, scanned product.
+For ML serving the layer that matters is **what goes in the image and what does not**. Code, lockfile, the model artefact (or a script that pulls it from the registry), and a runtime command. **Not** in the image: secrets (injected as env vars or via a secret store at runtime), data (mounted as a volume or read from cloud storage), credentials. **Not in the same image**: training code and serving code, when they have very different dependency footprints - the serving image should be minimal, the training image can be fat. **Base image** choice matters: `python:3.11-slim` is the right default; `python:3.11` is fat (full Debian); `python:3.11-alpine` is small but breaks compiled wheels (musl libc vs glibc); `nvidia/cuda:12.X-cudnn-runtime` is the starting point for GPU inference. The image is the deployment artefact; treat it like a versioned, signed, scanned product.
 
 ## Cheatsheet
 
@@ -39,6 +39,17 @@ For ML serving the layer that matters is **what goes in the image and what does 
 
 ---
 
+## Deployment: the frame
+
+Containerization is a means; **deployment** is the end. Deployment is the act of taking a trained model or a service and making it available to consumers in a stable, reachable, operable form: an endpoint that stays up, scales, and can be updated and rolled back. A model in a notebook is not deployed; a model behind a versioned HTTP endpoint with monitoring is.
+
+Where the workload runs is a separate axis from how it is packaged:
+- **On-premise**: your own hardware and data center. Maximum control and data residency, highest capital and operational cost, you own scaling and uptime. Common where regulation or latency demands it.
+- **Cloud**: rented infrastructure (AWS, GCP, Azure). Elastic, pay-as-you-go, managed services for serving and monitoring; the tradeoff is vendor coupling and egress cost.
+- **Hybrid**: sensitive data or training on-premise, elastic serving or burst capacity in the cloud. The pragmatic middle for organisations with existing on-prem investment.
+
+The container is what makes these portable: the same image runs on a laptop, an on-prem VM, or a managed cloud runtime. That portability is why containerization is the unit of deployment for the rest of this note.
+
 ## Containers vs VMs
 
 > Both isolate workloads. They differ in *what* they virtualise.
@@ -47,13 +58,13 @@ For ML serving the layer that matters is **what goes in the image and what does 
 |---|---|---|
 | Virtualises | Hardware (CPU, memory, devices) | OS process tree |
 | Kernel | Each VM has its own | Shared with the host |
-| Boot time | Seconds–minutes | Milliseconds |
+| Boot time | Seconds-minutes | Milliseconds |
 | Image size | GB | MB (sometimes GB for ML) |
-| Density per host | 10s | 100s–1000s |
-| Isolation strength | Strong (separate kernel) | Strong-but-not-perfect (shared kernel — kernel-level vulnerabilities cross the boundary) |
+| Density per host | 10s | 100s-1000s |
+| Isolation strength | Strong (separate kernel) | Strong-but-not-perfect (shared kernel - kernel-level vulnerabilities cross the boundary) |
 | Use case | Multi-tenant infra, untrusted workloads, different OSes on one host | App packaging and shipping; consistent dev/staging/prod |
 
-Containers won the application packaging space because they are lightweight and reproducible. VMs (or VM-like sandboxes — Firecracker, gVisor) still matter when isolation strength has to be hard, e.g., running untrusted user code.
+Containers won the application packaging space because they are lightweight and reproducible. VMs (or VM-like sandboxes - Firecracker, gVisor) still matter when isolation strength has to be hard, e.g., running untrusted user code.
 
 ---
 
@@ -73,7 +84,7 @@ Containers won the application packaging space because they are lightweight and 
 | **user** | UID/GID mapping | Container's `root` can be mapped to non-root on host |
 | **cgroup** | The cgroup hierarchy | Newer namespace, hides the host's cgroup layout |
 
-### Control groups (cgroups) — resource limits
+### Control groups (cgroups) - resource limits
 
 ```bash
 docker run --memory=2g --cpus=1.5 --pids-limit=200 myapp:v1
@@ -404,7 +415,7 @@ docker compose exec api bash    # shell into the api container
 docker compose down -v          # stop and remove volumes
 ```
 
-The killer feature: services reference each other by service name (`db`, `cache`) — Compose puts them on a private network and provides DNS. Newcomers' setup goes from "twelve services on twelve ports" to `docker compose up`.
+The killer feature: services reference each other by service name (`db`, `cache`) - Compose puts them on a private network and provides DNS. Newcomers' setup goes from "twelve services on twelve ports" to `docker compose up`.
 
 Why **not** in production: no autoscaling, no rolling updates, no health-aware load balancing, single-host. Compose is to development what Kubernetes is to production.
 
@@ -544,12 +555,12 @@ Cleanest path: separate `Dockerfile.serve.cpu` and `Dockerfile.serve.gpu`, with 
 ## See also
 
 ### Other notes
-- [02_environments_and_version_control.md](02_environments_and_version_control.md) — the lockfile that goes into the image
-- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) — the app the image wraps
-- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) — where build, scan, push, and sign happen
-- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) — running the image behind NGINX/Gunicorn in production
+- [02_environments_and_version_control.md](02_environments_and_version_control.md) - the lockfile that goes into the image
+- [04_model_serving_with_fastapi.md](04_model_serving_with_fastapi.md) - the app the image wraps
+- [08_ci_cd_pipelines.md](08_ci_cd_pipelines.md) - where build, scan, push, and sign happen
+- [09_production_deployment_monitoring_orchestration.md](09_production_deployment_monitoring_orchestration.md) - running the image behind NGINX/Gunicorn in production
 
 ### Cross-module
-- Module 05 [01_aiaas_and_cloud_architecture_fundamentals.md](../../05_AI_cloud_services/notes/01_aiaas_and_cloud_architecture_fundamentals.md) — containerised AI services on cloud platforms
-- Module 05 [05_iaas_open_source_and_on_prem_deployment.md](../../05_AI_cloud_services/notes/05_iaas_open_source_and_on_prem_deployment.md) — containers in the IaaS / on-prem deployment story
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — containerising agentic systems (with tool sandboxing concerns)
+- Module 05 [01_aiaas_and_cloud_architecture_fundamentals.md](../../05_AI_cloud_services/notes/01_aiaas_and_cloud_architecture_fundamentals.md) - containerised AI services on cloud platforms
+- Module 05 [05_iaas_open_source_and_on_prem_deployment.md](../../05_AI_cloud_services/notes/05_iaas_open_source_and_on_prem_deployment.md) - containers in the IaaS / on-prem deployment story
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - containerising agentic systems (with tool sandboxing concerns)
