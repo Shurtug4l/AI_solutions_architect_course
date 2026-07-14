@@ -5,16 +5,16 @@ model_service.py - Layer di servizio del modello (LogiFast Solutions)
                    Modulo 06: AI Service Deployment
 ================================================================================
 
-Responsabilita': caricare l'artefatto, validare gli input, produrre le predizioni
-e i metadati di versione. E' separato dal layer API (app.py) di proposito: il
-contratto del modello (feature attese, categorie note, unita' di misura,
-provenienza dell'artefatto) e' una preoccupazione diversa dal trasporto HTTP.
+Responsabilità: caricare l'artefatto, validare gli input, produrre le predizioni
+e i metadati di versione. È separato dal layer API (app.py) di proposito: il
+contratto del modello (feature attese, categorie note, unità di misura,
+provenienza dell'artefatto) è una preoccupazione diversa dal trasporto HTTP.
 Tenere i due piani distinti rende la logica di predizione testabile senza un
 server attivo e permette di sostituire Flask con un altro runtime senza toccarla.
 
-Nota di sicurezza: il modello e' un pickle, e l'unpickle esegue codice arbitrario.
-L'artefatto e' stato verificato staticamente (pickletools: solo classi
-sklearn/numpy, nessun modulo sospetto) e la sua integrita' e' controllata via
+Nota di sicurezza: il modello è un pickle, e l'unpickle esegue codice arbitrario.
+L'artefatto è stato verificato staticamente (pickletools: solo classi
+sklearn/numpy, nessun modulo sospetto) e la sua integrità è controllata via
 SHA-256 al caricamento. In produzione l'hash andrebbe verificato contro un
 registro fidato di modelli prima del load, non solo loggato.
 ================================================================================
@@ -36,7 +36,7 @@ logger = logging.getLogger("logifast.model")
 MODEL_DIR = Path(__file__).resolve().parent
 MODEL_PATH = MODEL_DIR / "delivery.pkl"
 MODEL_VERSION = "1.0.0"                 # versione semantica dell'artefatto deployato
-PINNED_SKLEARN = "1.6.1"               # versione con cui il pickle e' stato serializzato
+PINNED_SKLEARN = "1.6.1"               # versione con cui il pickle è stato serializzato
 EXPECTED_SHA256 = "cb29574fa8836c9d3aa62f17760d300999c5bdbb9184b006041f95d6bbfbe260"
 OUTPUT_UNIT = "ore"                    # assunzione motivata sul range osservato, vedi README
 
@@ -47,10 +47,10 @@ MODEL_FEATURES = ["pickup_location", "delivery_location", "weight", "service_typ
 REQUEST_FIELDS = ["pickup_location", "delivery_location", "pickup_datetime", "weight", "service_type"]
 
 # Banda per l'intervallo opzionale, pari all'RMSE sulla validazione sintetica
-# (notebooks/exploration_validation.ipynb). E' ampia di proposito: il modello
+# (notebooks/exploration_validation.ipynb). È ampia di proposito: il modello
 # fornito sottostima il segnale distanza (R2 negativo), quindi la sua incertezza
-# reale e' grande. Un intervallo piu' stretto richiede un modello migliore, non
-# una banda piu' ottimistica. Dichiarata come illustrativa, non statistica.
+# reale è grande. Un intervallo più stretto richiede un modello migliore, non
+# una banda più ottimistica. Dichiarata come illustrativa, non statistica.
 PREDICTION_BAND_HOURS = 22.5
 
 
@@ -67,9 +67,9 @@ class DeliveryModelService:
     Wrapper attorno alla Pipeline sklearn (ColumnTransformer + LinearRegression).
 
     Incapsulare il modello in una classe, invece di chiamarlo direttamente nelle
-    route, isola tre responsabilita' che altrimenti finirebbero nel layer HTTP:
+    route, isola tre responsabilità che altrimenti finirebbero nel layer HTTP:
     introspezione dell'artefatto (categorie note, feature attese), validazione di
-    dominio e calcolo di uno score di affidabilita'. L'artefatto e' caricato una
+    dominio e calcolo di uno score di affidabilità. L'artefatto è caricato una
     sola volta alla creazione del servizio.
     """
 
@@ -98,8 +98,8 @@ class DeliveryModelService:
         except Exception as exc:
             # Load resiliente: se l'artefatto manca o non si deserializza, l'app parte
             # comunque e /health segnala ERROR (readiness probe), invece di andare in
-            # crash-loop. Dietro un orchestratore e' il comportamento corretto: restare
-            # ispezionabili e non ricevere traffico finche' non si e' pronti.
+            # crash-loop. Dietro un orchestratore è il comportamento corretto: restare
+            # ispezionabili e non ricevere traffico finché non si è pronti.
             logger.exception("caricamento del modello fallito")
             self.model = None
             self.load_error = str(exc)
@@ -108,7 +108,7 @@ class DeliveryModelService:
 
     @property
     def ready(self) -> bool:
-        """True se l'artefatto e' caricato e il servizio puo' predire."""
+        """True se l'artefatto è caricato e il servizio può predire."""
         return self.model is not None
 
     # ── Helper ────────────────────────────────────────────────────────────────
@@ -135,7 +135,7 @@ class DeliveryModelService:
     def validate(self, record: dict) -> tuple[dict, list[str]]:
         """
         Valida un singolo record. Gli errori bloccanti alzano ValidationError (400).
-        Le anomalie non bloccanti (citta' fuori vocabolario, datetime non parsabile)
+        Le anomalie non bloccanti (città fuori vocabolario, datetime non parsabile)
         diventano warning: con handle_unknown='ignore' il modello produce comunque
         un output, solo meno affidabile, quindi rifiutare sarebbe troppo rigido.
         """
@@ -167,7 +167,7 @@ class DeliveryModelService:
             warnings.append("pickup_datetime non in formato ISO 8601 riconoscibile "
                             "(campo non usato dal modello corrente)")
 
-        # Citta' fuori vocabolario -> warning, l'OHE le ignora e la stima degrada.
+        # Città fuori vocabolario -> warning, l'OHE le ignora e la stima degrada.
         for field in ("pickup_location", "delivery_location"):
             known = self._known.get(field, set())
             if known and str(record[field]) not in known:
@@ -188,10 +188,10 @@ class DeliveryModelService:
 
     def _reliability(self, clean: dict) -> float:
         """
-        Score di affidabilita' euristico in [0, 1]. NON e' una probabilita': una
+        Score di affidabilità euristico in [0, 1]. NON è una probabilità: una
         LinearRegression non espone predict_proba. Penalizza gli input fuori
-        distribuzione (citta' ignote, peso implausibile), cioe' i casi in cui
-        l'output del modello e' meno credibile. Dichiarato come proxy, non come
+        distribuzione (città ignote, peso implausibile), cioè i casi in cui
+        l'output del modello è meno credibile. Dichiarato come proxy, non come
         intervallo statistico.
         """
         score = 1.0

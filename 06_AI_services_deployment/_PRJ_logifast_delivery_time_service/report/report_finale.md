@@ -28,7 +28,7 @@ riaddestramento) e lo dichiara come non usato.
 
 ## 3. Analisi esplorativa e validazione
 
-Il dettaglio e in [`notebooks/exploration_validation.ipynb`](../notebooks/exploration_validation.ipynb).
+Il dettaglio è in [`notebooks/exploration_validation.ipynb`](../notebooks/exploration_validation.ipynb).
 L'artefatto è una `Pipeline` scikit-learn: `OneHotEncoder` sulle categoriche
 (città, servizio) + passthrough sul peso, seguito da una `LinearRegression`.
 

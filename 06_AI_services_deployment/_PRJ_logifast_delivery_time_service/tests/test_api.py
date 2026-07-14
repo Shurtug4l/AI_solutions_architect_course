@@ -76,7 +76,7 @@ def test_predict_unknown_city_warns(client):
 
 
 def test_predict_bad_body(client):
-    response = client.post("/predict", data="non e' json", content_type="application/json")
+    response = client.post("/predict", data="non è json", content_type="application/json")
     assert response.status_code == 400
 
 

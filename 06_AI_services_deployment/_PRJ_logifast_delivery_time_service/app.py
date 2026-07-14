@@ -16,13 +16,13 @@ API REST in Flask che espone un modello pre-addestrato per la stima del tempo di
 consegna (time-to-delivery) degli ordini di LogiFast Solutions, fornitore
 logistico urbano e interurbano. Il servizio riceve i dati noti al momento della
 presa in carico (origine, destinazione, peso, tipo di servizio, data/ora di
-ritiro) e restituisce una stima in ore, con uno score di affidabilita' e un
+ritiro) e restituisce una stima in ore, con uno score di affidabilità e un
 intervallo indicativo.
 
-Il codice e' diviso in due piani: questo file e' il layer di trasporto (HTTP,
-validazione del payload, logging, gestione degli errori); model_service.py e' il
+Il codice è diviso in due piani: questo file è il layer di trasporto (HTTP,
+validazione del payload, logging, gestione degli errori); model_service.py è il
 layer del modello (caricamento dell'artefatto, contratto delle feature,
-predizione). La separazione e' deliberata: il contratto del modello non deve
+predizione). La separazione è deliberata: il contratto del modello non deve
 dipendere da Flask, e la logica di predizione resta testabile senza un server.
 
 ARCHITETTURA
@@ -34,11 +34,11 @@ ARCHITETTURA
    Flask app (app.py)                 <- routing, validazione payload, logging
             |
             v
-   DeliveryModelService               <- validazione di dominio, affidabilita'
+   DeliveryModelService               <- validazione di dominio, affidabilità
    (model_service.py)
             |
             v
-   Pipeline sklearn (delivery.pkl)    <- OneHotEncoder(citta', servizio) +
+   Pipeline sklearn (delivery.pkl)    <- OneHotEncoder(città, servizio) +
             |                             passthrough(peso) -> LinearRegression
             v
    Risposta JSON                      <- stima (ore) + CI + reliability + warning
@@ -92,7 +92,7 @@ def create_app(model_path: str | None = None) -> Flask:
 
     @app.get("/health")
     def health():
-        # Readiness: OK se il modello e' caricato, ERROR/503 altrimenti (traccia: OK/ERROR).
+        # Readiness: OK se il modello è caricato, ERROR/503 altrimenti (traccia: OK/ERROR).
         ready = service.ready
         return jsonify(status="OK" if ready else "ERROR",
                        timestamp=datetime.now(timezone.utc).isoformat()), (200 if ready else 503)

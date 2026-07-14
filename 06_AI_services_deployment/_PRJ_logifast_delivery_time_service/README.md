@@ -113,7 +113,7 @@ contro un registro fidato prima del load.
 
 ```
 _PRJ_logifast_delivery_time_service/
-  PRJ_logifast_delivery_time_service.pdf   # documento di consegna (sintesi; .docx sorgente gitignored)
+  PRJ_logifast_delivery_time_service.pdf   # documento di consegna
   app.py                 # API Flask (layer di trasporto)
   model_service.py       # caricamento, validazione, predizione, metadati
   delivery.pkl           # artefatto del modello (sklearn 1.6.1)
@@ -121,8 +121,12 @@ _PRJ_logifast_delivery_time_service/
   notebooks/             # esplorazione e validazione del modello
   docs/                  # schema dati, specifica API, design MLOps
   tests/                 # test di integrazione (pytest)
-  report/                # report_finale.md, sorgente markdown della sintesi
+  report/                # report_finale.md, corpo del report di consegna
 ```
+
+Il documento di consegna sintetizza il progetto in forma autocontenuta;
+`report/report_finale.md` (corpo) e i `docs/*.md` (schema dati, specifica API,
+disegno MLOps) ne sono i sorgenti.
 
 ## Test
 
