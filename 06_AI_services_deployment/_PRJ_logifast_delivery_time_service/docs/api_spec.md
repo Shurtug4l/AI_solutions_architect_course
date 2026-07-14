@@ -1,7 +1,7 @@
 # Specifica API REST
 
 Base URL (sviluppo): `http://localhost:8080`. Tutte le richieste e risposte sono in
-`application/json`. Lo schema dei campi e' in [`data_schema.md`](data_schema.md).
+`application/json`. Lo schema dei campi è in [`data_schema.md`](data_schema.md).
 
 ## POST /predict
 
@@ -36,7 +36,7 @@ Predizione su un singolo ordine.
 ```
 
 Con input fuori distribuzione la risposta resta 200 ma `reliability_score` scende e
-`warnings` si popola (es. citta' ignota, `pickup_datetime` non parsabile).
+`warnings` si popola (es. città ignota, `pickup_datetime` non parsabile).
 
 ## POST /predict/batch
 
@@ -61,9 +61,9 @@ isolato come errore, gli altri vengono predetti.
 
 ## GET /health
 
-Stato operativo del servizio (readiness). `status` e' `OK` con 200 se il modello e'
-caricato, `ERROR` con 503 se l'artefatto non e' disponibile: dietro un orchestratore
-serve a non ricevere traffico finche' il servizio non e' pronto.
+Stato operativo del servizio (readiness). `status` è `OK` con 200 se il modello è
+caricato, `ERROR` con 503 se l'artefatto non è disponibile: dietro un orchestratore
+serve a non ricevere traffico finché il servizio non è pronto.
 
 ```json
 { "status": "OK", "timestamp": "2026-07-01T07:49:00.152448+00:00" }
@@ -83,7 +83,7 @@ Versione e contratto del modello: utile per i client e per il versionamento.
   "request_fields": ["pickup_location", "delivery_location", "pickup_datetime", "weight", "service_type"],
   "unused_fields": ["pickup_datetime"],
   "output_unit": "ore",
-  "known_locations": ["Ancona", "... 20 citta ..."],
+  "known_locations": ["Ancona", "... 20 città ..."],
   "known_service_types": ["Express", "Premium"],
   "artifact_sha256": "cb29574f...",
   "loaded_at": "2026-06-30T21:49:00+00:00"

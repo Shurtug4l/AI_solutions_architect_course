@@ -208,7 +208,7 @@ def fig01_architecture():
     box(ax, 0.5, 3.55, 12.1, 1.25, fill=TINT["violet"], border=BORDER)
     label(ax, 0.85, 4.55, "CONOSCENZA", size=9.5, weight="bold", color=INK_SOFT, ha="left")
     for i, (h1, h2, ac) in enumerate([
-            ("Knowledge graph", "entita biomediche, evidenza reificata", ACCENT["violet"]),
+            ("Knowledge graph", "entità biomediche, evidenza reificata", ACCENT["violet"]),
             ("Semantic layer", "vocabolari: SNOMED, MedDRA, ChEMBL", ACCENT["blue"])]):
         x = 1.6 + i * 5.6
         box(ax, x, 3.75, 5.0, 0.62, accent=ac)
@@ -312,7 +312,7 @@ def fig03_kg():
     fig, ax = canvas((13, 9))
     ax.set_xlim(0, 13); ax.set_ylim(0, 9)
     title_block(ax, 0.3, 8.7, "Modello concettuale del knowledge graph",
-                "Entita biomediche, relazioni tipizzate ed evidenza reificata con provenienza")
+                "Entità biomediche, relazioni tipizzate ed evidenza reificata con provenienza")
 
     # Layout chosen to minimise edge crossings: the Compound-Target-Disease
     # triangle sits at the top, sources feed inward from the periphery.
@@ -356,7 +356,7 @@ def fig03_kg():
     # note on reified evidence
     box(ax, 0.4, 0.4, 5.6, 0.85, fill=TINT["slate"], border=BORDER_SOFT)
     ax.text(0.7, 0.82,
-            "Evidence e reificata: porta direzione, forza,\nconfidenza e provenienza (prov:wasDerivedFrom)",
+            "Evidence è reificata: porta direzione, forza,\nconfidenza e provenienza (prov:wasDerivedFrom)",
             fontsize=8.3, color=INK_SOFT, ha="left", va="center")
 
     ax.set_axis_off()
@@ -378,7 +378,7 @@ def fig04_rag():
              ("2 Ingest", "chunk + metadati", ACCENT["emerald"]),
              ("3 Embed", "index versionato", ACCENT["cyan"]),
              ("4 Retrieval", "filtro accessi", ACCENT["rose"]),
-             ("5 Context", "solo cio autorizzato", ACCENT["amber"]),
+             ("5 Context", "solo ciò autorizzato", ACCENT["amber"]),
              ("6 Generate", "citazione obbligatoria", ACCENT["blue"]),
              ("7 Feedback", "audit + drift", ACCENT["violet"])]
     w = 1.62; y = 5.2
@@ -426,7 +426,7 @@ def fig05_lifecycle():
                 "Cinque fasi (nota 04); la condivisione attraversa la vita attiva; owner - rischio - controllo")
 
     phases = [("1 Acquisizione", "ingest, consenso,\nvalidazione origine", ACCENT["blue"]),
-              ("2 Catalogazione", "identita, metadati,\nstorage", ACCENT["cyan"]),
+              ("2 Catalogazione", "identità, metadati,\nstorage", ACCENT["cyan"]),
               ("3 Uso", "accesso controllato,\nversioning", ACCENT["emerald"]),
               ("4 Archiviazione", "cold storage,\nretention", ACCENT["amber"]),
               ("5 Dismissione", "cancella / anonimizza,\ncatalogo aggiornato", ACCENT["rose"])]
@@ -448,7 +448,7 @@ def fig05_lifecycle():
 
     # bottom: catalog + lineage as the connective tissue
     band(ax, 0.35, 1.0, 12.3, 1.1,
-         "SOTTO OGNI FASE", "Data catalog + metadata management + lineage (la fase e evidenza, non teoria)",
+         "SOTTO OGNI FASE", "Data catalog + metadata management + lineage (la fase è evidenza, non teoria)",
          accent=ACCENT["slate"])
 
     ax.set_axis_off()
@@ -470,7 +470,7 @@ def fig06_domains():
         ("Lineage & Provenance", "grafo ingest->output, ricostruzione", ACCENT["cyan"]),
         ("Policy & Classificazione", "4 livelli, mapping policy-dataset", ACCENT["amber"]),
         ("Accessi & Sicurezza", "RBAC, SoD, pseudonimizzazione", ACCENT["rose"]),
-        ("Knowledge Graph", "entita, ontologia, evidenza reificata", ACCENT["violet"]),
+        ("Knowledge Graph", "entità, ontologia, evidenza reificata", ACCENT["violet"]),
         ("RAG / Generazione", "retrieval filtrato, citazioni, GraphRAG", ACCENT["blue"]),
         ("Audit & Reporting", "21 CFR Part 11, log AI, audit-ready", ACCENT["slate"]),
     ]
@@ -536,8 +536,8 @@ def fig07_lakehouse():
 def fig08_maturity():
     """Left: five-rung maturity ladder. Right: three-wave adoption roadmap."""
     fig, ax = canvas((13, 7.5)); ax.set_xlim(0, 13); ax.set_ylim(0, 7.5)
-    title_block(ax, 0.3, 7.1, "Modello di maturita e roadmap di adozione",
-                "Scala di maturita (nota 09) e adozione incrementale a tre wave")
+    title_block(ax, 0.3, 7.1, "Modello di maturità e roadmap di adozione",
+                "Scala di maturità (nota 09) e adozione incrementale a tre wave")
 
     # maturity ladder (left)
     rungs = [("1 Ad-hoc", "nessuna regola, conoscenza tribale", ACCENT["rose"]),
@@ -551,7 +551,7 @@ def fig08_maturity():
         box(ax, x, y, 5.0, 0.9, accent=ac)
         label(ax, x + 0.9, y + 0.45, h, size=9.5, weight="bold")
         ax.text(x + 3.4, y + 0.45, b, fontsize=7.8, color=INK_SOFT, ha="center", va="center")
-    label(ax, 1.0, 6.5, "Maturita", size=11, weight="bold", color=INK_SOFT, ha="left")
+    label(ax, 1.0, 6.5, "Maturità", size=11, weight="bold", color=INK_SOFT, ha="left")
 
     # roadmap waves (right)
     label(ax, 7.6, 6.5, "Adozione", size=11, weight="bold", color=INK_SOFT, ha="left")

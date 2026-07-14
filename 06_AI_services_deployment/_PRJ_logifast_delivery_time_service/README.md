@@ -21,7 +21,7 @@ python app.py
 gunicorn -w 2 -b 0.0.0.0:8080 "app:create_app()"
 ```
 
-Il modello `delivery.pkl` deve trovarsi nella cartella del progetto (gia' incluso).
+Il modello `delivery.pkl` deve trovarsi nella cartella del progetto (già incluso).
 
 ## Endpoint
 
@@ -65,9 +65,9 @@ curl -X POST http://localhost:8080/predict/batch -H "Content-Type: application/j
 ]'
 ```
 
-L'intervallo e' largo (banda di ~22.5 ore, pari all'RMSE sulla validazione
-sintetica) perche' il modello fornito sottostima il segnale dominante, la
-distanza tra le citta': la sua incertezza reale e' grande. La banda e' onesta,
+L'intervallo è largo (banda di ~22.5 ore, pari all'RMSE sulla validazione
+sintetica) perché il modello fornito sottostima il segnale dominante, la
+distanza tra le città: la sua incertezza reale è grande. La banda è onesta,
 non un difetto del servizio; stringerla richiede un modello migliore (vedi
 `notebooks/exploration_validation.ipynb` e il piano di riaddestramento in
 `docs/mlops_design.md`).
@@ -78,35 +78,35 @@ Lo schema completo di richieste e risposte e gli altri endpoint sono in
 
 ## Note di progettazione
 
-Tre scelte non ovvie, motivate qui perche' incidono sull'uso del servizio.
+Tre scelte non ovvie, motivate qui perché incidono sull'uso del servizio.
 
 - **`pickup_datetime` accettato ma non usato.** L'introspezione dell'artefatto
-  mostra che il modello e' addestrato su quattro feature
+  mostra che il modello è addestrato su quattro feature
   (`pickup_location`, `delivery_location`, `weight`, `service_type`): la
   data/ora di ritiro non entra nella predizione. L'API la richiede comunque, per
   coerenza con la specifica e per non rompere il contratto quando il modello
-  verra' riaddestrato includendola. La risposta lo segnala in `unused_fields`
+  verrà riaddestrato includendola. La risposta lo segnala in `unused_fields`
   (endpoint `/model`).
-- **Output in ore.** Il modello restituisce un numero senza unita'. Sul range
+- **Output in ore.** Il modello restituisce un numero senza unità. Sul range
   osservato (circa 39-55, media ~46) l'interpretazione coerente con consegne
-  interurbane e' in ore (~2 giorni), non minuti. L'assunzione e' dichiarata e
+  interurbane è in ore (~2 giorni), non minuti. L'assunzione è dichiarata e
   andrebbe confermata con la documentazione di training.
-- **Citta' fuori vocabolario: warning, non errore.** L'`OneHotEncoder` usa
-  `handle_unknown='ignore'`, quindi una citta' sconosciuta non genera errore ma
+- **Città fuori vocabolario: warning, non errore.** L'`OneHotEncoder` usa
+  `handle_unknown='ignore'`, quindi una città sconosciuta non genera errore ma
   una codifica a zeri e una stima vicina all'intercetta. Il servizio non blocca,
   ma abbassa il `reliability_score` e aggiunge un warning: una predizione
-  silenziosamente degradata e' peggio di una segnalata.
+  silenziosamente degradata è peggio di una segnalata.
 
-Il `reliability_score` e' un'euristica di in-distribution, non una probabilita':
+Il `reliability_score` è un'euristica di in-distribution, non una probabilità:
 una `LinearRegression` non espone `predict_proba`. L'`confidence_interval_hours`
-e' una banda illustrativa (~1 RMSE sulla validazione sintetica), non un
+è una banda illustrativa (~1 RMSE sulla validazione sintetica), non un
 intervallo statistico rigoroso. Entrambi sono dichiarati come tali.
 
 ## Sicurezza
 
-`delivery.pkl` e' un pickle: l'unpickle esegue codice arbitrario. L'artefatto e'
-stato verificato staticamente (solo classi `sklearn`/`numpy`) e la sua integrita'
-e' controllata via SHA-256 al caricamento. In produzione l'hash va verificato
+`delivery.pkl` è un pickle: l'unpickle esegue codice arbitrario. L'artefatto è
+stato verificato staticamente (solo classi `sklearn`/`numpy`) e la sua integrità
+è controllata via SHA-256 al caricamento. In produzione l'hash va verificato
 contro un registro fidato prima del load.
 
 ## Struttura
@@ -132,5 +132,5 @@ pytest -q
 ```
 
 I test coprono i quattro endpoint, la validazione (campi mancanti, `service_type`
-non valido, body non-JSON), il degrado su citta' ignota e il batch misto
+non valido, body non-JSON), il degrado su città ignota e il batch misto
 ok/errore.
