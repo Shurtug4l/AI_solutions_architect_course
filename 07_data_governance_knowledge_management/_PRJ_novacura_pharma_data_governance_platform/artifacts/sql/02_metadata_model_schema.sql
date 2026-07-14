@@ -9,19 +9,19 @@
 --   controllati, e versioning dei metadati.
 --
 --   Il modello segue la tripartizione della nota 04: metadati tecnici (schema,
---   formato, path), business/descrittivi (nome, significato, dominio, unita) e
---   operativi (frequenza di refresh, owner, sensibilita). Ogni campo di
---   metadato dichiara a quale strato appartiene e se e obbligatorio o
---   facoltativo. Questa e la parte "specifica del modello di metadati" tra gli
+--   formato, path), business/descrittivi (nome, significato, dominio, unità) e
+--   operativi (frequenza di refresh, owner, sensibilità). Ogni campo di
+--   metadato dichiara a quale strato appartiene e se è obbligatorio o
+--   facoltativo. Questa è la parte "specifica del modello di metadati" tra gli
 --   artefatti richiesti.
 --
--- Perche i vocabolari controllati sono il fulcro
---   In una farmaceutica l'interoperabilita non e opzionale: la stessa reazione
+-- Perché i vocabolari controllati sono il fulcro
+--   In una farmaceutica l'interoperabilita non è opzionale: la stessa reazione
 --   avversa deve significare la stessa cosa in farmacovigilanza, in clinica e
 --   nel knowledge graph. I vocabolari standard (SNOMED CT, MedDRA, MeSH, ATC,
 --   ChEMBL, Orphanet, UniProt) sono il semantic layer (nota 05) reso persistente.
---   Un tag semantico e cio che promuove un campo da "colonna" a "concetto
---   condiviso": e il ponte tra il catalogo (artefatto 01) e il knowledge graph
+--   Un tag semantico è ciò che promuove un campo da "colonna" a "concetto
+--   condiviso": È il ponte tra il catalogo (artefatto 01) e il knowledge graph
 --   (artifacts/knowledge_graph).
 --
 -- Dialetto: PostgreSQL 15+.
@@ -35,10 +35,10 @@ SET search_path TO governance;
 -- -----------------------------------------------------------------------------
 -- I registri terminologici di riferimento. is_external marca i vocabolari
 -- gestiti da enti terzi (SNOMED International, EMA per MedDRA, ...): NovaCura ne
--- allinea una versione, non li possiede. version_label e non-negoziabile: la
+-- allinea una versione, non li possiede. version_label è non-negoziabile: la
 -- codifica MedDRA cambia due volte l'anno, e un ICSR codificato con MedDRA 26.1
--- non e confrontabile alla cieca con uno in 27.0. Tracciare la versione del
--- vocabolario e parte della tracciabilita regolatoria.
+-- non è confrontabile alla cieca con uno in 27.0. Tracciare la versione del
+-- vocabolario è parte della tracciabilità regolatoria.
 -- -----------------------------------------------------------------------------
 CREATE TABLE controlled_vocabulary (
     vocab_id      SERIAL       PRIMARY KEY,
@@ -54,9 +54,9 @@ CREATE TABLE controlled_vocabulary (
 -- -----------------------------------------------------------------------------
 -- Termini di vocabolario
 -- -----------------------------------------------------------------------------
--- I singoli concetti codificati. code e il codice nativo del vocabolario
+-- I singoli concetti codificati. code è il codice nativo del vocabolario
 -- (es. un codice MedDRA PT), label la sua etichetta preferita, uri la sua
--- identita globale. Solo un sottoinsieme dei termini realmente usati viene
+-- identità globale. Solo un sottoinsieme dei termini realmente usati viene
 -- materializzato qui: il vocabolario completo vive nel sistema terminologico,
 -- il control plane ne cataloga l'uso.
 -- -----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ CREATE TABLE vocabulary_term (
     vocab_id    INTEGER      NOT NULL REFERENCES controlled_vocabulary(vocab_id),
     code        VARCHAR(60)  NOT NULL,   -- codice nativo nel vocabolario
     label       VARCHAR(240) NOT NULL,   -- etichetta preferita
-    uri         VARCHAR(300),            -- identita globale (per il KG)
+    uri         VARCHAR(300),            -- identità globale (per il KG)
     UNIQUE (vocab_id, code)
 );
 
@@ -76,9 +76,9 @@ CREATE TABLE vocabulary_term (
 -- Il livello di indirezione che aggancia un campo di dataset a un concetto.
 -- Un tag ha un nome interno stabile (es. 'adverse_event') e punta a un termine
 -- di un vocabolario. dataset_field.semantic_tag_id (artefatto 01) referenzia
--- questa tabella. Perche non taggare direttamente col term_id: il tag e il
--- concetto interno stabile, il termine e la sua codifica in un vocabolario
--- che puo cambiare versione o essere sostituito. Un livello di indirezione
+-- questa tabella. Perché non taggare direttamente col term_id: il tag è il
+-- concetto interno stabile, il termine è la sua codifica in un vocabolario
+-- che può cambiare versione o essere sostituito. Un livello di indirezione
 -- protegge il catalogo dal churn terminologico.
 -- -----------------------------------------------------------------------------
 CREATE TABLE semantic_tag (
@@ -90,7 +90,7 @@ CREATE TABLE semantic_tag (
 );
 
 -- La FK differita da 01: aggancia dataset_field.semantic_tag_id a semantic_tag.
--- Dichiarata qui perche semantic_tag e definita in questo artefatto, che si
+-- Dichiarata qui perché semantic_tag è definita in questo artefatto, che si
 -- assume caricato dopo 01.
 ALTER TABLE dataset_field
     ADD CONSTRAINT fk_field_semantic_tag
@@ -100,12 +100,12 @@ ALTER TABLE dataset_field
 -- -----------------------------------------------------------------------------
 -- Attributi del modello di metadati (lo standard minimo)
 -- -----------------------------------------------------------------------------
--- La definizione formale di QUALI metadati un dataset deve o puo dichiarare.
--- Questa tabella e lo "standard minimo di metadati" della traccia reso dato:
+-- La definizione formale di QUALI metadati un dataset deve o può dichiarare.
+-- Questa tabella è lo "standard minimo di metadati" della traccia reso dato:
 -- ogni attributo appartiene a uno strato (technical/business/operational),
--- e obbligatorio o facoltativo, ha un tipo e una descrizione semantica.
+-- è obbligatorio o facoltativo, ha un tipo e una descrizione semantica.
 -- La query 05 usa questa tabella per verificare che i dataset dichiarino tutti
--- i metadati obbligatori: lo standard e controllabile, non solo documentato.
+-- i metadati obbligatori: lo standard è controllabile, non solo documentato.
 -- -----------------------------------------------------------------------------
 CREATE TABLE metadata_attribute (
     attr_id      SERIAL       PRIMARY KEY,
@@ -115,7 +115,7 @@ CREATE TABLE metadata_attribute (
     is_mandatory BOOLEAN      NOT NULL,
     data_type    VARCHAR(40)  NOT NULL,
     description  VARCHAR(300) NOT NULL,
-    vocab_id     INTEGER      REFERENCES controlled_vocabulary(vocab_id)  -- se il valore e vincolato a un vocabolario
+    vocab_id     INTEGER      REFERENCES controlled_vocabulary(vocab_id)  -- se il valore è vincolato a un vocabolario
 );
 
 
@@ -123,11 +123,11 @@ CREATE TABLE metadata_attribute (
 -- Valori di metadato (istanze) con versioning
 -- -----------------------------------------------------------------------------
 -- I valori concreti degli attributi per un dato dataset, versionati. Il
--- versioning dei metadati e un requisito esplicito della traccia. Il pattern e
--- append-only con validita temporale: un nuovo valore non aggiorna in place,
--- crea una nuova versione e chiude la precedente (valid_to). Cosi la domanda
+-- versioning dei metadati è un requisito esplicito della traccia. Il pattern è
+-- append-only con validità temporale: un nuovo valore non aggiorna in place,
+-- crea una nuova versione e chiude la precedente (valid_to). Così la domanda
 -- "quali metadati aveva questo dataset quando il modello fu addestrato?" ha
--- sempre risposta, che e la base della riproducibilita.
+-- sempre risposta, che è la base della riproducibilità.
 -- -----------------------------------------------------------------------------
 CREATE TABLE metadata_value (
     value_id     BIGSERIAL    PRIMARY KEY,
@@ -167,13 +167,13 @@ INSERT INTO controlled_vocabulary (code, name, domain_note, version_label, is_ex
         'Classificazione dei farmaci per organo bersaglio e meccanismo.', 'ATC 2026', TRUE,
         'https://www.whocc.no/atc/'),
     ('CHEMBL', 'ChEMBL',
-        'Identita dei composti e bioattivita, base dell''anagrafica molecole.', 'ChEMBL 34', TRUE,
+        'Identità dei composti e bioattivita, base dell''anagrafica molecole.', 'ChEMBL 34', TRUE,
         'https://www.ebi.ac.uk/chembl/'),
     ('ORPHA',  'Orphanet',
         'Nomenclatura delle malattie rare, centrale per il focus NovaCura.', 'Orphanet 2026-01', TRUE,
         'http://www.orpha.net/ORDO/'),
     ('UNIPROT','UniProt',
-        'Identita di proteine e target molecolari.', 'UniProt 2026_01', TRUE,
+        'Identità di proteine e target molecolari.', 'UniProt 2026_01', TRUE,
         'https://www.uniprot.org/uniprotkb/'),
     ('ICD10',  'ICD-10',
         'Classificazione delle malattie per reportistica e mapping.', 'ICD-10 2019', TRUE,
@@ -218,11 +218,11 @@ INSERT INTO metadata_attribute (name, layer, is_mandatory, data_type, descriptio
     ('business_name',     'business',    TRUE,  'string', 'Nome comprensibile al business.', NULL),
     ('definition',        'business',    TRUE,  'string', 'Significato del dataset e dei suoi campi chiave.', NULL),
     ('domain_vocabulary', 'business',    FALSE, 'enum',   'Vocabolario di dominio prevalente.', 1),
-    ('unit_of_measure',   'business',    FALSE, 'string', 'Unita di misura dei campi quantitativi.', NULL),
+    ('unit_of_measure',   'business',    FALSE, 'string', 'Unità di misura dei campi quantitativi.', NULL),
     -- operativi
     ('data_owner',        'operational', TRUE,  'ref',    'Owner accountable del dataset.', NULL),
-    ('data_steward',      'operational', TRUE,  'ref',    'Steward responsabile della qualita.', NULL),
-    ('sensitivity',       'operational', TRUE,  'enum',   'Classe di sensibilita.', NULL),
+    ('data_steward',      'operational', TRUE,  'ref',    'Steward responsabile della qualità.', NULL),
+    ('sensitivity',       'operational', TRUE,  'enum',   'Classe di sensibilità.', NULL),
     ('refresh_frequency', 'operational', TRUE,  'string', 'Frequenza di aggiornamento.', NULL),
     ('retention_period',  'operational', TRUE,  'string', 'Periodo di conservazione applicabile.', NULL),
     ('gxp_relevant',      'operational', TRUE,  'bool',   'Rilevanza GxP del dataset.', NULL);
@@ -245,17 +245,17 @@ WHERE d.urn = 'urn:novacura:clinical:ct_subject_outcomes' AND a.name = 'definiti
 -- =============================================================================
 -- Note di lettura critica (per il valutatore)
 -- =============================================================================
--- - Il livello di indirezione tag -> termine -> vocabolario e la scelta di
---   design piu importante qui. Costa una join in piu, ma disaccoppia la
+-- - Il livello di indirezione tag -> termine -> vocabolario è la scelta di
+--   design più importante qui. Costa una join in più, ma disaccoppia la
 --   semantica interna stabile dal churn dei vocabolari esterni (MedDRA cambia
 --   ogni sei mesi). Senza indirezione, ogni aggiornamento di MedDRA
 --   toccherebbe il catalogo.
--- - metadata_value e volutamente append-only con valid_from/valid_to invece di
---   una colonna aggiornabile. Costa spazio e una unique parziale, ma e cio che
+-- - metadata_value è volutamente append-only con valid_from/valid_to invece di
+--   una colonna aggiornabile. Costa spazio e una unique parziale, ma è ciò che
 --   rende i metadati ricostruibili a una data passata: senza, il versioning
 --   sarebbe dichiarato ma non dimostrabile.
--- - Limite: qui non e modellato il mapping cross-vocabolario (UMLS come
+-- - Limite: qui non è modellato il mapping cross-vocabolario (UMLS come
 --   ponte tra SNOMED e MedDRA). In un sistema reale una crosswalk table
---   collegherebbe termini equivalenti tra vocabolari; e stato omesso per non
+--   collegherebbe termini equivalenti tra vocabolari; è stato omesso per non
 --   gonfiare l'artefatto oltre lo scopo della specifica.
 -- =============================================================================

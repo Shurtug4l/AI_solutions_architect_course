@@ -14,12 +14,12 @@
 --     2. Forward: data una sorgente, quali output ne dipendono? (impact
 --        analysis prima di modificare o ritirare un dato, nota 04)
 --     3. Ricostruzione firmata: l'output con la catena completa di run, versioni
---        di codice e attori, cioe l'evidenza ALCOA+ per un ispettore.
+--        di codice e attori, cioè l'evidenza ALCOA+ per un ispettore.
 --
--- Perche WITH RECURSIVE
---   La lineage e un grafo di profondita arbitraria (sorgente -> ... -> output).
---   Una join a profondita fissa non basta: la ricorsione percorre il grafo
---   fin dove arriva. e il motivo per cui il modello 03 e un grafo e non colonne.
+-- Perché WITH RECURSIVE
+--   La lineage è un grafo di profondità arbitraria (sorgente -> ... -> output).
+--   Una join a profondità fissa non basta: la ricorsione percorre il grafo
+--   fin dove arriva. È il motivo per cui il modello 03 è un grafo e non colonne.
 --
 -- Dialetto: PostgreSQL 15+. Presuppone gli schemi 01-04 caricati con seed.
 -- =============================================================================
@@ -67,11 +67,11 @@ ORDER BY depth, name;
 
 
 -- -----------------------------------------------------------------------------
--- 2. FORWARD LINEAGE - da una sorgente a cio che ne dipende
+-- 2. FORWARD LINEAGE - da una sorgente a ciò che ne dipende
 -- -----------------------------------------------------------------------------
 -- Domanda di change management: "Se ritiro o correggo il dataset di
 -- farmacovigilanza, quali modelli e output vanno rivisti?". Si parte dal nodo
--- dataset e si scende gli archi in avanti (from -> to). e la mossa da fare
+-- dataset e si scende gli archi in avanti (from -> to). È la mossa da fare
 -- PRIMA di toccare una sorgente, non dopo (nota 04, forward lineage).
 -- -----------------------------------------------------------------------------
 WITH RECURSIVE fwd AS (
@@ -97,7 +97,7 @@ SELECT depth, node_type, name
 FROM fwd
 WHERE depth > 0            -- escludi la sorgente stessa
 ORDER BY depth, name;
--- Risultato atteso: feature_set (1), modello (2), output (3). Tutto cio che
+-- Risultato atteso: feature_set (1), modello (2), output (3). Tutto ciò che
 -- eredita un cambiamento della fonte PV.
 
 
@@ -106,8 +106,8 @@ ORDER BY depth, name;
 -- -----------------------------------------------------------------------------
 -- La query che un auditor vuole: per un dato output, la lista completa delle
 -- sorgenti, con la run che le ha trasformate, la versione di codice di quella
--- run, chi l'ha lanciata e l'hash del manifest degli input. e la differenza
--- tra "il numero e questo" e "il numero e questo perche prodotto dalla run R
+-- run, chi l'ha lanciata e l'hash del manifest degli input. È la differenza
+-- tra "il numero è questo" e "il numero è questo perché prodotto dalla run R
 -- del codice a1b2c3d4 sugli input con hash H, lanciata da X il giorno D".
 -- -----------------------------------------------------------------------------
 WITH RECURSIVE back AS (
@@ -123,7 +123,7 @@ WITH RECURSIVE back AS (
 )
 SELECT DISTINCT
        d.urn                       AS sorgente,
-       sc.code                     AS sensibilita,
+       sc.code                     AS sensibilità,
        e.transform_type            AS trasformazione,
        run.run_id,
        run.code_version,
@@ -141,7 +141,7 @@ LEFT JOIN party actor ON actor.party_id = run.triggered_by
 WHERE src.node_type = 'dataset'
 ORDER BY d.urn;
 -- Ogni sorgente del report con la sua run, versione di codice, hash del
--- manifest e responsabile: la pipeline diventa ricostruibile end-to-end.
+-- manifest è responsabile: la pipeline diventa ricostruibile end-to-end.
 
 
 -- -----------------------------------------------------------------------------
@@ -150,7 +150,7 @@ ORDER BY d.urn;
 -- Completa la ricostruzione unendo la lineage all'audit degli accessi: per le
 -- sorgenti che alimentano un output, quali accessi (concessi o negati) sono
 -- stati registrati. Unisce il "cosa deriva da cosa" (lineage) al "chi ha
--- toccato cosa" (audit), che e cio che un'indagine su un incidente richiede.
+-- toccato cosa" (audit), che è ciò che un'indagine su un incidente richiede.
 -- -----------------------------------------------------------------------------
 WITH RECURSIVE back AS (
     SELECT n.node_id FROM lineage_node n
@@ -178,16 +178,16 @@ ORDER BY d.urn, al.occurred_at;
 -- Note di lettura critica (per il valutatore)
 -- =============================================================================
 -- - Le stesse due CTE ricorsive (back/fwd) rispondono a domande opposte solo
---   invertendo la direzione dell'arco percorso (to->from vs from->to). e la
---   prova che il modello a grafo dell'artefatto 03 e la rappresentazione giusta:
+--   invertendo la direzione dell'arco percorso (to->from vs from->to). È la
+--   prova che il modello a grafo dell'artefatto 03 è la rappresentazione giusta:
 --   una struttura, due letture.
--- - La query 3 e il deliverable regolatorio vero. Da sola giustifica perche
+-- - La query 3 è il deliverable regolatorio vero. Da sola giustifica perché
 --   ogni arco porta la run e ogni run porta code_version e input_manifest_hash:
 --   senza quei campi la ricostruzione direbbe "da dove" ma non "in quale stato
---   del mondo", e la riproducibilita richiede entrambi.
+--   del mondo", e la riproducibilità richiede entrambi.
 -- - Limite noto: su grafi molto grandi la ricorsione va vincolata (limite di
---   profondita, materializzazione incrementale). Su una lineage di dominio,
---   con profondita nell'ordine delle decine di hop, il costo e trascurabile;
+--   profondità, materializzazione incrementale). Su una lineage di dominio,
+--   con profondità nell'ordine delle decine di hop, il costo è trascurabile;
 --   il vincolo diventa rilevante solo se si tracciasse la lineage a livello di
 --   singola colonna su migliaia di trasformazioni, scenario fuori scope per una
 --   specifica progettuale.

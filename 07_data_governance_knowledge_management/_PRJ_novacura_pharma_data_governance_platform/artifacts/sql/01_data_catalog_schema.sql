@@ -6,29 +6,29 @@
 -- Scopo
 --   Schema del control plane del catalogo dati: l'inventario centrale dei
 --   dataset aziendali rilevanti per il programma di drug repurposing, con
---   proprietari, classificazione di sensibilita, metadati di campo e mapping
+--   proprietari, classificazione di sensibilità, metadati di campo e mapping
 --   verso le policy di governance.
 --
---   Questo NON e lo schema dei dati clinici o di laboratorio. E lo schema che
+--   Questo NON è lo schema dei dati clinici o di laboratorio. È lo schema che
 --   descrive quei dati (catalog + metadata management, note 03 e 04): la
---   "vetrina" che dice cosa esiste, dove vive, chi ne risponde e come puo
+--   "vetrina" che dice cosa esiste, dove vive, chi ne risponde e come può
 --   essere usato. I dati veri vivono nel lakehouse (vedi artifacts/bigdata).
 --
 -- Dialetto
---   PostgreSQL 15+. Il control plane di governance e strutturato e
---   transazionale, quindi un motore relazionale e la scelta corretta
+--   PostgreSQL 15+. Il control plane di governance è strutturato e
+--   transazionale, quindi un motore relazionale è la scelta corretta
 --   (schema-on-write, nota 08). Gli equivalenti su Big Data (Delta Lake,
 --   Unity Catalog) sono annotati dove rilevante.
 --
 -- Principio guida
---   Ogni riga del catalogo ha un proprietario. La accountability e il
+--   Ogni riga del catalogo ha un proprietario. La accountability è il
 --   principio portante della governance (nota 01): un dataset senza owner e
 --   un dataset di cui nessuno risponde. I vincoli NOT NULL su owner e
 --   sensitivity sono la traduzione tecnica di quel principio.
 --
 -- Coerenza cross-artefatto
---   dataset.dataset_id e la chiave referenziata da 02 (metadata), 03 (lineage),
---   05 (data quality) e dai manifest Big Data. e l'identita stabile di un
+--   dataset.dataset_id è la chiave referenziata da 02 (metadata), 03 (lineage),
+--   05 (data quality) e dai manifest Big Data. È l'identità stabile di un
 --   asset informativo lungo tutto il suo ciclo di vita.
 -- =============================================================================
 
@@ -58,11 +58,11 @@ CREATE TABLE data_domain (
 -- Parti / attori di governance (ruoli)
 -- -----------------------------------------------------------------------------
 -- I ruoli della nota 02, tenuti distinti come vuole DAMA: Data Owner (business,
--- accountable), Data Steward (qualita), Data Custodian (infrastruttura),
--- piu i ruoli specifici del contesto AI e pharma (Model Owner, QA GxP,
--- Regulatory Affairs). Il CDO e transversale e non e legato a un singolo
--- dataset. La segregazione owner/steward/custodian non e pedanteria: in una
--- farmaceutica l'infrastruttura e spesso gestita da IT o da un fornitore
+-- accountable), Data Steward (qualità), Data Custodian (infrastruttura),
+-- più i ruoli specifici del contesto AI e pharma (Model Owner, QA GxP,
+-- Regulatory Affairs). Il CDO è transversale e non è legato a un singolo
+-- dataset. La segregazione owner/steward/custodian non è pedanteria: in una
+-- farmaceutica l'infrastruttura è spesso gestita da IT o da un fornitore
 -- esterno, mentre il significato del dato resta al business (nota 02).
 -- -----------------------------------------------------------------------------
 CREATE TABLE party (
@@ -84,7 +84,7 @@ CREATE TABLE party (
 -- Dove il dato nasce. Il flag gxp_relevant marca i sistemi soggetti alle norme
 -- Good Practice (GCP/GLP/GMP) e quindi ai requisiti 21 CFR Part 11 ed EU Annex
 -- 11 su audit trail e firme elettroniche. La distinzione GxP / non-GxP guida
--- il livello di controllo: un CTMS di trial e GxP, uno scraper di letteratura
+-- il livello di controllo: un CTMS di trial è GxP, uno scraper di letteratura
 -- pubblica non lo e.
 -- -----------------------------------------------------------------------------
 CREATE TABLE source_system (
@@ -100,12 +100,12 @@ CREATE TABLE source_system (
 
 
 -- -----------------------------------------------------------------------------
--- Classi di sensibilita
+-- Classi di sensibilità
 -- -----------------------------------------------------------------------------
--- Lo schema di classificazione dati. Quattro livelli piu due flag ortogonali:
+-- Lo schema di classificazione dati. Quattro livelli più due flag ortogonali:
 -- phi_flag per i dati sanitari personali (GDPR art. 9, categoria particolare)
--- e gxp_flag per i dati con impatto regolatorio. La classificazione non e
--- decorativa: e cio che la policy di accesso e il retrieval del RAG leggono
+-- e gxp_flag per i dati con impatto regolatorio. La classificazione non è
+-- decorativa: È ciò che la policy di accesso e il retrieval del RAG leggono
 -- per decidere chi vede cosa (nota 07, access-filtered retrieval).
 -- -----------------------------------------------------------------------------
 CREATE TABLE sensitivity_class (
@@ -122,11 +122,11 @@ CREATE TABLE sensitivity_class (
 -- -----------------------------------------------------------------------------
 -- Dataset (la scheda di catalogo)
 -- -----------------------------------------------------------------------------
--- Il cuore del catalogo. Ogni dataset e un asset informativo con identita,
+-- Il cuore del catalogo. Ogni dataset è un asset informativo con identità,
 -- proprietario e stato di ciclo di vita (nota 04: acquisition -> cataloging ->
 -- use -> archiving -> decommissioning). Il campo medallion_layer colloca il
--- dataset nella scala di raffinamento Bronze/Silver/Gold (nota 08), cosi la
--- lineage e leggibile per costruzione.
+-- dataset nella scala di raffinamento Bronze/Silver/Gold (nota 08), così la
+-- lineage è leggibile per costruzione.
 --
 -- schema_version abilita l'evoluzione additiva dei metadati senza rompere la
 -- ricostruibilita storica: quando lo schema di un dataset cambia, si incrementa
@@ -141,13 +141,13 @@ CREATE TABLE dataset (
     source_system_id   INTEGER      NOT NULL REFERENCES source_system(system_id),
 
     -- accountability: owner e steward obbligatori, custodian opzionale
-    -- (puo coincidere con un fornitore infrastrutturale)
+    -- (può coincidere con un fornitore infrastrutturale)
     owner_party_id     INTEGER      NOT NULL REFERENCES party(party_id),
     steward_party_id   INTEGER      NOT NULL REFERENCES party(party_id),
     custodian_party_id INTEGER      REFERENCES party(party_id),
 
     -- classificazione (obbligatoria: un dataset non classificato non entra
-    -- in produzione, e la regola che 05 verifica)
+    -- in produzione, è la regola che 05 verifica)
     sensitivity_class_id SMALLINT   NOT NULL REFERENCES sensitivity_class(class_id),
 
     storage_format     VARCHAR(24)  NOT NULL
@@ -178,10 +178,10 @@ CREATE INDEX idx_dataset_lifecycle   ON dataset(lifecycle_state);
 -- Campi del dataset (metadati di campo)
 -- -----------------------------------------------------------------------------
 -- La granularita fine del catalogo: ogni campo con tipo, semantica, obbligo,
--- sensibilita e pattern di validita. La distinzione is_pii / is_phi conta:
--- un subject_id pseudonimizzato e PII ma la diagnosi associata e PHI (GDPR
+-- sensibilità e pattern di validità. La distinzione is_pii / is_phi conta:
+-- un subject_id pseudonimizzato è PII ma la diagnosi associata è PHI (GDPR
 -- art. 9). semantic_tag_id (definito in 02) aggancia il campo a un termine di
--- vocabolario controllato (SNOMED, MedDRA, ...), che e cio che rende il dato
+-- vocabolario controllato (SNOMED, MedDRA, ...), che è ciò che rende il dato
 -- interoperabile tra team e con il knowledge graph.
 -- -----------------------------------------------------------------------------
 CREATE TABLE dataset_field (
@@ -196,9 +196,9 @@ CREATE TABLE dataset_field (
     is_phi               BOOLEAN      NOT NULL DEFAULT FALSE,
     sensitivity_class_id SMALLINT     REFERENCES sensitivity_class(class_id),
     semantic_tag_id      INTEGER,      -- FK verso governance.semantic_tag (artefatto 02)
-    valid_pattern        VARCHAR(200), -- regex o regola di validita (dimensione Validity, nota 03)
+    valid_pattern        VARCHAR(200), -- regex o regola di validità (dimensione Validity, nota 03)
     allowed_values       TEXT,         -- dominio dei valori ammessi, se enumerabile
-    unit                 VARCHAR(40),  -- unita di misura (business metadata, nota 04)
+    unit                 VARCHAR(40),  -- unità di misura (business metadata, nota 04)
     UNIQUE (dataset_id, name)
 );
 
@@ -212,7 +212,7 @@ CREATE INDEX idx_field_phi      ON dataset_field(is_phi) WHERE is_phi = TRUE;
 -- Le policy aziendali (classification, access, retention, privacy, data
 -- sharing) come oggetti versionati con un owner. La struttura riflette la nota
 -- 02: una policy ha titolo parlante, scope, responsabile e statement. Il
--- versioning e effective_date servono perche una policy che cambia non
+-- versioning e effective_date servono perché una policy che cambia non
 -- cancella la precedente: la ricostruzione regolatoria deve poter dire quale
 -- policy era in vigore alla data X.
 -- -----------------------------------------------------------------------------
@@ -226,7 +226,7 @@ CREATE TABLE policy (
     version        VARCHAR(12)  NOT NULL,   -- semver testuale, es. 1.2
     effective_date DATE         NOT NULL,
     owner_party_id INTEGER      NOT NULL REFERENCES party(party_id),
-    statement      TEXT         NOT NULL,   -- il "cosa fare e perche"
+    statement      TEXT         NOT NULL,   -- il "cosa fare e perché"
     is_current     BOOLEAN      NOT NULL DEFAULT TRUE,
     UNIQUE (code, version)
 );
@@ -237,9 +237,9 @@ CREATE TABLE policy (
 -- -----------------------------------------------------------------------------
 -- Il legame esplicito tra policy e dataset che la traccia richiede
 -- ("mapping tra policy e dataset"). Una tabella ponte molti-a-molti: un
--- dataset e soggetto a piu policy, una policy copre piu dataset. La query 05
+-- dataset è soggetto a più policy, una policy copre più dataset. La query 05
 -- verifica che ogni dataset restricted/PHI sia coperto almeno da una policy di
--- access e una di retention: la copertura non e assunta, e controllata.
+-- access e una di retention: la copertura non è assunta, è controllata.
 -- -----------------------------------------------------------------------------
 CREATE TABLE policy_dataset_map (
     policy_id   INTEGER NOT NULL REFERENCES policy(policy_id),
@@ -252,7 +252,7 @@ CREATE TABLE policy_dataset_map (
 -- -----------------------------------------------------------------------------
 -- Regole di retention
 -- -----------------------------------------------------------------------------
--- La retention non e mai "tenere tutto per sempre" (nota 02). Ogni regola lega
+-- La retention non è mai "tenere tutto per sempre" (nota 02). Ogni regola lega
 -- una categoria di dato a un periodo, una base legale e un'azione di
 -- dismissione. Nel contesto pharma i periodi sono lunghi e imposti da norma:
 -- i dati di uno studio clinico vanno conservati fino a 25 anni dalla fine dello
@@ -326,8 +326,8 @@ INSERT INTO source_system (code, name, kind, environment, gxp_relevant, descript
         'Anagrafiche di dominio con mapping a vocabolari standard.');
 
 -- Un dataset rappresentativo per ciascuna famiglia di fonti del caso guida.
--- storage_location, medallion_layer e sensibilita sono coerenti con lo schema:
--- i dati a livello soggetto sono restricted+PHI; letteratura pubblica e public.
+-- storage_location, medallion_layer e sensibilità sono coerenti con lo schema:
+-- i dati a livello soggetto sono restricted+PHI; letteratura pubblica è public.
 INSERT INTO dataset (urn, name, description, domain_id, source_system_id,
         owner_party_id, steward_party_id, custodian_party_id, sensitivity_class_id,
         storage_format, storage_location, medallion_layer, refresh_frequency,
@@ -415,7 +415,7 @@ WHERE policy.code = 'POL-RET-01';
 -- =============================================================================
 -- Note di lettura critica (per il valutatore)
 -- =============================================================================
--- - Perche PostgreSQL e non un catalog gia pronto (Collibra/DataHub): a livello
+-- - Perché PostgreSQL e non un catalog già pronto (Collibra/DataHub): a livello
 --   di specifica progettuale, modellare il control plane in SQL esplicito rende
 --   verificabili i vincoli di governance (owner obbligatorio, classificazione
 --   obbligatoria, copertura policy). Un prodotto COTS li implementerebbe, ma la
@@ -424,8 +424,8 @@ WHERE policy.code = 'POL-RET-01';
 --   l'access-filtered retrieval del RAG (nota 07). L'enforcement vive nel piano
 --   applicativo che legge sensitivity_class e le ACL; qui se ne definisce la
 --   base dati.
--- - Evoluzione: sensitivity_class e volutamente piccola e stabile. Aggiungere
---   un dominio o un formato di storage e additivo (nuova riga), non un cambio
+-- - Evoluzione: sensitivity_class è volutamente piccola e stabile. Aggiungere
+--   un dominio o un formato di storage è additivo (nuova riga), non un cambio
 --   di schema: la scalabilita verso nuovi domini di dato (requisito non
---   funzionale) e supportata dal modello, non solo dichiarata.
+--   funzionale) è supportata dal modello, non solo dichiarata.
 -- =============================================================================

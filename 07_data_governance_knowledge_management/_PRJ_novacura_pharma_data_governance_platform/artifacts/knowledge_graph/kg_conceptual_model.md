@@ -1,22 +1,22 @@
 # Modello concettuale del knowledge graph di dominio
 
-Modello concettuale (nota 05: l'ontologia e la T-box, il grafo popolato e la
-A-box) del knowledge graph biomedico che collega le entita del programma di
+Modello concettuale (nota 05: l'ontologia è la T-box, il grafo popolato è la
+A-box) del knowledge graph biomedico che collega le entità del programma di
 drug repurposing NovaCura. Rappresenta il livello di conoscenza strutturata su
-cui poggiano il RAG governato (GraphRAG) e la spiegabilita degli output.
+cui poggiano il RAG governato (GraphRAG) e la spiegabilità degli output.
 
-Perche un grafo e non tabelle (nota 08): la domanda centrale del repurposing
-e multi-hop, "quali composti che agiscono su un target coinvolto in una malattia
-rara hanno gia evidenza clinica o di assay, senza segnali di sicurezza
-ostativi?". Sulle tabelle e una pila di join; sul grafo e una passeggiata lungo
+Perché un grafo e non tabelle (nota 08): la domanda centrale del repurposing
+è multi-hop, "quali composti che agiscono su un target coinvolto in una malattia
+rara hanno già evidenza clinica o di assay, senza segnali di sicurezza
+ostativi?". Sulle tabelle è una pila di join; sul grafo è una passeggiata lungo
 gli archi. La conoscenza densa di relazioni si modella come grafo.
 
-## Tipi di nodo (entita)
+## Tipi di nodo (entità)
 
 Ogni tipo di nodo si aggancia a un vocabolario controllato (artefatto SQL 02),
-cosi l'identita dei nodi e interoperabile e non locale.
+così l'identità dei nodi è interoperabile e non locale.
 
-| Nodo | Descrizione | Vocabolario di identita |
+| Nodo | Descrizione | Vocabolario di identità |
 |------|-------------|-------------------------|
 | `Compound` | Composto / principio attivo candidato | ChEMBL, ATC |
 | `Target` | Bersaglio molecolare (proteina/gene) | UniProt |
@@ -32,7 +32,7 @@ cosi l'identita dei nodi e interoperabile e non locale.
 ## Tipi di arco (relazioni)
 
 Le relazioni portano il significato (nota 05: relazioni logiche = meno
-ambiguita). Le principali:
+ambiguità). Le principali:
 
 ```
   (Compound) --targets--------> (Target)
@@ -54,29 +54,29 @@ ambiguita). Le principali:
 ## Evidenza reificata e provenienza sui fatti
 
 Decisione di modellazione centrale: l'evidenza a favore o contro un'ipotesi di
-repurposing e **reificata** in un nodo `Evidence`, non appesa come proprieta di
+repurposing è **reificata** in un nodo `Evidence`, non appesa come proprietà di
 un arco. Motivazione, con il costo:
 
-- Un'affermazione come "sirolimus e candidato per la LAM" non e un fatto atomico:
-  e sostenuta da piu fonti (un assay, una pubblicazione, un braccio di trial),
+- Un'affermazione come "sirolimus è candidato per la LAM" non è un fatto atomico:
+  è sostenuta da più fonti (un assay, una pubblicazione, un braccio di trial),
   ciascuna con forza e direzione diverse, alcune a favore, alcune contrarie. Un
-  arco semplice non puo portare piu provenienze eterogenee.
+  arco semplice non può portare più provenienze eterogenee.
 - Reificare l'evidenza permette a ogni nodo `Evidence` di dichiarare la propria
   fonte (`derived_from` verso un `Publication`, un `Assay` o un `Trial`), la
-  direzione (`supports` / `refutes`) e la forza. e cio che rende la spiegazione
+  direzione (`supports` / `refutes`) e la forza. È ciò che rende la spiegazione
   dell'output tracciabile fino al dato originale (requisito del caso guida:
   "spiegazioni contestuali delle decisioni: provenienza dati, estratti,
-  relazioni tra entita").
+  relazioni tra entità").
 - Costo accettato: la reificazione aggiunge un nodo per ogni affermazione
   sostenuta, appesantendo il grafo. Il beneficio, provenienza per fatto invece
-  che per grafo, e esattamente cio che distingue un KG governato da uno
+  che per grafo, è esattamente ciò che distingue un KG governato da uno
   decorativo.
 
 Ogni nodo e ogni arco portano metadati di governance minimi: `source_dataset`
 (urn del catalogo), `derived_from` (fonte), `asserted_at`, `confidence`. Un
-triple senza provenienza e, nelle parole della nota 05, una bugia sicura di se.
+triple senza provenienza è, nelle parole della nota 05, una bugia sicura di sé.
 
-## Proprieta principali per nodo (estratto)
+## Proprietà principali per nodo (estratto)
 
 ```
   Compound:     chembl_id, atc_code, preferred_name, modality
@@ -96,12 +96,12 @@ vincoli, non solo relazioni). Alcuni vincoli rilevanti:
 
 - Un `Trial` che `studies` un `Compound` deve `investigate` almeno una `Disease`.
 - Un arco `repurposing_candidate_for` deve essere sostenuto da almeno un nodo
-  `Evidence` con `direction = support`; altrimenti e un'ipotesi non evidenziata
+  `Evidence` con `direction = support`; altrimenti è un'ipotesi non evidenziata
   e non entra nel Gold.
-- Un `AdverseEvent` `reported_for` un `Compound` con `seriousness = serious` e un
-  segnale che il modello di scoring deve poter leggere come penalita.
-- `indicated_for` e `repurposing_candidate_for` sono disgiunti: un composto gia
-  indicato per una malattia non e "candidato al repurposing" per la stessa.
+- Un `AdverseEvent` `reported_for` un `Compound` con `seriousness = serious` è un
+  segnale che il modello di scoring deve poter leggere come penalità.
+- `indicated_for` e `repurposing_candidate_for` sono disgiunti: un composto già
+  indicato per una malattia non è "candidato al repurposing" per la stessa.
 
 Questi vincoli rendono il reasoning sano (nota 08: un KG senza ontologia deriva
 in un mess incoerente). Sono controllabili in fase di caricamento come un DQ
@@ -109,43 +109,43 @@ gate sul grafo.
 
 ## Competency questions (cosa il grafo deve saper rispondere)
 
-Le domande che il grafo e progettato per rispondere, che sono anche il suo test
+Le domande che il grafo è progettato per rispondere, che sono anche il suo test
 di accettazione:
 
-1. Quali composti gia in portafoglio agiscono su un target associato a una data
+1. Quali composti già in portafoglio agiscono su un target associato a una data
    malattia rara?
-2. Per un candidato, qual e l'evidenza a favore e contraria, con la fonte di
+2. Per un candidato, qual è l'evidenza a favore e contraria, con la fonte di
    ciascun pezzo?
 3. Esistono segnali di farmacovigilanza seri per il candidato che
    controindicano il repurposing?
 4. Quali trial hanno misurato un endpoint rilevante per la malattia bersaglio?
-5. Ricostruire il percorso entita->evidenza->fonte per giustificare uno score a
+5. Ricostruire il percorso entità->evidenza->fonte per giustificare uno score a
    un revisore regolatorio.
 
-Le domande 2, 3 e 5 sono multi-hop e attraversano piu tipi di nodo: sono
-esattamente cio che una rappresentazione tabellare renderebbe faticoso e il
+Le domande 2, 3 e 5 sono multi-hop e attraversano più tipi di nodo: sono
+esattamente ciò che una rappresentazione tabellare renderebbe faticoso e il
 grafo rende diretto.
 
 ## KG + AI: il ruolo nel sistema (nota 08)
 
-Il grafo e la **memoria strutturata**, l'LLM e l'intelligenza. Nel flusso
+Il grafo è la **memoria strutturata**, l'LLM è l'intelligenza. Nel flusso
 governato (artefatto rag):
 
 - Il grafo fornisce all'LLM fatti certi, correnti e strutturati (grounding):
   quali evidenze, quali fonti, quali segnali di sicurezza.
-- L'LLM, a sua volta, aiuta a costruire e mantenere il grafo estraendo entita e
+- L'LLM, a sua volta, aiuta a costruire e mantenere il grafo estraendo entità e
   relazioni dalla letteratura (nodo `Publication` -> `Evidence`), sotto controllo
   umano prima del commit.
-- Il risultato e GraphRAG: il retrieval consegna al modello un sottografo
+- Il risultato è GraphRAG: il retrieval consegna al modello un sottografo
   connesso e provenienziato invece di un sacco di paragrafi, con meno
   allucinazioni e provenienza tracciabile (nota 08).
 
 ## Nota di lettura critica
 
-Il rischio del modello e il popolamento automatico dalla letteratura:
+Il rischio del modello è il popolamento automatico dalla letteratura:
 l'estrazione di relazioni con un LLM introduce errori (relazioni inventate,
-entita mal risolte) che, una volta nel grafo, diventano fatti autorevoli
-consumati dal RAG. La difesa e la governance del grafo, non la fiducia
+entità mal risolte) che, una volta nel grafo, diventano fatti autorevoli
+consumati dal RAG. La difesa è la governance del grafo, non la fiducia
 nell'estrazione: ogni `Evidence` di origine automatica nasce in stato
 `proposed`, richiede validazione umana (uno steward) per passare a `asserted`, e
 porta sempre la sua `confidence` e la sua fonte. Un grafo che accetta estrazioni

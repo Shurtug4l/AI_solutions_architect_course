@@ -10,17 +10,17 @@
 --   processo di generazione dei risultati AI.
 --
 -- Cornice normativa
---   In una farmaceutica l'audit trail non e una buona pratica, e un obbligo.
+--   In una farmaceutica l'audit trail non è una buona pratica, è un obbligo.
 --   21 CFR Part 11 (FDA) ed EU Annex 11 richiedono, per i record elettronici
 --   GxP, un audit trail sicuro, generato dal sistema, con data/ora, che
 --   registri chi ha fatto cosa, il valore precedente e quello nuovo, e il
 --   motivo quando previsto. I principi ALCOA+ (Attributable, Legible,
 --   Contemporaneous, Original, Accurate, + Complete, Consistent, Enduring,
---   Available) sono i requisiti di integrita che questo schema traduce in
+--   Available) sono i requisiti di integrità che questo schema traduce in
 --   vincoli.
 --
--- Proprieta chiave: append-only
---   Un audit trail modificabile non e un audit trail. Le tabelle sono
+-- Proprietà chiave: append-only
+--   Un audit trail modificabile non è un audit trail. Le tabelle sono
 --   progettate per sola INSERT: niente UPDATE, niente DELETE. A livello di DB
 --   l'enforcement e demandato a permessi (REVOKE UPDATE/DELETE) e a un trigger
 --   che blocca le modifiche; qui si definiscono struttura e intento, con la
@@ -38,13 +38,13 @@ SET search_path TO governance;
 -- Il record centrale 21 CFR Part 11. Ogni campo mappa un requisito:
 --   occurred_at   -> Contemporaneous (timestamp generato dal sistema)
 --   actor_party_id-> Attributable (a una persona identificata, mai anonima)
---   action        -> cosa e stato fatto
+--   action        -> cosa è stato fatto
 --   old_value/new_value -> il prima e il dopo, per le modifiche
 --   reason        -> il motivo, obbligatorio per le operazioni che lo richiedono
 --   e_signature_* -> firma elettronica e suo significato (Part 11 subpart C)
 -- prev_event_hash / event_hash formano una catena hash: ogni evento incorpora
--- l'hash del precedente, cosi una manomissione a posteriori spezza la catena ed
--- e rilevabile. e la difesa tecnica contro l'alterazione retroattiva.
+-- l'hash del precedente, così una manomissione a posteriori spezza la catena ed
+-- è rilevabile. È la difesa tecnica contro l'alterazione retroattiva.
 -- -----------------------------------------------------------------------------
 CREATE TABLE audit_event (
     event_id         BIGSERIAL    PRIMARY KEY,
@@ -52,7 +52,7 @@ CREATE TABLE audit_event (
     actor_party_id   INTEGER      NOT NULL REFERENCES party(party_id),
     action           VARCHAR(40)  NOT NULL,   -- create, update, delete, classify, approve, export, ...
     entity_type      VARCHAR(40)  NOT NULL,   -- dataset, metadata_value, policy, model, ...
-    entity_id        VARCHAR(80)  NOT NULL,   -- id logico dell'entita toccata
+    entity_id        VARCHAR(80)  NOT NULL,   -- id logico dell'entità toccata
     old_value        JSONB,                   -- stato precedente (NULL per create)
     new_value        JSONB,                   -- stato nuovo (NULL per delete)
     reason           VARCHAR(300),            -- motivo, obbligatorio per azioni critiche (vedi trigger)
@@ -70,11 +70,11 @@ CREATE INDEX idx_audit_time   ON audit_event(occurred_at);
 -- -----------------------------------------------------------------------------
 -- Access log: ogni accesso a dati sensibili
 -- -----------------------------------------------------------------------------
--- Separato dall'audit degli eventi di modifica perche ha volume e retention
+-- Separato dall'audit degli eventi di modifica perché ha volume e retention
 -- diversi: gli accessi in lettura ai dati restricted sono molti e vanno tenuti
 -- per l'indagine su un eventuale data breach. granted distingue accessi
 -- riusciti e tentativi negati (entrambi sono evidenza). access_path registra da
--- dove e passato l'accesso: query diretta, retrieval del RAG, export.
+-- dove è passato l'accesso: query diretta, retrieval del RAG, export.
 -- -----------------------------------------------------------------------------
 CREATE TABLE access_log (
     access_id     BIGSERIAL    PRIMARY KEY,
@@ -97,17 +97,17 @@ CREATE INDEX idx_access_denied  ON access_log(granted) WHERE granted = FALSE;
 -- AI generation log: la provenienza di ogni risposta del RAG
 -- -----------------------------------------------------------------------------
 -- Lo step 7 della pipeline RAG (nota 07) reso governance: ogni output generato
--- e loggato con la sua provenienza completa. Non e telemetria di prodotto, e
+-- è loggato con la sua provenienza completa. Non è telemetria di prodotto, è
 -- l'audit trail del processo di generazione dei risultati AI che la traccia
--- richiede esplicitamente. I campi rispondono alla domanda regolatoria "perche
+-- richiede esplicitamente. I campi rispondono alla domanda regolatoria "perché
 -- il sistema ha dato questa risposta?":
 --   retrieved_chunks -> quali chunk sono stati recuperati (con la loro fonte)
 --   kg_subgraph_ref  -> quale sottografo del KG ha fornito i fatti (GraphRAG)
 --   citations        -> le citazioni mostrate all'utente (provenienza esplicita)
 --   model_version / index_version -> quale modello e quale indice: se cambiano,
---        la stessa domanda puo dare risposta diversa, e va tracciato (principio
---        "se cambio le regole, il gioco e cambiato", nota 07)
---   access_filter_applied -> prova che il retrieval e stato filtrato per
+--        la stessa domanda può dare risposta diversa, e va tracciato (principio
+--        "se cambio le regole, il gioco è cambiato", nota 07)
+--   access_filter_applied -> prova che il retrieval è stato filtrato per
 --        permessi PRIMA della generazione, non dopo (controllo chiave nota 07/09)
 -- -----------------------------------------------------------------------------
 CREATE TABLE ai_generation_log (
@@ -163,7 +163,7 @@ CREATE TRIGGER trg_ai_gen_log_immutable
 -- Seed - eventi di audit rappresentativi
 -- =============================================================================
 -- La catena hash e illustrata con hash placeholder: in produzione event_hash =
--- SHA-256(canonicalizzazione dei campi + prev_event_hash). L'importante e il
+-- SHA-256(canonicalizzazione dei campi + prev_event_hash). L'importante è il
 -- pattern: ogni evento incorpora il precedente.
 
 -- 1) Classificazione di un dataset (con firma di approvazione).
@@ -212,17 +212,17 @@ SELECT (SELECT party_id FROM party WHERE role_type = 'model_owner'),
 -- =============================================================================
 -- Note di lettura critica (per il valutatore)
 -- =============================================================================
--- - La catena hash (prev_event_hash -> event_hash) e la difesa contro
+-- - La catena hash (prev_event_hash -> event_hash) è la difesa contro
 --   l'alterazione retroattiva che un trigger da solo non da: un DBA con accesso
 --   fisico potrebbe aggirare il trigger, ma non ricalcolare l'intera catena
---   senza che il mismatch emerga a una verifica. e lo stesso principio di un
+--   senza che il mismatch emerga a una verifica. È lo stesso principio di un
 --   registro append-only firmato.
--- - Il CHECK su citations (>= 1) impone a livello di schema cio che la nota 07
+-- - Il CHECK su citations (>= 1) impone a livello di schema ciò che la nota 07
 --   chiede come principio: nessuna risposta AI senza provenienza. Rende
 --   impossibile loggare un output non citato, quindi impossibile produrne uno
 --   "conforme" senza fonte.
--- - access_filter_applied e volutamente NOT NULL e atteso TRUE: un output con
---   FALSE e un incidente di sicurezza (retrieval non filtrato = potenziale
+-- - access_filter_applied è volutamente NOT NULL e atteso TRUE: un output con
+--   FALSE è un incidente di sicurezza (retrieval non filtrato = potenziale
 --   esfiltrazione, nota 09), e resta nel log come tale invece di essere nascosto.
 -- - Limite: il seed usa hash placeholder (ripetizioni di un carattere). La
 --   canonicalizzazione reale (ordine dei campi, encoding) andrebbe fissata in

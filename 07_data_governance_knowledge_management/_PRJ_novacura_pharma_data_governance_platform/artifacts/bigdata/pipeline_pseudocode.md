@@ -3,12 +3,12 @@
 Descrizione astratta e **non eseguibile** del job `PIPE-REPURPOSE-01`
 (artefatto SQL 03). Copre il flusso tipico della traccia: ingest ->
 trasformazione -> analisi -> modello -> output, con i checkpoint di governance
-resi espliciti a ogni stadio. Lo scopo e mostrare *dove* la governance entra
+resi espliciti a ogni stadio. Lo scopo è mostrare *dove* la governance entra
 nella pipeline (nota 01: prima, durante e dopo), non fornire codice pronto.
 
 Convenzione: `governance.*` sono i punti in cui la pipeline scrive sul control
 plane (catalogo, lineage, audit, DQ) o legge una policy. Non sono commenti
-decorativi: sono il motivo per cui la pipeline e auditabile.
+decorativi: sono il motivo per cui la pipeline è auditabile.
 
 ## Diagramma di flusso
 
@@ -119,25 +119,25 @@ JOB repurpose_evidence_aggregation(candidate_compound, target_disease):
 Tre decisioni di design meritano di essere difese esplicitamente.
 
 - **Il DQ gate ferma la pipeline, non la avverte soltanto.** In [2], un
-  fallimento su una dimensione critica aborta il run. e la traduzione operativa
+  fallimento su una dimensione critica aborta il run. È la traduzione operativa
   del principio della nota 03 (l'effetto composto): promuovere dati che falliscono
   un controllo critico significa addestrare o inferire su input inaffidabili, e
-  in un contesto GxP e un difetto tracciabile. Il costo e che un dato sporco
-  blocca la produzione; il beneficio e che non produce evidenza falsa.
+  in un contesto GxP è un difetto tracciabile. Il costo è che un dato sporco
+  blocca la produzione; il beneficio è che non produce evidenza falsa.
 
-- **Il modello e caricato versionato, non addestrato in-line.** In [5] non c'e
+- **Il modello è caricato versionato, non addestrato in-line.** In [5] non c'è
   training dentro il job di produzione: si carica una versione pinnata dal
-  registry. Separare training e inferenza e cio che rende l'output riproducibile
+  registry. Separare training e inferenza è ciò che rende l'output riproducibile
   (stesso modello, stesso input, stesso risultato) e verificabile da un
   ispettore. Un training in-line renderebbe ogni run irripetibile.
 
 - **La pseudonimizzazione precede il feature engineering, non lo segue.** In [3],
-  i dati identificabili non arrivano mai al piano Gold. Filtrare l'identita a
+  i dati identificabili non arrivano mai al piano Gold. Filtrare l'identità a
   valle (dopo il join) lascerebbe PHI transitare in tabelle intermedie: lo stesso
   errore del "filtrare la risposta invece del contesto" nel RAG (nota 07). La
   difesa deve stare a monte del punto in cui i dati si diffondono.
 
-Limite: lo pseudocodice presenta il flusso come lineare per leggibilita. In
+Limite: lo pseudocodice presenta il flusso come lineare per leggibilità. In
 esercizio [1], [2] e [7] girano con cadenze diverse (ingest continuo,
 promozione batch, monitoraggio asincrono); il diagramma coglie le dipendenze di
 dato, non la schedulazione reale.

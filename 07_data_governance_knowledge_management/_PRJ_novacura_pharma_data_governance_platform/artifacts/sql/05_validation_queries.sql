@@ -1,12 +1,12 @@
 -- =============================================================================
 -- NovaCura Pharma - Piattaforma di Data Governance & Knowledge Management
--- Artefatto SQL 05 - Query di validazione della qualita e della governance
+-- Artefatto SQL 05 - Query di validazione della qualità e della governance
 -- =============================================================================
 --
 -- Scopo
 --   Query che trasformano i principi di governance in controlli eseguibili.
 --   Due gruppi:
---     A. Controlli sul control plane: la governance verifica se stessa
+--     A. Controlli sul control plane: la governance verifica sé stessa
 --        (dataset senza copertura policy, metadati obbligatori mancanti,
 --        dati sensibili non classificati). Sono i controlli che rendono
 --        la governance dimostrabile e non solo dichiarata.
@@ -14,7 +14,7 @@
 --        nota 03 (completeness, accuracy, consistency, timeliness, uniqueness,
 --        validity), con soglia e scoring.
 --
---   Il principio della nota 03: una metrica senza soglia e un numero isolato,
+--   Il principio della nota 03: una metrica senza soglia è un numero isolato,
 --   e una soglia la fissa il business, non l'ingegnere. Qui le soglie sono
 --   dati (tabella dq_rule), non costanti nel codice.
 --
@@ -27,7 +27,7 @@ SET search_path TO governance;
 -- -----------------------------------------------------------------------------
 -- DDL di supporto: regole e risultati di data quality
 -- -----------------------------------------------------------------------------
--- Definite qui perche sono gli oggetti che le query di questo artefatto
+-- Definite qui perché sono gli oggetti che le query di questo artefatto
 -- popolano e leggono. dq_rule lega una dimensione a un dataset/campo con una
 -- soglia; dq_result registra le misure nel tempo (la forma dinamica della nota
 -- 03, quella che coglie il decadimento).
@@ -77,13 +77,13 @@ WHERE d.urn = 'urn:novacura:clinical:ct_subject_outcomes';
 
 
 -- =============================================================================
--- GRUPPO A - la governance verifica se stessa
+-- GRUPPO A - la governance verifica sé stessa
 -- =============================================================================
 
 -- A1. Dataset sensibili senza copertura di policy completa.
 --     Regola: ogni dataset restricted (PHI) deve essere coperto da almeno una
 --     policy di access, una di retention e una di privacy. Un dataset PHI
---     scoperto e un rischio di compliance concreto, non teorico.
+--     scoperto è un rischio di compliance concreto, non teorico.
 SELECT d.urn, d.name, sc.code AS sensitivity,
        array_agg(DISTINCT p.category ORDER BY p.category) AS categorie_coperte
 FROM dataset d
@@ -94,7 +94,7 @@ WHERE sc.code = 'restricted'
 GROUP BY d.urn, d.name, sc.code
 HAVING NOT (array_agg(DISTINCT p.category) @> ARRAY['access','retention','privacy']::varchar[]);
 -- Atteso su questo seed: nessuna riga (i due dataset PHI sono coperti). Una
--- riga qui e un finding di audit.
+-- riga qui è un finding di audit.
 
 
 -- A2. Dataset senza tutti i metadati operativi obbligatori dichiarati.
@@ -119,12 +119,12 @@ WHERE d.lifecycle_state = 'active'
 ORDER BY d.urn, m.name;
 -- Nota: il seed valorizza solo 'definition' come esempio di versioning, quindi
 -- questa query evidenzia i metadati non ancora popolati. In esercizio la lista
--- vuota e l'obiettivo; qui mostra il controllo che guida il completamento.
+-- vuota è l'obiettivo; qui mostra il controllo che guida il completamento.
 
 
--- A3. Campi PHI senza tag semantico o senza pattern di validita.
+-- A3. Campi PHI senza tag semantico o senza pattern di validità.
 --     Un campo sanitario personale senza semantica esplicita e senza regola di
---     validita e un doppio rischio: non e interoperabile e non e verificabile.
+--     validità è un doppio rischio: non è interoperabile e non è verificabile.
 SELECT d.urn, f.name AS campo, f.is_phi,
        (f.semantic_tag_id IS NULL) AS senza_tag_semantico,
        (f.valid_pattern IS NULL)   AS senza_pattern_validita
@@ -135,8 +135,8 @@ WHERE f.is_phi
 
 
 -- A4. Accessi negati a dati restricted nelle ultime 24h (segnale di sicurezza).
---     Un tentativo negato non e un errore da nascondere: e evidenza che la
---     segregazione dei ruoli funziona, e un pattern di negati ripetuti e un
+--     Un tentativo negato non è un errore da nascondere: È evidenza che la
+--     segregazione dei ruoli funziona, e un pattern di negati ripetuti è un
 --     segnale da indagare.
 SELECT p.full_name, p.role_type, d.urn, al.occurred_at, al.row_scope
 FROM access_log al
@@ -151,7 +151,7 @@ ORDER BY al.occurred_at DESC;
 
 -- A5. Output AI non conformi: risposte senza filtro accessi o senza citazione.
 --     Il CHECK di schema (artefatto 04) impedisce citazioni vuote, ma
---     access_filter_applied = FALSE resta possibile e va sorvegliato: e la spia
+--     access_filter_applied = FALSE resta possibile e va sorvegliato: È la spia
 --     di un retrieval non filtrato prima della generazione (rischio nota 09).
 SELECT g.gen_id, p.full_name, g.occurred_at, g.model_version, g.index_version
 FROM ai_generation_log g
@@ -165,10 +165,10 @@ WHERE g.access_filter_applied = FALSE
 -- GRUPPO B - data quality sulle sei dimensioni (nota 03)
 -- =============================================================================
 
--- B1. Ultimo esito per ogni regola di qualita, con esito vs soglia.
+-- B1. Ultimo esito per ogni regola di qualità, con esito vs soglia.
 --     La forma "scorecard": ogni dimensione con il suo valore, la sua soglia e
 --     il verdetto. Tenere la scomposizione per dimensione accanto allo score
---     composito e la raccomandazione esplicita della nota 03 (uno score
+--     composito è la raccomandazione esplicita della nota 03 (uno score
 --     aggregato nasconde quale dimensione ha fallito).
 SELECT d.urn, r.dimension, r.description, r.threshold,
        res.measured_value, res.passed, r.is_critical
@@ -186,9 +186,9 @@ ORDER BY d.urn, r.is_critical DESC, r.dimension;
 
 -- B2. Data quality score per dataset (rollup) con banda a semaforo.
 --     Lo score composito della nota 03 (1-100) con le bande < 70 rosso,
---     70-80 giallo, > 80 verde. Il rollup e la media delle ultime misure, ma
+--     70-80 giallo, > 80 verde. Il rollup è la media delle ultime misure, ma
 --     un fallimento su una dimensione critica forza il rosso: un dataset con
---     alta media ma endpoint primario incompleto non e "quasi buono", e
+--     alta media ma endpoint primario incompleto non è "quasi buono", e
 --     inutilizzabile per lo scopo (argomento della nota 03 sull'effetto
 --     composto).
 WITH latest AS (
@@ -213,9 +213,9 @@ JOIN dataset d ON d.dataset_id = l.dataset_id
 GROUP BY d.urn;
 
 
--- B3. Freshness: dataset la cui ultima misura di qualita e piu vecchia della
+-- B3. Freshness: dataset la cui ultima misura di qualità è più vecchia della
 --     sua frequenza di refresh dichiarata. Un dataset "daily" senza misure da
---     giorni non e fresco, e la staleness e il fallimento silenzioso sia della
+--     giorni non è fresco, e la staleness è il fallimento silenzioso sia della
 --     DQ sia del RAG (note 03 e 07).
 SELECT d.urn, d.refresh_frequency,
        MAX(res.measured_at) AS ultima_misura,
@@ -231,19 +231,19 @@ HAVING (d.refresh_frequency = 'daily'  AND now() - MAX(res.measured_at) > INTERV
 -- =============================================================================
 -- Note di lettura critica (per il valutatore)
 -- =============================================================================
--- - Il gruppo A e la parte piu caratterizzante: la maggior parte dei sistemi
---   misura la qualita dei dati (gruppo B) ma non verifica la qualita della
+-- - Il gruppo A è la parte più caratterizzante: la maggior parte dei sistemi
+--   misura la qualità dei dati (gruppo B) ma non verifica la qualità della
 --   propria governance. A1-A3 controllano che ownership, classificazione,
---   metadati e policy siano coerenti: e la governance che si autoispeziona.
+--   metadati e policy siano coerenti: È la governance che si autoispeziona.
 -- - B2 codifica l'argomento dell'effetto composto della nota 03: la media da
 --   sola direbbe "verde", ma un fallimento critico forza il rosso. Uno score
---   che ignora la criticita per dimensione e fuorviante per costruzione.
--- - Le soglie vivono in dq_rule.threshold con dq_rule.set_by, cioe sono dato e
---   hanno un responsabile. Cambiare una soglia e un UPDATE tracciabile, non un
---   edit del codice: e la traduzione del principio "la soglia la fissa il
+--   che ignora la criticità per dimensione è fuorviante per costruzione.
+-- - Le soglie vivono in dq_rule.threshold con dq_rule.set_by, cioè sono dato e
+--   hanno un responsabile. Cambiare una soglia è un UPDATE tracciabile, non un
+--   edit del codice: È la traduzione del principio "la soglia la fissa il
 --   business" (nota 03).
 -- - Limite: accuracy e consistency compaiono nello schema dq_rule ma non nel
---   seed, perche misurarle richiede una fonte di verita esterna e un secondo
---   sistema con cui confrontare (nota 03: accuracy e semantica, non sintattica).
+--   seed, perché misurarle richiede una fonte di verità esterna e un secondo
+--   sistema con cui confrontare (nota 03: accuracy è semantica, non sintattica).
 --   Sono modellabili, non popolabili su dati illustrativi.
 -- =============================================================================

@@ -45,7 +45,7 @@
       {"dimension": "completeness", "field": "value", "threshold": 99.0, "measured": 99.7, "passed": true},
       {"dimension": "validity", "field": "readout", "threshold": 100.0, "measured": 100.0, "passed": true},
       {"dimension": "uniqueness", "field": "measurement_id", "threshold": 100.0, "measured": 100.0, "passed": true},
-      {"dimension": "consistency", "field": "value", "threshold": 98.0, "measured": 98.9, "passed": true, "note": "unita nM coerente tra run dopo conversione"}
+      {"dimension": "consistency", "field": "value", "threshold": 98.0, "measured": 98.9, "passed": true, "note": "unità nM coerente tra run dopo conversione"}
     ],
     "overall_score": 99.4,
     "band": "green"

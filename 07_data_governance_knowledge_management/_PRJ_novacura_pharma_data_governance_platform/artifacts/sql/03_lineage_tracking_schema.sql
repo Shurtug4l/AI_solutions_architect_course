@@ -5,23 +5,23 @@
 --
 -- Scopo
 --   Lo schema che rende ricostruibile il percorso di un dato dalla sorgente
---   grezza fino all'output del modello. e la traduzione in dato del requisito
---   piu importante del caso guida: "consentire audit completo della pipeline
+--   grezza fino all'output del modello. È la traduzione in dato del requisito
+--   più importante del caso guida: "consentire audit completo della pipeline
 --   dai dati grezzi al risultato finale per scopi regolatori".
 --
 -- Modello
---   La lineage e un grafo diretto (nota 03, nota 04). I nodi sono asset o
+--   La lineage è un grafo diretto (nota 03, nota 04). I nodi sono asset o
 --   processi (sorgente, dataset, processo ETL, feature set, modello, output);
 --   gli archi sono trasformazioni, ciascuna prodotta da un'esecuzione di
 --   pipeline. Il grafo supporta le due direzioni della nota 04:
 --     - backward lineage: da un output sospetto risalgo all'origine (debug);
---     - forward lineage: da una sorgente che cambia, trovo tutto cio che ne
+--     - forward lineage: da una sorgente che cambia, trovo tutto ciò che ne
 --       dipende (change management).
 --   Le query ricorsive che percorrono il grafo stanno nell'artefatto 06.
 --
--- Perche un grafo e non colonne "source/target"
---   Una pipeline reale non e lineare: un modello di repurposing consuma clinica,
---   assay, letteratura e PV insieme, e un dataset ne alimenta piu di uno. Solo
+-- Perché un grafo e non colonne "source/target"
+--   Una pipeline reale non è lineare: un modello di repurposing consuma clinica,
+--   assay, letteratura e PV insieme, e un dataset ne alimenta più di uno. Solo
 --   un grafo rappresenta il fan-in / fan-out senza duplicazione. Modellarlo con
 --   coppie sorgente-destinazione in colonne collasserebbe alla prima
 --   trasformazione molti-a-molti.
@@ -36,8 +36,8 @@ SET search_path TO governance;
 -- Pipeline (definizione logica)
 -- -----------------------------------------------------------------------------
 -- Il processo di trasformazione come oggetto stabile e versionabile. Una
--- pipeline e la definizione; una pipeline_run e una sua esecuzione concreta.
--- La distinzione conta per la riproducibilita: due run della stessa pipeline su
+-- pipeline è la definizione; una pipeline_run è una sua esecuzione concreta.
+-- La distinzione conta per la riproducibilità: due run della stessa pipeline su
 -- input diversi producono lineage diverse.
 -- -----------------------------------------------------------------------------
 CREATE TABLE pipeline (
@@ -54,11 +54,11 @@ CREATE TABLE pipeline (
 -- Esecuzioni di pipeline (run)
 -- -----------------------------------------------------------------------------
 -- Ogni esecuzione registra chi/quando/con quale codice. code_version
--- (commit hash o tag) e input_manifest_hash sono cio che chiude il cerchio
--- della riproducibilita: per rifare esattamente un risultato servono lo stesso
+-- (commit hash o tag) e input_manifest_hash sono ciò che chiude il cerchio
+-- della riproducibilità: per rifare esattamente un risultato servono lo stesso
 -- codice e gli stessi input. In un contesto GxP questi campi non sono
 -- telemetria, sono evidenza (ALCOA+: Attributable, Legible, Contemporaneous,
--- Original, Accurate, piu Complete, Consistent, Enduring, Available).
+-- Original, Accurate, più Complete, Consistent, Enduring, Available).
 -- -----------------------------------------------------------------------------
 CREATE TABLE pipeline_run (
     run_id             BIGSERIAL    PRIMARY KEY,
@@ -81,10 +81,10 @@ CREATE INDEX idx_run_started  ON pipeline_run(started_at);
 -- -----------------------------------------------------------------------------
 -- Nodi del grafo di lineage
 -- -----------------------------------------------------------------------------
--- Un nodo e qualcosa che ha uno stato: una sorgente esterna, un dataset del
+-- Un nodo è qualcosa che ha uno stato: una sorgente esterna, un dataset del
 -- catalogo, un feature set, un modello, un output. Per i dataset, ref_dataset_id
--- aggancia il nodo alla scheda di catalogo (artefatto 01), cosi la lineage non
--- e un mondo parallelo ma un'estensione del catalogo. I nodi non-dataset
+-- aggancia il nodo alla scheda di catalogo (artefatto 01), così la lineage non
+-- è un mondo parallelo ma un'estensione del catalogo. I nodi non-dataset
 -- (modelli, output) hanno solo ref_external.
 -- -----------------------------------------------------------------------------
 CREATE TABLE lineage_node (
@@ -108,13 +108,13 @@ CREATE INDEX idx_node_dataset ON lineage_node(ref_dataset_id);
 -- Archi del grafo di lineage (le trasformazioni)
 -- -----------------------------------------------------------------------------
 -- Un arco dice: il nodo from ha prodotto il nodo to, tramite una certa
--- trasformazione, in una certa run. Registrare la run su ogni arco e cio che
+-- trasformazione, in una certa run. Registrare la run su ogni arco è ciò che
 -- permette la ricostruzione temporale: "questo output nasce dagli input che
 -- esistevano al momento della run R", non dagli input di oggi.
 --
 -- transform_type classifica la trasformazione (ingest, clean, join, feature,
 -- train, infer); transform_logic ne porta la descrizione o un riferimento al
--- codice. Non e il codice eseguibile: e il record di governance di cosa e
+-- codice. Non è il codice eseguibile: È il record di governance di cosa è
 -- successo, sufficiente a un auditor per capire senza leggere il sorgente.
 -- -----------------------------------------------------------------------------
 CREATE TABLE lineage_edge (
@@ -168,7 +168,7 @@ INSERT INTO lineage_node (node_type, name, ref_external) VALUES
     ('output',      'Report di evidenza per candidato', 'urn:novacura:output:evidence_report');
 
 -- Archi: fan-in delle quattro fonti nel feature set, poi train e infer.
--- Tutti gli archi appartengono alla stessa run, cosi la ricostruzione e coerente.
+-- Tutti gli archi appartengono alla stessa run, così la ricostruzione è coerente.
 WITH r AS (SELECT run_id FROM pipeline_run ORDER BY run_id DESC LIMIT 1),
      fs AS (SELECT node_id FROM lineage_node WHERE node_type = 'feature_set'),
      md AS (SELECT node_id FROM lineage_node WHERE node_type = 'model'),
@@ -191,16 +191,16 @@ FROM md, ou, r;
 -- Note di lettura critica (per il valutatore)
 -- =============================================================================
 -- - Registrare run_id su ogni arco (invece che solo su una tabella di run
---   separata) e la decisione che abilita la ricostruzione temporale. Costa una
+--   separata) è la decisione che abilita la ricostruzione temporale. Costa una
 --   FK per arco, ma senza di essa la lineage direbbe "A deriva da B" senza dire
---   "in quale esecuzione", e la riproducibilita regolatoria richiede il quando.
+--   "in quale esecuzione", e la riproducibilità regolatoria richiede il quando.
 -- - input_manifest_hash lega la run al manifest Big Data (artifacts/bigdata):
---   e il punto in cui il control plane relazionale e il data plane distribuito
---   si agganciano. Verificare l'hash e verificare che gli input non siano
+--   è il punto in cui il control plane relazionale e il data plane distribuito
+--   si agganciano. Verificare l'hash è verificare che gli input non siano
 --   cambiati sotto il modello.
--- - Limite: la pseudonimizzazione e modellata come transform_type ma la
---   gestione delle chiavi di re-identificazione (chi puo invertire lo
+-- - Limite: la pseudonimizzazione è modellata come transform_type ma la
+--   gestione delle chiavi di re-identificazione (chi può invertire lo
 --   pseudonimo) vive nella policy di accesso, non qui. Separare le due cose e
---   voluto: la lineage prova che la pseudonimizzazione e avvenuta, non custodisce
+--   voluto: la lineage prova che la pseudonimizzazione è avvenuta, non custodisce
 --   il segreto.
 -- =============================================================================
