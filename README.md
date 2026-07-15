@@ -16,7 +16,7 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 | 03 | [Agentic AI](03_agentic_ai) | Two capstones: DigitServe (n8n) + GreenThumb (ReAct + RAG) | delivered |
 | 04 | [Business Case & AI PM](04_business_case_AIPM) | OmniRetail AI governance platform | delivered |
 | 05 | [Cloud for AI](05_AI_cloud_services) | EnergoGrid hybrid multi-cloud infrastructure | delivered |
-| 06 | [AI Service Deployment](06_AI_services_deployment) | LogiFast delivery-time service (Flask) | in progress |
+| 06 | [AI Service Deployment](06_AI_services_deployment) | LogiFast delivery-time service (Flask) | delivered |
 | 07 | [Data Governance & KM](07_data_governance_knowledge_management) | Data governance architecture for a pharma company | in progress |
 | 08 | Solution Design & Architecture | Scalable architecture for AI systems | planned |
 | 09 | AI Architecture Security | Risk and vulnerability analysis of an AI system | planned |
@@ -95,7 +95,7 @@ AI_solutions_architect_course/
 │                                   #   GreenThumb = LangChain/LiteLLM ReAct + RAG + FastAPI notebook (2nd module-03 capstone)
 ├── 04_business_case_AIPM/           # Notes + exercises + PRJ (OmniRetail AI governance platform) - delivered
 ├── 05_AI_cloud_services/            # Notes + exercises + PRJ (EnergoGrid hybrid multi-cloud) - delivered
-├── 06_AI_services_deployment/       # Notes + exercises + PRJ (LogiFast delivery-time service, Flask) - capstone pre-delivery
+├── 06_AI_services_deployment/       # Notes + exercises + PRJ (LogiFast delivery-time service, Flask) - delivered
 ├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local, gitignored) - module in progress, no capstone
 └── README.md
 ```
