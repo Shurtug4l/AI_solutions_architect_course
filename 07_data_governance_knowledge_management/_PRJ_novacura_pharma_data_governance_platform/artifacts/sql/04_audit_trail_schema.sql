@@ -22,7 +22,7 @@
 -- Proprietà chiave: append-only
 --   Un audit trail modificabile non è un audit trail. Le tabelle sono
 --   progettate per sola INSERT: niente UPDATE, niente DELETE. A livello di DB
---   l'enforcement e demandato a permessi (REVOKE UPDATE/DELETE) e a un trigger
+--   l'enforcement è demandato a permessi (REVOKE UPDATE/DELETE) e a un trigger
 --   che blocca le modifiche; qui si definiscono struttura e intento, con la
 --   difesa a trigger inclusa come parte della specifica.
 --
@@ -162,7 +162,7 @@ CREATE TRIGGER trg_ai_gen_log_immutable
 -- =============================================================================
 -- Seed - eventi di audit rappresentativi
 -- =============================================================================
--- La catena hash e illustrata con hash placeholder: in produzione event_hash =
+-- La catena hash è illustrata con hash placeholder: in produzione event_hash =
 -- SHA-256(canonicalizzazione dei campi + prev_event_hash). L'importante è il
 -- pattern: ogni evento incorpora il precedente.
 
@@ -200,12 +200,12 @@ INSERT INTO ai_generation_log (actor_party_id, query_text, retrieved_chunks,
         access_filter_applied, confidence)
 SELECT (SELECT party_id FROM party WHERE role_type = 'model_owner'),
        'Quali evidenze supportano sirolimus come candidato per la LAM?',
-       '[{"chunk_id":"lit-4471#3","dataset_urn":"urn:novacura:literature:evidence_annotations","score":0.89,"source_ref":"PMID:18836093"},
+       '[{"chunk_id":"lit-4471#3","dataset_urn":"urn:novacura:literature:evidence_annotations","score":0.89,"source_ref":"PMID:21410393"},
          {"chunk_id":"assay-233#1","dataset_urn":"urn:novacura:lab:assay_measurements","score":0.81,"source_ref":"assay_run:233"}]'::jsonb,
        'kg://subgraph/sirolimus-LAM-mTOR',
        'Le evidenze convergono su inibizione di mTOR: dati di assay (IC50) e una '
        'pubblicazione clinica supportano l''ipotesi. Nessun segnale PV ostativo nel perimetro consultato.',
-       '[{"source_ref":"PMID:18836093","section":"Results","dataset_urn":"urn:novacura:literature:evidence_annotations"},
+       '[{"source_ref":"PMID:21410393","section":"Results","dataset_urn":"urn:novacura:literature:evidence_annotations"},
          {"source_ref":"assay_run:233","section":"potency","dataset_urn":"urn:novacura:lab:assay_measurements"}]'::jsonb,
        'repurpose-scorer-3.1', 'idx-2026-06-10', TRUE, 0.780;
 

@@ -22,7 +22,7 @@
 --
 -- Principio guida
 --   Ogni riga del catalogo ha un proprietario. La accountability è il
---   principio portante della governance (nota 01): un dataset senza owner e
+--   principio portante della governance (nota 01): un dataset senza owner è
 --   un dataset di cui nessuno risponde. I vincoli NOT NULL su owner e
 --   sensitivity sono la traduzione tecnica di quel principio.
 --
@@ -85,7 +85,7 @@ CREATE TABLE party (
 -- Good Practice (GCP/GLP/GMP) e quindi ai requisiti 21 CFR Part 11 ed EU Annex
 -- 11 su audit trail e firme elettroniche. La distinzione GxP / non-GxP guida
 -- il livello di controllo: un CTMS di trial è GxP, uno scraper di letteratura
--- pubblica non lo e.
+-- pubblica non lo è.
 -- -----------------------------------------------------------------------------
 CREATE TABLE source_system (
     system_id      SERIAL       PRIMARY KEY,
@@ -105,7 +105,7 @@ CREATE TABLE source_system (
 -- Lo schema di classificazione dati. Quattro livelli più due flag ortogonali:
 -- phi_flag per i dati sanitari personali (GDPR art. 9, categoria particolare)
 -- e gxp_flag per i dati con impatto regolatorio. La classificazione non è
--- decorativa: È ciò che la policy di accesso e il retrieval del RAG leggono
+-- decorativa: è ciò che la policy di accesso e il retrieval del RAG leggono
 -- per decidere chi vede cosa (nota 07, access-filtered retrieval).
 -- -----------------------------------------------------------------------------
 CREATE TABLE sensitivity_class (
@@ -129,7 +129,7 @@ CREATE TABLE sensitivity_class (
 -- lineage è leggibile per costruzione.
 --
 -- schema_version abilita l'evoluzione additiva dei metadati senza rompere la
--- ricostruibilita storica: quando lo schema di un dataset cambia, si incrementa
+-- ricostruibilità storica: quando lo schema di un dataset cambia, si incrementa
 -- la versione invece di sovrascrivere.
 -- -----------------------------------------------------------------------------
 CREATE TABLE dataset (
@@ -177,7 +177,7 @@ CREATE INDEX idx_dataset_lifecycle   ON dataset(lifecycle_state);
 -- -----------------------------------------------------------------------------
 -- Campi del dataset (metadati di campo)
 -- -----------------------------------------------------------------------------
--- La granularita fine del catalogo: ogni campo con tipo, semantica, obbligo,
+-- La granularità fine del catalogo: ogni campo con tipo, semantica, obbligo,
 -- sensibilità e pattern di validità. La distinzione is_pii / is_phi conta:
 -- un subject_id pseudonimizzato è PII ma la diagnosi associata è PHI (GDPR
 -- art. 9). semantic_tag_id (definito in 02) aggancia il campo a un termine di
@@ -283,7 +283,7 @@ INSERT INTO data_domain (domain_id, code, name, description, business_area) VALU
         'Dataset di trial clinici interni: soggetti, bracci, endpoint, esiti, eventi avversi.',
         'Clinical Development'),
     (2, 'lab', 'Laboratorio (assay)',
-        'Misure di laboratorio su composti e target: screening, potenza, tossicita.',
+        'Misure di laboratorio su composti e target: screening, potenza, tossicità.',
         'Discovery & Preclinical'),
     (3, 'literature', 'Letteratura scientifica',
         'Annotazioni ed evidenze estratte da pubblicazioni e fonti bibliografiche.',
@@ -340,7 +340,7 @@ INSERT INTO dataset (urn, name, description, domain_id, source_system_id,
         'daily', 's3://novacura-lake/samples/clinical_outcomes_sample', 'active', TRUE),
     ('urn:novacura:lab:assay_measurements',
         'Misure di assay su composti e target',
-        'Risultati di screening: potenza (IC50/EC50), affinita, citotossicita per coppia composto-target.',
+        'Risultati di screening: potenza (IC50/EC50), affinità, citotossicità per coppia composto-target.',
         2, 2, 3, 6, 7, 3,
         'delta', 's3://novacura-lake/gold/lab/assay_measurements', 'gold',
         'on-event', 's3://novacura-lake/samples/assay_sample', 'active', TRUE),
@@ -402,6 +402,17 @@ WHERE d.urn IN ('urn:novacura:lab:assay_measurements',
                 'urn:novacura:mdm:compound_master')
   AND p.code IN ('POL-CLS-01', 'POL-ACC-01');
 
+-- I dataset non-PHI con un obbligo di conservazione (assay 15 anni, letteratura
+-- 3 anni: vedi retention_rule) sono mappati anche a POL-RET-01, così il blocco
+-- retention dichiarato nei rispettivi manifest ha una policy che lo copre.
+INSERT INTO policy_dataset_map (policy_id, dataset_id, notes)
+SELECT p.policy_id, d.dataset_id, 'Copertura retention per dataset non-PHI con obbligo di conservazione.'
+FROM policy p
+CROSS JOIN dataset d
+WHERE d.urn IN ('urn:novacura:lab:assay_measurements',
+                'urn:novacura:literature:evidence_annotations')
+  AND p.code = 'POL-RET-01';
+
 INSERT INTO retention_rule (policy_id, data_category, retention_period, legal_basis, disposal_action)
 SELECT policy_id, v.data_category, v.retention_period, v.legal_basis, v.disposal_action
 FROM policy, (VALUES
@@ -420,12 +431,12 @@ WHERE policy.code = 'POL-RET-01';
 --   verificabili i vincoli di governance (owner obbligatorio, classificazione
 --   obbligatoria, copertura policy). Un prodotto COTS li implementerebbe, ma la
 --   traccia chiede lo schema logico, non la configurazione di un prodotto.
--- - Limite: questo schema modella il control plane, non impone di per se
+-- - Limite: questo schema modella il control plane, non impone di per sé
 --   l'access-filtered retrieval del RAG (nota 07). L'enforcement vive nel piano
 --   applicativo che legge sensitivity_class e le ACL; qui se ne definisce la
 --   base dati.
 -- - Evoluzione: sensitivity_class è volutamente piccola e stabile. Aggiungere
 --   un dominio o un formato di storage è additivo (nuova riga), non un cambio
---   di schema: la scalabilita verso nuovi domini di dato (requisito non
+--   di schema: la scalabilità verso nuovi domini di dato (requisito non
 --   funzionale) è supportata dal modello, non solo dichiarata.
 -- =============================================================================

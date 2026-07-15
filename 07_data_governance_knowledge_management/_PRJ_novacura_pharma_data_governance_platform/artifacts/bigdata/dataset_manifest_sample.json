@@ -15,7 +15,7 @@
     "medallion_layer": "gold",
     "delta_version": 412,
     "snapshot_timestamp": "2026-06-10T02:41:00Z",
-    "file_count": 96,
+    "file_count": 428,
     "size_bytes": 2734891520,
     "compression": "zstd"
   },
@@ -54,7 +54,7 @@
     "sensitivity_class": "confidential",
     "phi": false,
     "gxp_relevant": true,
-    "policies": ["POL-CLS-01", "POL-ACC-01"],
+    "policies": ["POL-CLS-01", "POL-ACC-01", "POL-RET-01"],
     "retention": {"period": "15 years", "legal_basis": "GLP; policy IP interna", "disposal": "archive_cold"},
     "access_roles": ["data_owner", "data_steward", "model_owner", "qa_gxp"],
     "column_masking": []
@@ -72,8 +72,8 @@
   },
   "integrity": {
     "content_hash_algo": "sha256",
-    "content_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
     "signed_by": "custodian.platform@novacura.example",
-    "note": "content_hash e SHA-256 della lista ordinata (path, size, file_hash) delle parti Parquet; e il valore registrato su pipeline_run.input_manifest_hash per legare la run a questo stato esatto."
+    "note": "content_hash è lo SHA-256 della lista ordinata (path, size, file_hash) delle parti Parquet: impegna sul contenuto fisico dei dati. Ciò che la run registra su pipeline_run.input_manifest_hash è invece lo SHA-256 del manifest canonicalizzato nella sua interezza, che include content_hash; hashando il manifest ci si impegna transitivamente anche sul contenuto dei file. Valori placeholder illustrativi."
   }
 }

@@ -114,7 +114,7 @@ CREATE INDEX idx_node_dataset ON lineage_node(ref_dataset_id);
 --
 -- transform_type classifica la trasformazione (ingest, clean, join, feature,
 -- train, infer); transform_logic ne porta la descrizione o un riferimento al
--- codice. Non è il codice eseguibile: È il record di governance di cosa è
+-- codice. Non è il codice eseguibile: è il record di governance di cosa è
 -- successo, sufficiente a un auditor per capire senza leggere il sorgente.
 -- -----------------------------------------------------------------------------
 CREATE TABLE lineage_edge (
@@ -200,7 +200,7 @@ FROM md, ou, r;
 --   cambiati sotto il modello.
 -- - Limite: la pseudonimizzazione è modellata come transform_type ma la
 --   gestione delle chiavi di re-identificazione (chi può invertire lo
---   pseudonimo) vive nella policy di accesso, non qui. Separare le due cose e
+--   pseudonimo) vive nella policy di accesso, non qui. Separare le due cose è
 --   voluto: la lineage prova che la pseudonimizzazione è avvenuta, non custodisce
 --   il segreto.
 -- =============================================================================

@@ -101,23 +101,23 @@ ncr:mTOR a nc:Target ;
 
 ncr:LAM a nc:Disease ;
     rdfs:label "Linfangioleiomiomatosi" ;
-    owl:sameAs orpha:3253 ;
+    owl:sameAs orpha:538 ;
     nc:prevalenceClass "rare" .
 
 # Relazioni di dominio.
 ncr:sirolimus nc:targets ncr:mTOR .
 ncr:mTOR nc:associatedWith ncr:LAM .
 
-# L'ipotesi di repurposing: È un'asserzione governata, non un fatto nudo.
+# L'ipotesi di repurposing: è un'asserzione governata, non un fatto nudo.
 # validationStatus = "asserted" significa che uno steward l'ha validata (vedi
 # nota critica del modello concettuale); un'ipotesi solo proposta resterebbe
 # "proposed" e non entrerebbe nel Gold.
 ncr:sirolimus nc:repurposingCandidateFor ncr:LAM .
 
 # --- Evidenza reificata a favore, da una pubblicazione -----------------------
-ncr:pub_18836093 a nc:Publication ;
-    rdfs:label "MILES trial - sirolimus in LAM" ;
-    nc:pmid "18836093" ;
+ncr:pub_21410393 a nc:Publication ;
+    rdfs:label "MILES trial - sirolimus in LAM (McCormack et al., NEJM)" ;
+    nc:pmid "21410393" ;
     nc:year "2011"^^xsd:gYear .
 
 ncr:ev_clinical_01 a nc:Evidence ;
@@ -127,9 +127,9 @@ ncr:ev_clinical_01 a nc:Evidence ;
     nc:validationStatus "asserted" ;
     nc:sourceDataset "urn:novacura:literature:evidence_annotations" ;
     nc:supports ncr:sirolimus ;
-    prov:wasDerivedFrom ncr:pub_18836093 .
+    prov:wasDerivedFrom ncr:pub_21410393 .
 
-ncr:pub_18836093 nc:reports ncr:ev_clinical_01 .
+ncr:pub_21410393 nc:reports ncr:ev_clinical_01 .
 
 # --- Evidenza reificata a favore, da un assay --------------------------------
 ncr:assay_233 a nc:Assay ;
@@ -157,7 +157,7 @@ ncr:ae_stomatitis a nc:AdverseEvent ;
     nc:reportedFor ncr:sirolimus ;
     nc:sourceDataset "urn:novacura:pv:icsr_reactions" .
 
-# --- Un'evidenza contraria, di bassa confidenza, per mostrare la bidirezionalita
+# --- Un'evidenza contraria, di bassa confidenza, per mostrare la bidirezionalità
 ncr:ev_counter_01 a nc:Evidence ;
     nc:direction "refute" ;
     nc:strength "weak" ;
@@ -165,7 +165,7 @@ ncr:ev_counter_01 a nc:Evidence ;
     nc:validationStatus "asserted" ;
     nc:sourceDataset "urn:novacura:literature:evidence_annotations" ;
     nc:refutes ncr:sirolimus ;
-    prov:wasDerivedFrom ncr:pub_18836093 .
+    prov:wasDerivedFrom ncr:pub_21410393 .
 
 # =============================================================================
 # Nota di lettura critica (per il valutatore)
@@ -175,6 +175,12 @@ ncr:ev_counter_01 a nc:Evidence ;
 #   supporto. Un modello che appendesse la provenienza all'arco
 #   repurposingCandidateFor non potrebbe portare due evidenze in disaccordo sullo
 #   stesso arco, che è il caso normale nel repurposing.
+# - Semplificazione dichiarata: nc:supports/nc:refutes puntano al Compound
+#   (sirolimus), non all'arco Compound-Disease. In RDF puro un arco non può essere
+#   soggetto di un altro arco senza RDF-star; il lato malattia dell'ipotesi resta
+#   implicito nel contesto del sottografo recuperato (candidato + malattia +
+#   evidenze). Con RDF-star si reificherebbe l'arco repurposingCandidateFor e
+#   nc:supports vi punterebbe direttamente.
 # - owl:sameAs verso ChEMBL/Orphanet/UniProt aggancia i nodi locali all'identità
 #   globale: il grafo NovaCura è interoperabile con risorse esterne, non un'isola.
 # - nc:validationStatus è la governance del grafo resa dato: distingue conoscenza

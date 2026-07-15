@@ -16,12 +16,12 @@
 --   artefatti richiesti.
 --
 -- Perché i vocabolari controllati sono il fulcro
---   In una farmaceutica l'interoperabilita non è opzionale: la stessa reazione
+--   In una farmaceutica l'interoperabilità non è opzionale: la stessa reazione
 --   avversa deve significare la stessa cosa in farmacovigilanza, in clinica e
 --   nel knowledge graph. I vocabolari standard (SNOMED CT, MedDRA, MeSH, ATC,
 --   ChEMBL, Orphanet, UniProt) sono il semantic layer (nota 05) reso persistente.
 --   Un tag semantico è ciò che promuove un campo da "colonna" a "concetto
---   condiviso": È il ponte tra il catalogo (artefatto 01) e il knowledge graph
+--   condiviso": è il ponte tra il catalogo (artefatto 01) e il knowledge graph
 --   (artifacts/knowledge_graph).
 --
 -- Dialetto: PostgreSQL 15+.
@@ -167,7 +167,7 @@ INSERT INTO controlled_vocabulary (code, name, domain_note, version_label, is_ex
         'Classificazione dei farmaci per organo bersaglio e meccanismo.', 'ATC 2026', TRUE,
         'https://www.whocc.no/atc/'),
     ('CHEMBL', 'ChEMBL',
-        'Identità dei composti e bioattivita, base dell''anagrafica molecole.', 'ChEMBL 34', TRUE,
+        'Identità dei composti e bioattività, base dell''anagrafica molecole.', 'ChEMBL 34', TRUE,
         'https://www.ebi.ac.uk/chembl/'),
     ('ORPHA',  'Orphanet',
         'Nomenclatura delle malattie rare, centrale per il focus NovaCura.', 'Orphanet 2026-01', TRUE,
@@ -185,9 +185,9 @@ SELECT v.vocab_id, t.code, t.label, v.uri_base || t.suffix
 FROM controlled_vocabulary v
 JOIN (VALUES
         ('CHEMBL',  'CHEMBL1201631', 'Sirolimus',                         'CHEMBL1201631'),
-        ('ORPHA',   'ORPHA:3253',    'Lymphangioleiomiomatosi (LAM)',     '3253'),
+        ('ORPHA',   'ORPHA:538',     'Lymphangioleiomyomatosis (LAM)',    '538'),
         ('UNIPROT', 'P42345',        'mTOR (serina/treonina chinasi)',    'P42345'),
-        ('MEDDRA',  '10062os',       'Stomatite (PT esemplificativo)',    ''),
+        ('MEDDRA',  '10042128',      'Stomatitis',                        ''),
         ('ATC',     'L04AA10',       'Sirolimus (immunosoppressore)',     ''),
         ('SNOMED',  '254837009',     'Reperto clinico (esempio)',         '254837009')
     ) AS t(vcode, code, label, suffix)
@@ -204,8 +204,50 @@ INSERT INTO semantic_tag (name, description, primary_term, kg_node_type) VALUES
     ('publication',   'Pubblicazione o fonte bibliografica.',      NULL, 'Publication'),
     ('subject',       'Soggetto arruolato (pseudonimizzato).',     NULL, 'Subject');
 
--- Lo standard minimo di metadati: cosa ogni dataset DEVE o PUO dichiarare.
--- Gli obbligatori coprono i tre strati; senza di essi un dataset non e
+-- Campi di dataset (la scheda a livello di campo, artefatto 01) per due dataset
+-- del caso guida. Popolare dataset_field serve a due cose: rende la scheda di
+-- catalogo completa dei "fields" richiesti dalla traccia, e rende verificabile
+-- (non vacua) la query A3 di 05 sui campi PHI senza tag o pattern. I campi PHI
+-- portano tag semantico E pattern di validità, quindi su questo seed A3
+-- restituisce zero righe (stato conforme). I campi di assay sono allineati per
+-- nome e semantica al manifest (dataset_manifest_sample.json), così le due
+-- rappresentazioni dei "campi" (control plane relazionale e manifest del data
+-- plane) si riconciliano.
+INSERT INTO dataset_field (dataset_id, name, ordinal, data_type, description,
+        is_required, is_pii, is_phi, sensitivity_class_id, semantic_tag_id,
+        valid_pattern, unit)
+SELECT d.dataset_id, f.name, f.ordinal, f.data_type, f.description,
+       f.is_required, f.is_pii, f.is_phi,
+       (SELECT class_id FROM sensitivity_class WHERE code = f.sens),
+       (SELECT tag_id   FROM semantic_tag      WHERE name = f.tag),
+       f.valid_pattern, f.unit
+FROM dataset d, (VALUES
+        -- ct_subject_outcomes (restricted, PHI): soggetto pseudonimo, diagnosi PHI, endpoint
+        ('urn:novacura:clinical:ct_subject_outcomes', 'subject_id', 1::smallint, 'string',
+            'Identificativo pseudonimo del soggetto arruolato.', TRUE, TRUE, FALSE,
+            'restricted', 'subject', '^NCS-[0-9]{8}$', NULL),
+        ('urn:novacura:clinical:ct_subject_outcomes', 'diagnosis_code', 2::smallint, 'string',
+            'Diagnosi codificata del soggetto (dato sanitario, PHI).', TRUE, FALSE, TRUE,
+            'restricted', 'disease', '^[0-9]{6,9}$', NULL),
+        ('urn:novacura:clinical:ct_subject_outcomes', 'primary_endpoint_value', 3::smallint, 'double',
+            'Valore dell''endpoint primario misurato per il soggetto.', TRUE, FALSE, FALSE,
+            'confidential', 'endpoint', NULL, NULL),
+        -- assay_measurements (confidential): campi allineati al manifest
+        ('urn:novacura:lab:assay_measurements', 'compound_id', 1::smallint, 'string',
+            'Composto testato, codice ChEMBL.', TRUE, FALSE, FALSE,
+            'confidential', 'compound', '^CHEMBL[0-9]+$', NULL),
+        ('urn:novacura:lab:assay_measurements', 'target_id', 2::smallint, 'string',
+            'Target molecolare, accession UniProt.', TRUE, FALSE, FALSE,
+            'confidential', 'target', '^[A-Z0-9]{6,10}$', NULL),
+        ('urn:novacura:lab:assay_measurements', 'value', 3::smallint, 'double',
+            'Valore di potenza misurato (IC50/EC50/Ki).', TRUE, FALSE, FALSE,
+            'confidential', NULL, NULL, 'nM')
+    ) AS f(urn, name, ordinal, data_type, description, is_required, is_pii, is_phi,
+           sens, tag, valid_pattern, unit)
+WHERE d.urn = f.urn;
+
+-- Lo standard minimo di metadati: cosa ogni dataset DEVE o PUÒ dichiarare.
+-- Gli obbligatori coprono i tre strati; senza di essi un dataset non è
 -- governabile (nessun owner = nessuna accountability; nessuna classificazione
 -- = nessuna policy di accesso applicabile).
 INSERT INTO metadata_attribute (name, layer, is_mandatory, data_type, description, vocab_id) VALUES

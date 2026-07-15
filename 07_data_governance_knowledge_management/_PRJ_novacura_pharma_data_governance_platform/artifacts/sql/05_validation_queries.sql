@@ -135,7 +135,7 @@ WHERE f.is_phi
 
 
 -- A4. Accessi negati a dati restricted nelle ultime 24h (segnale di sicurezza).
---     Un tentativo negato non è un errore da nascondere: È evidenza che la
+--     Un tentativo negato non è un errore da nascondere: è evidenza che la
 --     segregazione dei ruoli funziona, e un pattern di negati ripetuti è un
 --     segnale da indagare.
 SELECT p.full_name, p.role_type, d.urn, al.occurred_at, al.row_scope
@@ -151,7 +151,7 @@ ORDER BY al.occurred_at DESC;
 
 -- A5. Output AI non conformi: risposte senza filtro accessi o senza citazione.
 --     Il CHECK di schema (artefatto 04) impedisce citazioni vuote, ma
---     access_filter_applied = FALSE resta possibile e va sorvegliato: È la spia
+--     access_filter_applied = FALSE resta possibile e va sorvegliato: è la spia
 --     di un retrieval non filtrato prima della generazione (rischio nota 09).
 SELECT g.gen_id, p.full_name, g.occurred_at, g.model_version, g.index_version
 FROM ai_generation_log g
@@ -188,7 +188,7 @@ ORDER BY d.urn, r.is_critical DESC, r.dimension;
 --     Lo score composito della nota 03 (1-100) con le bande < 70 rosso,
 --     70-80 giallo, > 80 verde. Il rollup è la media delle ultime misure, ma
 --     un fallimento su una dimensione critica forza il rosso: un dataset con
---     alta media ma endpoint primario incompleto non è "quasi buono", e
+--     alta media ma endpoint primario incompleto non è "quasi buono", è
 --     inutilizzabile per lo scopo (argomento della nota 03 sull'effetto
 --     composto).
 WITH latest AS (
@@ -234,13 +234,13 @@ HAVING (d.refresh_frequency = 'daily'  AND now() - MAX(res.measured_at) > INTERV
 -- - Il gruppo A è la parte più caratterizzante: la maggior parte dei sistemi
 --   misura la qualità dei dati (gruppo B) ma non verifica la qualità della
 --   propria governance. A1-A3 controllano che ownership, classificazione,
---   metadati e policy siano coerenti: È la governance che si autoispeziona.
+--   metadati e policy siano coerenti: è la governance che si autoispeziona.
 -- - B2 codifica l'argomento dell'effetto composto della nota 03: la media da
 --   sola direbbe "verde", ma un fallimento critico forza il rosso. Uno score
 --   che ignora la criticità per dimensione è fuorviante per costruzione.
 -- - Le soglie vivono in dq_rule.threshold con dq_rule.set_by, cioè sono dato e
 --   hanno un responsabile. Cambiare una soglia è un UPDATE tracciabile, non un
---   edit del codice: È la traduzione del principio "la soglia la fissa il
+--   edit del codice: è la traduzione del principio "la soglia la fissa il
 --   business" (nota 03).
 -- - Limite: accuracy e consistency compaiono nello schema dq_rule ma non nel
 --   seed, perché misurarle richiede una fonte di verità esterna e un secondo

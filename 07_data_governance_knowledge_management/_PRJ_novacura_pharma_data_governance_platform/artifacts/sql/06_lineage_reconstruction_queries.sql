@@ -111,15 +111,16 @@ ORDER BY depth, name;
 -- del codice a1b2c3d4 sugli input con hash H, lanciata da X il giorno D".
 -- -----------------------------------------------------------------------------
 WITH RECURSIVE back AS (
-    SELECT n.node_id, 0 AS depth
+    SELECT n.node_id, 0 AS depth, ARRAY[n.node_id] AS path
     FROM lineage_node n
     WHERE n.node_type = 'output'
       AND n.ref_external = 'urn:novacura:output:evidence_report'
     UNION ALL
-    SELECT src.node_id, b.depth + 1
+    SELECT src.node_id, b.depth + 1, b.path || src.node_id
     FROM back b
     JOIN lineage_edge e   ON e.to_node_id = b.node_id
     JOIN lineage_node src ON src.node_id = e.from_node_id
+    WHERE NOT src.node_id = ANY(b.path)   -- niente cicli (feedback edge del monitoraggio)
 )
 SELECT DISTINCT
        d.urn                       AS sorgente,
@@ -153,13 +154,14 @@ ORDER BY d.urn;
 -- toccato cosa" (audit), che è ciò che un'indagine su un incidente richiede.
 -- -----------------------------------------------------------------------------
 WITH RECURSIVE back AS (
-    SELECT n.node_id FROM lineage_node n
+    SELECT n.node_id, ARRAY[n.node_id] AS path FROM lineage_node n
     WHERE n.node_type = 'output' AND n.ref_external = 'urn:novacura:output:evidence_report'
     UNION ALL
-    SELECT src.node_id
+    SELECT src.node_id, b.path || src.node_id
     FROM back b
     JOIN lineage_edge e   ON e.to_node_id = b.node_id
     JOIN lineage_node src ON src.node_id = e.from_node_id
+    WHERE NOT src.node_id = ANY(b.path)   -- niente cicli (feedback edge del monitoraggio)
 ),
 source_datasets AS (
     SELECT DISTINCT n.ref_dataset_id AS dataset_id

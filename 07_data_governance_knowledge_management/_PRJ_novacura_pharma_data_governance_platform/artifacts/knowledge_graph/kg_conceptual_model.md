@@ -29,6 +29,11 @@ così l'identità dei nodi è interoperabile e non locale.
 | `Publication` | Fonte bibliografica | PMID / DOI |
 | `Evidence` | Nodo di evidenza reificato (vedi sotto) | interno |
 
+Il campione di triple (`kg_triples_sample.ttl`) istanzia un sottoinsieme di questi
+tipi (otto classi), sufficiente a illustrare un'ipotesi di repurposing con evidenza
+reificata. `Subject` ed `Endpoint` sono modellati qui a livello concettuale ma non
+istanziati nel campione, per tenerlo piccolo e leggibile.
+
 ## Tipi di arco (relazioni)
 
 Le relazioni portano il significato (nota 05: relazioni logiche = meno
@@ -51,7 +56,14 @@ ambiguità). Le principali:
   (Evidence)     --refutes------> (edge Compound-Disease)   # evidenza contraria
 ```
 
-## Evidenza reificata e provenienza sui fatti
+Convenzione di naming: nella prosa e nelle tabelle le relazioni sono in snake_case
+per leggibilità (`associated_with`, `reported_for`); nel serializzato RDF
+(`kg_triples_sample.ttl`) le stesse proprietà sono in camelCase (`associatedWith`,
+`reportedFor`), la forma idiomatica per le proprietà OWL. Sono la stessa relazione,
+due rese. Nota di semplificazione: nel campione RDF `supports`/`refutes` puntano al
+`Compound` (non all'arco `Compound`-`Disease`, che RDF puro non consente come
+soggetto senza RDF-star); il lato malattia resta implicito nel contesto del
+sottografo recuperato.
 
 Decisione di modellazione centrale: l'evidenza a favore o contro un'ipotesi di
 repurposing è **reificata** in un nodo `Evidence`, non appesa come proprietà di

@@ -307,57 +307,85 @@ def fig02_lineage():
 
 
 def fig03_kg():
-    """The domain graph. Diagonal edges are intentional: a graph drawn with only
-    orthogonal arrows would misrepresent its topology."""
-    fig, ax = canvas((13, 9))
-    ax.set_xlim(0, 13); ax.set_ylim(0, 9)
-    title_block(ax, 0.3, 8.7, "Modello concettuale del knowledge graph",
+    """The domain graph. A graph cannot be drawn with only orthogonal arrows
+    without lying about its shape, so edges stay diagonal; the layout keeps them
+    readable by anchoring every arrow to the box borders (never the centres),
+    routing the few long edges with gentle curves that clear the core, and
+    placing each label on its own edge over a white patch."""
+    fig, ax = canvas((13, 10))
+    ax.set_xlim(0, 13); ax.set_ylim(0, 10)
+    title_block(ax, 0.3, 9.55, "Modello concettuale del knowledge graph",
                 "Entità biomediche, relazioni tipizzate ed evidenza reificata con provenienza")
 
-    # Layout chosen to minimise edge crossings: the Compound-Target-Disease
-    # triangle sits at the top, sources feed inward from the periphery.
+    hw, hh = 1.02, 0.44
+    # Planar arrangement (verified crossing-free): the Compound-Target-Disease
+    # triangle spans the top; Assay sits between Compound and Target so both its
+    # edges stay short; Trial fans up into Compound and Disease; the Evidence /
+    # Publication chain lives lower-left, clear of everyone else's paths.
     nodes = {
-        "Target":       (6.5, 7.3, ACCENT["cyan"]),
-        "Compound":     (2.7, 5.3, ACCENT["blue"]),
-        "Disease":      (10.3, 5.3, ACCENT["rose"]),
-        "Evidence":     (6.5, 4.5, ACCENT["slate"]),
-        "AdverseEvent": (2.7, 7.5, ACCENT["rose"]),
-        "Assay":        (2.5, 2.5, ACCENT["emerald"]),
-        "Trial":        (6.5, 1.5, ACCENT["amber"]),
-        "Publication":  (10.5, 2.5, ACCENT["violet"]),
+        "AdverseEvent": (2.2, 8.35, ACCENT["rose"]),
+        "Assay":        (4.8, 8.35, ACCENT["emerald"]),
+        "Target":       (7.6, 8.5, ACCENT["cyan"]),
+        "Compound":     (2.5, 5.9, ACCENT["blue"]),
+        "Disease":      (11.0, 5.9, ACCENT["rose"]),
+        "Evidence":     (5.0, 3.5, ACCENT["slate"]),
+        "Trial":        (8.5, 2.2, ACCENT["amber"]),
+        "Publication":  (3.0, 2.0, ACCENT["violet"]),
     }
-    rw, rh = 1.95, 0.82
     for name, (x, y, ac) in nodes.items():
-        box(ax, x - rw / 2, y - rh / 2, rw, rh, accent=ac, fill=SURFACE)
+        box(ax, x - hw, y - hh, 2 * hw, 2 * hh, accent=ac, fill=SURFACE)
         label(ax, x, y, name, size=10, weight="bold")
 
     def c(n):
         x, y, _ = nodes[n]; return (x, y)
 
-    # top triangle
-    edge(ax, c("Compound"), c("Target"), "targets", lpos=(4.0, 6.7))
-    edge(ax, c("Target"), c("Disease"), "associated_with", lpos=(9.0, 6.7))
-    edge(ax, c("Compound"), c("Disease"), "repurposing_candidate_for",
-         color=ACCENT["rose"], lw=2.0, lpos=(6.5, 5.55))
-    # adverse event straight down onto compound
-    edge(ax, c("AdverseEvent"), c("Compound"), "reported_for", lpos=(3.35, 6.4))
-    # evidence supports/refutes the hypothesis, publication reports evidence
-    edge(ax, c("Evidence"), c("Compound"), "supports / refutes",
-         color=ACCENT["emerald"], lw=1.7, lpos=(4.6, 4.65))
-    edge(ax, c("Publication"), c("Evidence"), "reports", lpos=(8.7, 3.35))
-    # assay tests compound (against target)
-    edge(ax, c("Assay"), c("Compound"), "tests", lpos=(2.05, 3.9))
-    edge(ax, c("Assay"), c("Target"), "against", color=INK_MUTED,
-         lpos=(4.5, 3.4), tsize=7.5)
-    # trial studies compound / investigates disease
-    edge(ax, c("Trial"), c("Compound"), "studies", lpos=(4.2, 2.7))
-    edge(ax, c("Trial"), c("Disease"), "investigates", lpos=(8.8, 2.7))
+    def bpt(a, b):
+        """Point on the border of the box centred at a, toward b."""
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        sx = hw / abs(dx) if dx else 1e9
+        sy = hh / abs(dy) if dy else 1e9
+        t = min(sx, sy)
+        return (a[0] + t * dx, a[1] + t * dy)
 
-    # note on reified evidence
-    box(ax, 0.4, 0.4, 5.6, 0.85, fill=TINT["slate"], border=BORDER_SOFT)
-    ax.text(0.7, 0.82,
-            "Evidence è reificata: porta direzione, forza,\nconfidenza e provenienza (prov:wasDerivedFrom)",
-            fontsize=8.3, color=INK_SOFT, ha="left", va="center")
+    def ke(n0, n1, text, *, color=INK_SOFT, lw=1.4, rad=0.0, tsize=8.2,
+           off=0.0, t=0.5):
+        a0, a1 = bpt(c(n0), c(n1)), bpt(c(n1), c(n0))
+        ax.add_patch(FancyArrowPatch(
+            a0, a1, connectionstyle=f"arc3,rad={rad}", arrowstyle="-|>",
+            mutation_scale=13, color=color, lw=lw, zorder=3,
+            shrinkA=1, shrinkB=1))
+        if not text:
+            return
+        # base point at fraction t along the chord, lifted onto the arc
+        bx = a0[0] + t * (a1[0] - a0[0])
+        by = a0[1] + t * (a1[1] - a0[1])
+        dx, dy = a1[0] - a0[0], a1[1] - a0[1]
+        L = (dx * dx + dy * dy) ** 0.5 or 1.0
+        px, py = -dy / L, dx / L                    # left-of-travel unit
+        bow = 2 * t * (1 - t) * rad * L             # arc displacement at t
+        lx = bx + (bow + off) * px
+        ly = by + (bow + off) * py
+        ax.text(lx, ly, text, fontsize=tsize, color=INK_SOFT, ha="center",
+                va="center", zorder=6,
+                bbox=dict(boxstyle="round,pad=0.2", fc=BG, ec="none", alpha=0.96))
+
+    # core triangle Compound - Target - Disease
+    ke("Compound", "Target", "targets", off=0.20)
+    ke("Target", "Disease", "associated_with", off=0.22)
+    ke("Compound", "Disease", "repurposing_candidate_for",
+       color=ACCENT["rose"], lw=2.2, tsize=8.4, off=0.30)
+    # adverse event down onto compound (left column)
+    ke("AdverseEvent", "Compound", "reported_for", off=0.22)
+    # assay (top) tests compound and assays against target: both short
+    ke("Assay", "Compound", "tests", off=-0.22)
+    ke("Assay", "Target", "against", color=INK_MUTED, lw=1.3, off=0.22)
+    # evidence supports/refutes the hypothesis; publication reports evidence
+    ke("Evidence", "Compound", "supports / refutes",
+       color=ACCENT["emerald"], lw=1.7, off=0.22, t=0.46)
+    ke("Publication", "Evidence", "reports", off=0.20)
+    # trial studies compound / investigates disease (long straight fans)
+    ke("Trial", "Compound", "studies", t=0.66, off=0.24)
+    ke("Trial", "Disease", "investigates", t=0.5, off=-0.22)
 
     ax.set_axis_off()
     save(fig, "03_knowledge_graph_conceptual_model.png")
