@@ -6,6 +6,24 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 
 ---
 
+## Progress
+
+| # | Module | Capstone | Status |
+| --- | ------ | -------- | ------ |
+| 00 | [Python Programming](00_python_programming) | Warehouse order monitoring system | delivered |
+| 01 | [Machine Learning](01_machine_learning) | Defective-parts classification pipeline | delivered |
+| 02 | [Large Language Models](02_large_language_models) | Hybrid RAG for a company knowledge base (ChromaDB + BM25) | delivered |
+| 03 | [Agentic AI](03_agentic_ai) | Two capstones: DigitServe (n8n) + GreenThumb (ReAct + RAG) | delivered |
+| 04 | [Business Case & AI PM](04_business_case_AIPM) | OmniRetail AI governance platform | delivered |
+| 05 | [Cloud for AI](05_AI_cloud_services) | EnergoGrid hybrid multi-cloud infrastructure | delivered |
+| 06 | [AI Service Deployment](06_AI_services_deployment) | LogiFast delivery-time service (Flask) | in progress |
+| 07 | [Data Governance & KM](07_data_governance_knowledge_management) | Data governance architecture for a pharma company | in progress |
+| 08 | Solution Design & Architecture | Scalable architecture for AI systems | planned |
+| 09 | AI Architecture Security | Risk and vulnerability analysis of an AI system | planned |
+| 10 | Governance, Ethics & Compliance | AI governance framework for a fintech | planned |
+
+---
+
 ## Topic Areas
 
 ### Python Programming
