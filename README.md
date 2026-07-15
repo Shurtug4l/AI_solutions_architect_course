@@ -17,7 +17,7 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 | 04 | [Business Case & AI PM](04_business_case_AIPM) | OmniRetail AI governance platform | delivered |
 | 05 | [Cloud for AI](05_AI_cloud_services) | EnergoGrid hybrid multi-cloud infrastructure | delivered |
 | 06 | [AI Service Deployment](06_AI_services_deployment) | LogiFast delivery-time service (Flask) | delivered |
-| 07 | [Data Governance & KM](07_data_governance_knowledge_management) | Data governance architecture for a pharma company | in progress |
+| 07 | [Data Governance & KM](07_data_governance_knowledge_management) | NovaCura Pharma data governance platform | delivered |
 | 08 | Solution Design & Architecture | Scalable architecture for AI systems | planned |
 | 09 | AI Architecture Security | Risk and vulnerability analysis of an AI system | planned |
 | 10 | Governance, Ethics & Compliance | AI governance framework for a fintech | planned |
@@ -96,8 +96,8 @@ AI_solutions_architect_course/
 ├── 04_business_case_AIPM/           # Notes + exercises + PRJ (OmniRetail AI governance platform) - delivered
 ├── 05_AI_cloud_services/            # Notes + exercises + PRJ (EnergoGrid hybrid multi-cloud) - delivered
 ├── 06_AI_services_deployment/       # Notes + exercises + PRJ (LogiFast delivery-time service, Flask) - delivered
-├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local, gitignored) - module in progress, no capstone
+├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local) + PRJ (NovaCura DG&KM: PDF + 8 diagrams + SQL/BigData/KG/RAG artifacts) - delivered
 └── README.md
 ```
 
-Note: slide decks (`.pptx`) and capstone Word sources (`.docx`) are kept local and gitignored, so they are not part of the published repository. The two document capstones (modules 04, 05) are shipped as `.pdf`.
+Note: slide decks (`.pptx`) and capstone Word sources (`.docx`) are kept local and gitignored, so they are not part of the published repository. The document capstones (modules 04, 05, 07) are shipped as `.pdf`.
