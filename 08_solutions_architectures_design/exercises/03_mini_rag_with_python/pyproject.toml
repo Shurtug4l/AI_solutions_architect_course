@@ -1,0 +1,14 @@
+[project]
+name = "local-rag-chat"
+version = "0.1.0"
+description = "Local RAG Chat with Streamlit and LM Studio"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit",
+    "chromadb",
+    "rank_bm25",
+    "pydantic",
+    "openai",
+    "duckdb"
+]
