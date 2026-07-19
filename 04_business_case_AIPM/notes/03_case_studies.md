@@ -266,9 +266,9 @@ A team that nails the technology but neglects the surrounding system is one hall
 ## See also
 
 ### Other notes
-- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) — the solutionism trap concretely materialised in failure Family 1
-- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) — the metric alignment that Netflix nails and that fraud-detector failures miss; the drift cycle that the MLOps failures skip
-- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) — who owns the governance role that the chatbot cases lacked
-- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) — the PoC-to-production transition where Family 3 failures happen
-- Module 02 [04_rag_fundamentals.md](../../02_large_language_models/notes/04_rag_fundamentals.md) and [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) — the grounding mechanism the Air Canada chatbot needed
-- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) — accountability, regulatory exposure, the governance practices that prevent Family 5 failures
+- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) - the solutionism trap concretely materialised in failure Family 1
+- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) - the metric alignment that Netflix nails and that fraud-detector failures miss; the drift cycle that the MLOps failures skip
+- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) - who owns the governance role that the chatbot cases lacked
+- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) - the PoC-to-production transition where Family 3 failures happen
+- Module 02 [04_rag_fundamentals.md](../../02_large_language_models/notes/04_rag_fundamentals.md) and [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) - the grounding mechanism the Air Canada chatbot needed
+- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) - accountability, regulatory exposure, the governance practices that prevent Family 5 failures

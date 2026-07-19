@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Always open files with the `with` statement — it guarantees the handle is closed even if the body raises. Always specify `encoding="utf-8"` for text files; the platform default is non-portable. Iterate line-by-line for large files, never `read()` or `readlines()` (the former loads the whole file into memory; the latter splits it into a list of strings just as wastefully). Use **`pathlib.Path`** for path manipulation in new code — it is cross-platform, composable with the `/` operator, and offers convenient methods (`read_text`, `write_text`, `glob`, `mkdir`). For structured formats, the standard library covers the common cases: **`csv`** for tabular text (always with `newline=""`), **`json`** for nested data (use `indent=2` for human-readable output and `ensure_ascii=False` to keep non-ASCII characters intact). For binary files use the `'b'` mode flag. **`tempfile`** handles scratch files and directories with auto-cleanup.
+Always open files with the `with` statement - it guarantees the handle is closed even if the body raises. Always specify `encoding="utf-8"` for text files; the platform default is non-portable. Iterate line-by-line for large files, never `read()` or `readlines()` (the former loads the whole file into memory; the latter splits it into a list of strings just as wastefully). Use **`pathlib.Path`** for path manipulation in new code - it is cross-platform, composable with the `/` operator, and offers convenient methods (`read_text`, `write_text`, `glob`, `mkdir`). For structured formats, the standard library covers the common cases: **`csv`** for tabular text (always with `newline=""`), **`json`** for nested data (use `indent=2` for human-readable output and `ensure_ascii=False` to keep non-ASCII characters intact). For binary files use the `'b'` mode flag. **`tempfile`** handles scratch files and directories with auto-cleanup.
 
 ## Cheatsheet
 
@@ -31,10 +31,10 @@ Always open files with the `with` statement — it guarantees the handle is clos
 ```python
 f = open("data.txt", "r")           # open for reading
 data = f.read()
-f.close()                           # must close manually — easy to forget on exception path
+f.close()                           # must close manually - easy to forget on exception path
 ```
 
-Always use the `with` statement — it guarantees `close()` runs even if the body raises:
+Always use the `with` statement - it guarantees `close()` runs even if the body raises:
 
 ```python
 with open("data.txt", "r") as f:
@@ -96,7 +96,7 @@ with open("log.txt", "a", encoding="utf-8") as f:
     f.write("New entry\n")
 ```
 
-`writelines` does **not** add line terminators — it just concatenates. The name is misleading; treat it as "write a list of strings".
+`writelines` does **not** add line terminators - it just concatenates. The name is misleading; treat it as "write a list of strings".
 
 ---
 
@@ -109,11 +109,11 @@ with open("data.txt", "r", encoding="utf-8") as f:
     data = f.read()
 ```
 
-For files that may contain non-Latin characters, also pass `errors="strict"` (the default — fail loudly on invalid sequences) rather than the lenient alternatives like `"replace"` or `"ignore"` that hide encoding bugs.
+For files that may contain non-Latin characters, also pass `errors="strict"` (the default - fail loudly on invalid sequences) rather than the lenient alternatives like `"replace"` or `"ignore"` that hide encoding bugs.
 
 ---
 
-## `pathlib` — modern path handling
+## `pathlib` - modern path handling
 
 `pathlib.Path` is the preferred way to manipulate filesystem paths in Python 3.4+. It is cross-platform, composable, and offers methods that string-based path manipulation lacks.
 
@@ -166,7 +166,7 @@ Prefer `pathlib.Path` over `os.path` for new code. The `os.path` functions are s
 ```python
 import csv
 
-# Reading as dicts (the common case — first row is the header)
+# Reading as dicts (the common case - first row is the header)
 with open("data.csv", newline="", encoding="utf-8") as f:
     reader = csv.DictReader(f)
     for row in reader:
@@ -281,7 +281,7 @@ with tempfile.TemporaryDirectory() as tmpdir:
     work_path.write_text("temp data")
 ```
 
-`NamedTemporaryFile` with `delete=False` is a common pattern when you need to pass the file path to a subprocess or another library — the file persists until you explicitly remove it.
+`NamedTemporaryFile` with `delete=False` is a common pattern when you need to pass the file path to a subprocess or another library - the file persists until you explicitly remove it.
 
 ---
 
@@ -347,7 +347,7 @@ When working with both `os.path` strings and `Path` objects, `Path(os_path_strin
 
 ## See also
 
-- [02_collections.md](02_collections.md) — iterating over file lines as a sequence
-- [07_exceptions.md](07_exceptions.md) — `with` statement, context managers in detail, `FileNotFoundError`
-- [10_environments_and_tooling.md](10_environments_and_tooling.md) — `.env` files, environment variables
-- [11_standard_library.md](11_standard_library.md) — `os`, `sys`, `tempfile`, `shutil` for higher-level file ops
+- [02_collections.md](02_collections.md) - iterating over file lines as a sequence
+- [07_exceptions.md](07_exceptions.md) - `with` statement, context managers in detail, `FileNotFoundError`
+- [10_environments_and_tooling.md](10_environments_and_tooling.md) - `.env` files, environment variables
+- [11_standard_library.md](11_standard_library.md) - `os`, `sys`, `tempfile`, `shutil` for higher-level file ops

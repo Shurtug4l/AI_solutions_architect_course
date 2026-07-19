@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A condensed tour of the modules you reach for most often. **`os` / `sys`** for OS-level operations and runtime introspection. **`datetime`** for dates, times, and durations — always work in UTC internally and convert only at display time, and prefer `datetime.now(tz=timezone.utc)` over the deprecated `datetime.utcnow()`. **`collections`** adds `defaultdict`, `Counter`, `deque`, and `namedtuple` — drop-in upgrades over rolling your own. **`itertools`** provides lazy iterator combinators for everything from chaining and slicing to combinatorics and grouping. **`functools`** offers higher-order helpers (`partial`, `reduce`, `lru_cache`, `wraps`, `total_ordering`). **`re`** is the regex engine — compile patterns once when reused, prefer named groups for readable matches. **`math`** and **`random`** for numerical work; **`secrets`** for cryptographically secure randomness (tokens, passwords). **`typing`** for type hints — modern Python lets you skip the `List`/`Dict`/`Optional`/`Union` imports in favour of `list`, `dict`, `int | None`, `int | str`. **`logging`** for production diagnostics — one logger per module via `logging.getLogger(__name__)`, and use `logger.exception(...)` inside `except` blocks to capture the traceback automatically.
+A condensed tour of the modules you reach for most often. **`os` / `sys`** for OS-level operations and runtime introspection. **`datetime`** for dates, times, and durations - always work in UTC internally and convert only at display time, and prefer `datetime.now(tz=timezone.utc)` over the deprecated `datetime.utcnow()`. **`collections`** adds `defaultdict`, `Counter`, `deque`, and `namedtuple` - drop-in upgrades over rolling your own. **`itertools`** provides lazy iterator combinators for everything from chaining and slicing to combinatorics and grouping. **`functools`** offers higher-order helpers (`partial`, `reduce`, `lru_cache`, `wraps`, `total_ordering`). **`re`** is the regex engine - compile patterns once when reused, prefer named groups for readable matches. **`math`** and **`random`** for numerical work; **`secrets`** for cryptographically secure randomness (tokens, passwords). **`typing`** for type hints - modern Python lets you skip the `List`/`Dict`/`Optional`/`Union` imports in favour of `list`, `dict`, `int | None`, `int | str`. **`logging`** for production diagnostics - one logger per module via `logging.getLogger(__name__)`, and use `logger.exception(...)` inside `except` blocks to capture the traceback automatically.
 
 ## Cheatsheet
 
@@ -66,7 +66,7 @@ For path manipulation, prefer `pathlib.Path` (covered in [09_file_io.md](09_file
 ```python
 import sys
 
-sys.argv                                        # ['script.py', 'arg1', ...] — command-line args
+sys.argv                                        # ['script.py', 'arg1', ...] - command-line args
 sys.path                                        # list of module search paths
 sys.version                                     # Python version string
 sys.platform                                    # 'darwin', 'linux', 'win32'
@@ -76,7 +76,7 @@ sys.getsizeof(obj)                              # memory size of an object in by
 sys.modules                                     # dict of imported modules
 ```
 
-`sys.exit(N)` raises `SystemExit(N)`, which can be caught — useful for deferred cleanup. `os._exit(N)` exits immediately without running cleanup; use it sparingly.
+`sys.exit(N)` raises `SystemExit(N)`, which can be caught - useful for deferred cleanup. `os._exit(N)` exits immediately without running cleanup; use it sparingly.
 
 ---
 
@@ -115,7 +115,7 @@ dt.date()
 dt.time()
 ```
 
-**Always work in UTC internally**; convert to local time only for display. Use `datetime.now(tz=timezone.utc)` instead of `datetime.utcnow()` — the latter returns a naive datetime that knows nothing about its timezone, and is deprecated in 3.12. For richer time-zone support (named zones, DST), use `zoneinfo.ZoneInfo("Europe/Rome")`.
+**Always work in UTC internally**; convert to local time only for display. Use `datetime.now(tz=timezone.utc)` instead of `datetime.utcnow()` - the latter returns a naive datetime that knows nothing about its timezone, and is deprecated in 3.12. For richer time-zone support (named zones, DST), use `zoneinfo.ZoneInfo("Europe/Rome")`.
 
 ---
 
@@ -124,7 +124,7 @@ dt.time()
 ```python
 from collections import defaultdict, Counter, deque, namedtuple, OrderedDict
 
-# defaultdict — no KeyError on missing keys
+# defaultdict - no KeyError on missing keys
 word_count = defaultdict(int)
 for word in text.split():
     word_count[word] += 1                       # no need for `if word in d`
@@ -133,15 +133,15 @@ groups = defaultdict(list)
 for item in items:
     groups[item.category].append(item)
 
-# Counter — frequency tables for any hashable
+# Counter - frequency tables for any hashable
 c = Counter("abracadabra")                      # Counter({'a': 5, 'b': 2, 'r': 2, ...})
 c.most_common(3)                                # [('a', 5), ('b', 2), ('r', 2)]
 c['a']                                          # 5
-c['z']                                          # 0 — missing keys read as zero
+c['z']                                          # 0 - missing keys read as zero
 c + Counter("abc")                              # add counts
 c - Counter("ab")                               # subtract (clamped at 0)
 
-# namedtuple — lightweight, immutable struct
+# namedtuple - lightweight, immutable struct
 Point = namedtuple('Point', ['x', 'y'])
 p = Point(1, 2)
 p.x, p.y                                        # attribute access
@@ -149,7 +149,7 @@ p[0], p[1]                                      # index access still works
 p._asdict()                                     # OrderedDict of fields
 p._replace(x=10)                                # new namedtuple with one field changed
 
-# deque — double-ended queue, O(1) on both ends
+# deque - double-ended queue, O(1) on both ends
 dq = deque([1, 2, 3], maxlen=5)
 dq.append(4)                                    # right
 dq.appendleft(0)                                # left
@@ -208,31 +208,31 @@ it.repeat(value, n)
 ```python
 from functools import partial, reduce, lru_cache, wraps, cache, total_ordering, cached_property
 
-# partial — pre-fill arguments
+# partial - pre-fill arguments
 add5 = partial(lambda x, y: x + y, y=5)
 add5(10)                                        # 15
 
-# lru_cache — memoise, bounded
+# lru_cache - memoise, bounded
 @lru_cache(maxsize=128)
 def expensive(n): ...
 
-# cache — like lru_cache(maxsize=None) (3.9+)
+# cache - like lru_cache(maxsize=None) (3.9+)
 @cache
 def fib(n):
     if n < 2: return n
     return fib(n-1) + fib(n-2)
 
-# reduce — fold
+# reduce - fold
 reduce(lambda a, b: a + b, [1, 2, 3, 4])        # 10
 
-# total_ordering — define __eq__ and one comparison, get the rest free
+# total_ordering - define __eq__ and one comparison, get the rest free
 @total_ordering
 class Card:
     def __eq__(self, other): ...
     def __lt__(self, other): ...
     # __le__, __gt__, __ge__ auto-generated
 
-# wraps — preserve metadata in a decorator (see 04_functions.md)
+# wraps - preserve metadata in a decorator (see 04_functions.md)
 def my_decorator(func):
     @wraps(func)
     def wrapper(*args, **kw): ...
@@ -241,12 +241,12 @@ def my_decorator(func):
 
 ---
 
-## `re` — regular expressions
+## `re` - regular expressions
 
 ```python
 import re
 
-# Compile once, reuse — meaningfully faster when used in a loop
+# Compile once, reuse - meaningfully faster when used in a loop
 pattern = re.compile(r'\d{3}-\d{4}')
 pattern.match("123-4567")
 
@@ -265,7 +265,7 @@ re.finditer(r'\d+', 'a1 b22')                   # iterator of match objects
 
 # Substitute
 re.sub(r'\s+', ' ', 'hello  world')             # 'hello world'
-re.sub(r'(\w+)', r'[\1]', 'foo bar')            # '[foo] [bar]' — backreference
+re.sub(r'(\w+)', r'[\1]', 'foo bar')            # '[foo] [bar]' - backreference
 
 # Split
 re.split(r'[,;\s]+', 'a, b; c d')               # ['a', 'b', 'c', 'd']
@@ -274,7 +274,7 @@ re.split(r'[,;\s]+', 'a, b; c d')               # ['a', 'b', 'c', 'd']
 m = re.match(r'(\d{4})-(\d{2})-(\d{2})', '2024-01-15')
 m.groups()                                      # ('2024', '01', '15')
 
-# Named groups (preferred — self-documenting)
+# Named groups (preferred - self-documenting)
 m = re.match(r'(?P<year>\d{4})-(?P<month>\d{2})', '2024-01')
 m.group('year')                                 # '2024'
 m.groupdict()                                   # {'year': '2024', 'month': '01'}
@@ -305,7 +305,7 @@ import math
 math.sqrt(16)                                   # 4.0
 math.floor(3.7)                                 # 3
 math.ceil(3.2)                                  # 4
-math.log(100, 10)                               # 2.0 — log base 10
+math.log(100, 10)                               # 2.0 - log base 10
 math.log2(8)                                    # 3.0
 math.exp(1)                                     # e ≈ 2.718
 math.pi                                         # 3.14159...
@@ -315,8 +315,8 @@ math.isnan(x)
 math.isinf(x)
 math.factorial(5)                               # 120
 math.gcd(12, 8)                                 # 4
-math.comb(10, 3)                                # 120 — combinations
-math.perm(10, 3)                                # 720 — permutations
+math.comb(10, 3)                                # 120 - combinations
+math.perm(10, 3)                                # 720 - permutations
 math.isclose(a, b, rel_tol=1e-9)                # safe float equality
 ```
 
@@ -361,23 +361,23 @@ from typing import (
     TYPE_CHECKING,
 )
 
-# TypeVar — generic functions
+# TypeVar - generic functions
 T = TypeVar('T')
 
 def first(lst: list[T]) -> T:
     return lst[0]
 
-# Protocol — structural subtyping (duck typing with type checking)
+# Protocol - structural subtyping (duck typing with type checking)
 class Drawable(Protocol):
     def draw(self) -> None: ...
 
 def render(obj: Drawable) -> None:              # any object with .draw() qualifies
     obj.draw()
 
-# Literal — constrain to specific values
+# Literal - constrain to specific values
 def align(text: str, mode: Literal["left", "center", "right"]) -> str: ...
 
-# Final — mark as constant (mypy enforced, no runtime effect)
+# Final - mark as constant (mypy enforced, no runtime effect)
 MAX_SIZE: Final = 100
 ```
 
@@ -404,7 +404,7 @@ logger.error("Error occurred")
 logger.critical("Critical failure")
 logger.exception("Error with traceback")        # use inside except blocks
 
-# Lazy formatting — message string is built only if the level is enabled
+# Lazy formatting - message string is built only if the level is enabled
 logger.info("Processing %d items", len(items))
 ```
 
@@ -419,35 +419,35 @@ Inside `except` blocks, **always prefer `logger.exception(...)` over `logger.err
 ## Quick mention: other useful modules
 
 ```python
-# argparse — command-line interfaces
+# argparse - command-line interfaces
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("input")
 parser.add_argument("--verbose", "-v", action="store_true")
 args = parser.parse_args()
 
-# subprocess — run external commands
+# subprocess - run external commands
 import subprocess
 result = subprocess.run(["ls", "-la"], capture_output=True, text=True, check=True)
 print(result.stdout)
 
-# concurrent.futures — thread / process pools
+# concurrent.futures - thread / process pools
 from concurrent.futures import ThreadPoolExecutor
 with ThreadPoolExecutor(max_workers=4) as ex:
     results = list(ex.map(fetch, urls))
 
-# enum — symbolic constants
+# enum - symbolic constants
 from enum import Enum, auto
 class Color(Enum):
     RED = auto()
     GREEN = auto()
     BLUE = auto()
 
-# hashlib — cryptographic hashes
+# hashlib - cryptographic hashes
 import hashlib
 hashlib.sha256(b"hello").hexdigest()
 
-# uuid — universally unique identifiers
+# uuid - universally unique identifiers
 import uuid
 uuid.uuid4()                                    # random UUID
 ```
@@ -501,9 +501,9 @@ uuid.uuid4()                                    # random UUID
 
 ## See also
 
-- [02_collections.md](02_collections.md) — list, tuple, dict, set
-- [04_functions.md](04_functions.md) — `functools.wraps`, decorator patterns
-- [05_functional_programming.md](05_functional_programming.md) — `itertools`, `functools` in depth
-- [07_exceptions.md](07_exceptions.md) — `logger.exception`, error handling
-- [09_file_io.md](09_file_io.md) — `pathlib`, `csv`, `json`, `tempfile`
-- [10_environments_and_tooling.md](10_environments_and_tooling.md) — `os.environ`, `.env` files
+- [02_collections.md](02_collections.md) - list, tuple, dict, set
+- [04_functions.md](04_functions.md) - `functools.wraps`, decorator patterns
+- [05_functional_programming.md](05_functional_programming.md) - `itertools`, `functools` in depth
+- [07_exceptions.md](07_exceptions.md) - `logger.exception`, error handling
+- [09_file_io.md](09_file_io.md) - `pathlib`, `csv`, `json`, `tempfile`
+- [10_environments_and_tooling.md](10_environments_and_tooling.md) - `os.environ`, `.env` files

@@ -318,11 +318,11 @@ The discipline is to apply them **before** the bill becomes a problem, not after
 ## See also
 
 ### Other notes
-- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — pyramid maps to the AIaaS-vs-custom-platform tradeoff
-- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) — AWS counterpart (Azure AI Services ↔ Bedrock + Comprehend etc.; Azure ML ↔ SageMaker)
-- [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — GCP counterpart, with a different philosophy (data-first vs services-first)
-- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — when to leave the Azure pyramid for IaaS or OSS
+- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) - pyramid maps to the AIaaS-vs-custom-platform tradeoff
+- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) - AWS counterpart (Azure AI Services ↔ Bedrock + Comprehend etc.; Azure ML ↔ SageMaker)
+- [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) - GCP counterpart, with a different philosophy (data-first vs services-first)
+- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) - when to leave the Azure pyramid for IaaS or OSS
 
 ### Cross-module
-- Module 02 [05_prompt_engineering.md](../../02_large_language_models/notes/05_prompt_engineering.md) — what you build on top of Azure OpenAI Service
-- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) — the metrics that Azure ML's monitoring tracks
+- Module 02 [05_prompt_engineering.md](../../02_large_language_models/notes/05_prompt_engineering.md) - what you build on top of Azure OpenAI Service
+- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) - the metrics that Azure ML's monitoring tracks

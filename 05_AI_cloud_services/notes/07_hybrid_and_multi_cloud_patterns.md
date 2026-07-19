@@ -320,12 +320,12 @@ If the architecture is not documented, the only person who understands it is the
 ## See also
 
 ### Other notes
-- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — the basic primitives that mix in hybrid architectures
-- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md), [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md), [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — the providers being combined here
-- [05_iaas_open_source_and_on_prem_deployment.md](05_iaas_open_source_and_on_prem_deployment.md) — the OSS leg of hybrid architectures
-- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — when each model wins; hybrid means picking the right one per workload
+- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) - the basic primitives that mix in hybrid architectures
+- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md), [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md), [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) - the providers being combined here
+- [05_iaas_open_source_and_on_prem_deployment.md](05_iaas_open_source_and_on_prem_deployment.md) - the OSS leg of hybrid architectures
+- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) - when each model wins; hybrid means picking the right one per workload
 
 ### Cross-module
-- Module 04 [05_roadmap_and_prioritization.md](../../04_business_case_AIPM/notes/05_roadmap_and_prioritization.md) — the "MVP → Scale" architectural pattern matches the product-roadmap pattern
-- Module 04 [06_product_lifecycle_poc_to_scale.md](../../04_business_case_AIPM/notes/06_product_lifecycle_poc_to_scale.md) — scaling from PoC to production aligns with the architectural evolution
-- Module 04 [01_identifying_ai_problems_and_feasibility.md](../../04_business_case_AIPM/notes/01_identifying_ai_problems_and_feasibility.md) — TCO over 3 years is the right horizon for evaluating hybrid/multi-cloud
+- Module 04 [05_roadmap_and_prioritization.md](../../04_business_case_AIPM/notes/05_roadmap_and_prioritization.md) - the "MVP → Scale" architectural pattern matches the product-roadmap pattern
+- Module 04 [06_product_lifecycle_poc_to_scale.md](../../04_business_case_AIPM/notes/06_product_lifecycle_poc_to_scale.md) - scaling from PoC to production aligns with the architectural evolution
+- Module 04 [01_identifying_ai_problems_and_feasibility.md](../../04_business_case_AIPM/notes/01_identifying_ai_problems_and_feasibility.md) - TCO over 3 years is the right horizon for evaluating hybrid/multi-cloud

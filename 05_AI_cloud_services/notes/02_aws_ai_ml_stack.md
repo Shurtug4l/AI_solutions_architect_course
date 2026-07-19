@@ -228,11 +228,11 @@ The point of running this on AWS (rather than locally) is the **reproducibility 
 ## See also
 
 ### Other notes
-- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — the abstract pipeline that SageMaker concretises
-- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) — Azure's equivalent stack and its pyramid of services
-- [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — GCP's data-first answer to SageMaker
-- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — when SageMaker (PaaS) is the right pick and when it is not
+- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) - the abstract pipeline that SageMaker concretises
+- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) - Azure's equivalent stack and its pyramid of services
+- [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) - GCP's data-first answer to SageMaker
+- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) - when SageMaker (PaaS) is the right pick and when it is not
 
 ### Cross-module
-- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) — the classical model selection workflow that SageMaker HPO automates
-- Module 02 [14_rag_production.md](../../02_large_language_models/notes/14_rag_production.md) — production patterns that apply to RAG endpoints hosted on SageMaker
+- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) - the classical model selection workflow that SageMaker HPO automates
+- Module 02 [14_rag_production.md](../../02_large_language_models/notes/14_rag_production.md) - production patterns that apply to RAG endpoints hosted on SageMaker

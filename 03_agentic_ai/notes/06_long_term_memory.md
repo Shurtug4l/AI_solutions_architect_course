@@ -608,12 +608,12 @@ Each stage in this stack is optional. The smallest viable RAG is `chunk → embe
 ## See also
 
 ### Other notes
-- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) — agents use LTM as a tool of last resort
-- [02_agent_components.md](02_agent_components.md) — memory as the fifth building block; STM vs LTM definitions
-- [04_frameworks.md](04_frameworks.md) — LangChain's `Chroma.from_documents`, `RetrievalQA`, vector store integrations
-- [05_short_term_memory.md](05_short_term_memory.md) — Entity Memory is the bridge; persist the dict and you have rudimentary LTM
-- [07_deployment.md](07_deployment.md) — vector DB persistence and secret management for the embedder API key
+- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) - agents use LTM as a tool of last resort
+- [02_agent_components.md](02_agent_components.md) - memory as the fifth building block; STM vs LTM definitions
+- [04_frameworks.md](04_frameworks.md) - LangChain's `Chroma.from_documents`, `RetrievalQA`, vector store integrations
+- [05_short_term_memory.md](05_short_term_memory.md) - Entity Memory is the bridge; persist the dict and you have rudimentary LTM
+- [07_deployment.md](07_deployment.md) - vector DB persistence and secret management for the embedder API key
 
 ### Exercises that exercise the concepts in this note
-- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) — full RAG pipeline (ChromaDB + nomic-embed-text), CAG fallback for off-topic queries, episodic memory with persistence-trigger
-- Also covered in module 02 capstone: `02_large_language_models/_PRJ_rag_system_for_company_knowledge/PRJ_rag_system_for_company_knowledge.py` — hybrid sem + BM25 + recency, category filters, larger corpus
+- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) - full RAG pipeline (ChromaDB + nomic-embed-text), CAG fallback for off-topic queries, episodic memory with persistence-trigger
+- Also covered in module 02 capstone: `02_large_language_models/_PRJ_rag_system_for_company_knowledge/PRJ_rag_system_for_company_knowledge.py` - hybrid sem + BM25 + recency, category filters, larger corpus

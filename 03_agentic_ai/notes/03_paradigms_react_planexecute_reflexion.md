@@ -70,24 +70,24 @@ The pattern that put agentic loops on the map. The agent alternates **reasoning*
        └──────────────┬─────────────┘
                       ▼
             ┌─────────────────┐
-            │    🤔 Reason     │
+            │     Reason      │
             └────────┬────────┘
                      ▼
             ┌─────────────────┐
-            │    🛠️ Act        │
+            │      Act        │
             └────────┬────────┘
                      ▼
             ┌─────────────────┐
-            │    👀 Observe    │
+            │     Observe     │
             └────────┬────────┘
                      ▼
             goal? ───── no ──── loop
                 │
                yes
                 ▼
-          ✍️ finalize answer
+          finalize answer
                 ▼
-          💬 answer
+          answer
 ```
 
 ### Worked example (verbatim from the deck)
@@ -130,21 +130,21 @@ Mitigations: a hard iteration cap (5-10), per-step timeouts, and an explicit tok
 Decouple **planning** from **execution**. A planner LLM proposes an ordered list of steps; an executor LLM (or sub-agent) runs them one by one, with tools at its disposal. After all steps run, an optional **re-planner** can revise the plan based on the results.
 
 ```
-question ─► 🤔 Planner ─► [step 1, step 2, ..., step N]
+question ─► Planner ─► [step 1, step 2, ..., step N]
                                   │
                                   ▼
-                          🤖 Executor (one step at a time)
+                          Executor (one step at a time)
                                   │
                                   ▼
                           ┌─────────────────┐
                           │  results        │
                           └─────────┬───────┘
                                     ▼
-                          🤔 Re-plan? ── yes ── back to executor
+                          Re-plan? ── yes ── back to executor
                                     │
                                    no
                                     ▼
-                            💬 answer
+                            answer
 ```
 
 ### Worked example (verbatim from the deck)
@@ -152,13 +152,13 @@ question ─► 🤔 Planner ─► [step 1, step 2, ..., step N]
 > *"Request extra remote-work for next week."*
 
 ```
-🤔 Planner output:
+Planner output:
    1. Retrieve policy and requirements
    2. Call the API to verify the request
    3. Submit the request into the system
    4. Confirm and send a summary
 
-🤖 Executor:
+Executor:
    step 1 → RAG over policy documents
    step 2 → tool: verify_request_api(...)
    step 3 → tool: create_request_api(...)
@@ -199,18 +199,18 @@ A self-improvement loop. After each attempt, an **evaluator** scores the output,
                             └────────┬───────┘
                                      ▼
                     ┌─────────────────────────────┐
-                    │ 🤖 Actor                    │
+                    │ Actor                       │
                     │ produces trajectory         │
                     │ (actions + observations)    │
                     └──────────┬──────────────────┘
                                ▼
                     ┌─────────────────────────────┐
-                    │ 📏 Evaluator                │
+                    │ Evaluator                   │
                     │ scores the trajectory       │
                     └──────────┬──────────────────┘
                                ▼
                     ┌─────────────────────────────┐
-                    │ 🪞 Self-Reflection          │
+                    │ Self-Reflection             │
                     │ writes a "lesson" to        │
                     │ long-term experience        │
                     └──────────┬──────────────────┘
@@ -325,13 +325,13 @@ The module 03 fact-checker (exercise 03) is the second of these: a ReAct agent w
 ## See also
 
 ### Other notes
-- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) — workflow vs pure agent (the next level up)
-- [02_agent_components.md](02_agent_components.md) — building blocks each paradigm orchestrates
-- [04_frameworks.md](04_frameworks.md) — LangGraph models these paradigms as explicit graphs
-- [05_short_term_memory.md](05_short_term_memory.md) — message-history strategies that compose with any paradigm
-- [06_long_term_memory.md](06_long_term_memory.md) — where Reflexion's "experience" actually lives
+- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) - workflow vs pure agent (the next level up)
+- [02_agent_components.md](02_agent_components.md) - building blocks each paradigm orchestrates
+- [04_frameworks.md](04_frameworks.md) - LangGraph models these paradigms as explicit graphs
+- [05_short_term_memory.md](05_short_term_memory.md) - message-history strategies that compose with any paradigm
+- [06_long_term_memory.md](06_long_term_memory.md) - where Reflexion's "experience" actually lives
 
 ### Exercises that exercise the concepts in this note
-- [`02_ex_translation_wikipedia_agent.ipynb`](../exercises/02_ex_translation_wikipedia_agent.ipynb) — pure ReAct agent with two tools
-- [`03_ex_fact_checker_react_reflexion.ipynb`](../exercises/03_ex_fact_checker_react_reflexion.ipynb) — ReAct + Reflexion stacked, with `Critique` schema and lesson-write loop
-- [`04_ex_fact_checker_langchain_vs_langgraph.ipynb`](../exercises/04_ex_fact_checker_langchain_vs_langgraph.ipynb) — same fact-checker via framework primitives (LangChain create_agent uses an internal ReAct loop)
+- [`02_ex_translation_wikipedia_agent.ipynb`](../exercises/02_ex_translation_wikipedia_agent.ipynb) - pure ReAct agent with two tools
+- [`03_ex_fact_checker_react_reflexion.ipynb`](../exercises/03_ex_fact_checker_react_reflexion.ipynb) - ReAct + Reflexion stacked, with `Critique` schema and lesson-write loop
+- [`04_ex_fact_checker_langchain_vs_langgraph.ipynb`](../exercises/04_ex_fact_checker_langchain_vs_langgraph.ipynb) - same fact-checker via framework primitives (LangChain create_agent uses an internal ReAct loop)

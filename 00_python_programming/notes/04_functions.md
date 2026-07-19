@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-Functions in Python are first-class objects: they can be passed around, returned, and assigned like any other value. Their signatures are flexible — `*args` collects extra positional arguments, `**kwargs` collects extra keyword arguments, and the markers `/` and `*` enforce positional-only and keyword-only calling conventions. Three traps recur in practice. **Mutable default arguments** (lists, dicts) are evaluated once at definition time and shared across all calls, leading to silent state leakage. **Closures created in loops** bind the loop variable by reference, so every callable ends up reading the final value at call time. **Assignment inside a function** creates a new local variable unless `global` or `nonlocal` is declared, silently shadowing outer names. **Decorators** are functions that wrap functions to extend their behavior; always pair them with `functools.wraps` to preserve `__name__`, `__doc__`, and the signature — otherwise debuggers, IDEs, and introspection tools all break.
+Functions in Python are first-class objects: they can be passed around, returned, and assigned like any other value. Their signatures are flexible - `*args` collects extra positional arguments, `**kwargs` collects extra keyword arguments, and the markers `/` and `*` enforce positional-only and keyword-only calling conventions. Three traps recur in practice. **Mutable default arguments** (lists, dicts) are evaluated once at definition time and shared across all calls, leading to silent state leakage. **Closures created in loops** bind the loop variable by reference, so every callable ends up reading the final value at call time. **Assignment inside a function** creates a new local variable unless `global` or `nonlocal` is declared, silently shadowing outer names. **Decorators** are functions that wrap functions to extend their behavior; always pair them with `functools.wraps` to preserve `__name__`, `__doc__`, and the signature - otherwise debuggers, IDEs, and introspection tools all break.
 
 ## Cheatsheet
 
 | Pattern | Syntax | Key note |
 |---|---|---|
-| Default arg | `def f(x=10)` | Evaluated once at def time — never `[]`, `{}`, or any mutable as default |
+| Default arg | `def f(x=10)` | Evaluated once at def time - never `[]`, `{}`, or any mutable as default |
 | Variable positional | `def f(*args)` | Collects extra positional args into a **tuple** |
 | Variable keyword | `def f(**kwargs)` | Collects extra keyword args into a **dict** |
 | Positional-only | `def f(x, /)` | Caller cannot pass `x=...`; useful for fast paths and stable APIs (3.8+) |
@@ -17,7 +17,7 @@ Functions in Python are first-class objects: they can be passed around, returned
 | Closure with mutation | `def outer(): nonlocal x` | Inner function writes to the outer binding |
 | Decorator | `@dec` above `def f` | Sugar for `f = dec(f)`, applied at definition time |
 | Decorator with args | `@dec(n)` | Factory pattern: `dec(n)` returns the actual decorator |
-| Type hints | `def f(x: int) -> str` | PEP 484, runtime no-op — checked by mypy / pyright |
+| Type hints | `def f(x: int) -> str` | PEP 484, runtime no-op - checked by mypy / pyright |
 
 ---
 
@@ -74,7 +74,7 @@ The same trap applies to dicts, sets, and any user-defined mutable object.
 
 ### `*args` and `**kwargs`
 
-`*args` gathers leftover positional arguments into a tuple; `**kwargs` gathers leftover keyword arguments into a dict. The names `args` and `kwargs` are conventional, not required — what matters are the `*` and `**` markers.
+`*args` gathers leftover positional arguments into a tuple; `**kwargs` gathers leftover keyword arguments into a dict. The names `args` and `kwargs` are conventional, not required - what matters are the `*` and `**` markers.
 
 ```python
 def add(*numbers):              # numbers is a tuple
@@ -94,8 +94,8 @@ def full(pos_only, /, standard, *, kw_only, **kwargs):
     ...
 ```
 
-- `/` — every parameter to its left is **positional-only**: it cannot be passed by name.
-- `*` — every parameter to its right is **keyword-only**: it must be passed by name.
+- `/` - every parameter to its left is **positional-only**: it cannot be passed by name.
+- `*` - every parameter to its right is **keyword-only**: it must be passed by name.
 
 ```python
 def func(a, b, /, c, *, d, e): ...
@@ -125,10 +125,10 @@ func(*args, **kwargs)
 
 When you reference a name, Python searches scopes in this order:
 
-1. **L**ocal — the current function.
-2. **E**nclosing — any outer function (relevant for closures).
-3. **G**lobal — module level.
-4. **B**uilt-in — `len`, `print`, `range`, etc.
+1. **L**ocal - the current function.
+2. **E**nclosing - any outer function (relevant for closures).
+3. **G**lobal - module level.
+4. **B**uilt-in - `len`, `print`, `range`, etc.
 
 ```python
 x = "global"
@@ -219,13 +219,13 @@ pairs = [(1, 'b'), (3, 'a'), (2, 'c')]
 sorted(pairs, key=lambda pair: pair[1])     # [(3,'a'), (1,'b'), (2,'c')]
 ```
 
-Use lambdas where the function is genuinely one-off and inline — typically as the `key=` argument of `sorted` / `min` / `max`, or inside `map` / `filter`. Once you find yourself wanting to break it across lines, switch to a named `def`. Assigning a lambda to a variable (`f = lambda x: ...`) provides no benefit over `def f(x): ...`, and it costs you the function name in tracebacks.
+Use lambdas where the function is genuinely one-off and inline - typically as the `key=` argument of `sorted` / `min` / `max`, or inside `map` / `filter`. Once you find yourself wanting to break it across lines, switch to a named `def`. Assigning a lambda to a variable (`f = lambda x: ...`) provides no benefit over `def f(x): ...`, and it costs you the function name in tracebacks.
 
 ---
 
 ## Decorators
 
-A decorator wraps another function to extend its behavior — logging, timing, caching, access control — without modifying the original. The `@` syntax is sugar for assigning the wrapped result back to the original name.
+A decorator wraps another function to extend its behavior - logging, timing, caching, access control - without modifying the original. The `@` syntax is sugar for assigning the wrapped result back to the original name.
 
 ```python
 def my_decorator(func):
@@ -245,7 +245,7 @@ def say_hello():
 
 ### `functools.wraps`
 
-A decorator naively replaces the function with `wrapper`, so the original `__name__`, `__doc__`, and signature are lost. This breaks IDE help, debuggers, and any tool that introspects functions. `functools.wraps` copies the metadata from the wrapped function onto the wrapper — make it the default reflex inside any decorator you write.
+A decorator naively replaces the function with `wrapper`, so the original `__name__`, `__doc__`, and signature are lost. This breaks IDE help, debuggers, and any tool that introspects functions. `functools.wraps` copies the metadata from the wrapped function onto the wrapper - make it the default reflex inside any decorator you write.
 
 ```python
 import functools
@@ -362,7 +362,7 @@ For more complex shapes (protocols, generics, type variables), `typing.Protocol`
 
 ## See also
 
-- [05_functional_programming.md](05_functional_programming.md) — `partial`, `reduce`, `map` / `filter`, generators, comprehensions
-- [06_oop.md](06_oop.md) — `@property`, `@classmethod`, `@staticmethod` in class context
-- [07_exceptions.md](07_exceptions.md) — `try` / `finally`, error handling patterns inside functions
-- [10_environments_and_tooling.md](10_environments_and_tooling.md) — type checking with `mypy`, formatting tools
+- [05_functional_programming.md](05_functional_programming.md) - `partial`, `reduce`, `map` / `filter`, generators, comprehensions
+- [06_oop.md](06_oop.md) - `@property`, `@classmethod`, `@staticmethod` in class context
+- [07_exceptions.md](07_exceptions.md) - `try` / `finally`, error handling patterns inside functions
+- [10_environments_and_tooling.md](10_environments_and_tooling.md) - type checking with `mypy`, formatting tools

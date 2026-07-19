@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-An AI product is not launched, it is **evolved through three distinct phases**, each answering a different question with different metrics. **Phase 1 — Proof of Concept (PoC)** asks *"Can it be done?"*: validate a fundamental technical hypothesis with minimum effort. The output is a scientific experiment (usually a notebook) returning a clean yes/no on technical feasibility. **Phase 2 — Minimum Viable Product (MVP)** asks *"Should we do it?"*: validate the *value* hypothesis. The MVP is a **Minimum Viable Test**, not a "small product"; it is the cheapest possible experiment that puts the model in front of real users in a real workflow and measures whether they act on it. The trade-off triangle is **Desirability / Feasibility / Viability** - users want it, we can build it robustly, the economics work. **Phase 3 — Scaling** asks *"Can we do it 1000 times?"*: validate the operational and economic sustainability. The trap is that what works for 100 beta users collapses under 100,000 - latency explodes, GPU costs balloon, the architecture isn't designed for it. **Scaling is an architectural problem from day one, not a post-launch concern.** Beyond MVP, the work shifts to **Customer Development**: Acquisition, Retention, Growth, all driven by the **Build-Measure-Learn loop** as the continuous improvement engine. **Product-Market Fit (PMF)** is the goal of the MVP → Scale transition: the elusive state where the market starts *pulling* the product instead of being pushed to it. PMF is a state, not a KPI, and its indicators (sustained adoption beyond the novelty curve, retention, prediction satisfaction) are subtler than launch metrics. The **Go-To-Market (GTM)** strategy for AI is mostly about **education and trust**: don't sell the technology ("Transformer model"), sell the user benefit ("write emails in half the time"); proactively communicate the probabilistic nature instead of overpromising; be transparent about limits. The Netflix recommender is the canonical worked example - from a 2006 collaborative-filter PoC to today's multi-billion-dollar retention engine, each phase clearly delineated, each pivot grounded in measurement.
+An AI product is not launched, it is **evolved through three distinct phases**, each answering a different question with different metrics. **Phase 1 - Proof of Concept (PoC)** asks *"Can it be done?"*: validate a fundamental technical hypothesis with minimum effort. The output is a scientific experiment (usually a notebook) returning a clean yes/no on technical feasibility. **Phase 2 - Minimum Viable Product (MVP)** asks *"Should we do it?"*: validate the *value* hypothesis. The MVP is a **Minimum Viable Test**, not a "small product"; it is the cheapest possible experiment that puts the model in front of real users in a real workflow and measures whether they act on it. The trade-off triangle is **Desirability / Feasibility / Viability** - users want it, we can build it robustly, the economics work. **Phase 3 - Scaling** asks *"Can we do it 1000 times?"*: validate the operational and economic sustainability. The trap is that what works for 100 beta users collapses under 100,000 - latency explodes, GPU costs balloon, the architecture isn't designed for it. **Scaling is an architectural problem from day one, not a post-launch concern.** Beyond MVP, the work shifts to **Customer Development**: Acquisition, Retention, Growth, all driven by the **Build-Measure-Learn loop** as the continuous improvement engine. **Product-Market Fit (PMF)** is the goal of the MVP → Scale transition: the elusive state where the market starts *pulling* the product instead of being pushed to it. PMF is a state, not a KPI, and its indicators (sustained adoption beyond the novelty curve, retention, prediction satisfaction) are subtler than launch metrics. The **Go-To-Market (GTM)** strategy for AI is mostly about **education and trust**: don't sell the technology ("Transformer model"), sell the user benefit ("write emails in half the time"); proactively communicate the probabilistic nature instead of overpromising; be transparent about limits. The Netflix recommender is the canonical worked example - from a 2006 collaborative-filter PoC to today's multi-billion-dollar retention engine, each phase clearly delineated, each pivot grounded in measurement.
 
 ## Cheatsheet
 
@@ -22,7 +22,7 @@ An AI product is not launched, it is **evolved through three distinct phases**, 
 
 ## Part 1: The three phases
 
-### Phase 1 — Proof of Concept (PoC): "Can it be done?"
+### Phase 1 - Proof of Concept (PoC): "Can it be done?"
 
 The PoC validates a **fundamental technical hypothesis** with the absolute minimum of effort. It is a scientific experiment, not a product.
 
@@ -43,7 +43,7 @@ The PoC succeeds if it returns a confident "yes" or "no" cheaply and quickly. A 
 
 Many AI initiatives die *because they were declared successful as a PoC and then immediately treated as a product*. The PoC's job is to answer one technical question - that's it. The notebook is not the product. The data scientist's laptop is not the production environment. Skipping the MVP and jumping to scaling produces the "pilot purgatory" pattern from [03_case_studies.md](03_case_studies.md) Family 3.
 
-### Phase 2 — MVP: "Should we do it?"
+### Phase 2 - MVP: "Should we do it?"
 
 The MVP validates the **value hypothesis**. The PoC said the model *can* predict; the MVP asks whether the prediction *matters*.
 
@@ -83,7 +83,7 @@ All three must hold for an MVP to be a meaningful test. A feasible but undesirab
 
 The MVP's primary purpose is **not launch** - it's **learning**. The Build → Measure → Learn → Iterate loop is what justifies the existence of an MVP. Every MVP cycle ends with a decision: continue (validated), pivot (partially validated), or stop (invalidated).
 
-### Phase 3 — Scaling: "Can we do it 1000 times?"
+### Phase 3 - Scaling: "Can we do it 1000 times?"
 
 Scaling is the transition from a working test to a continuously operating service at production volume.
 
@@ -248,7 +248,7 @@ The Air Canada chatbot case in [03_case_studies.md](03_case_studies.md) is what 
 
 ---
 
-## Part 4: Worked example — the Netflix recommender
+## Part 4: Worked example - the Netflix recommender
 
 The Netflix recommendation engine is the textbook journey through all three phases. Each phase clearly delineated, each pivot grounded in measurement, the whole journey worth >$1B/year in retained subscriptions.
 
@@ -256,7 +256,7 @@ The Netflix recommendation engine is the textbook journey through all three phas
 
 Streaming is a saturated market with low switching costs. Acquiring new customers is expensive; retaining existing ones is the strategic priority. AI is not an accessory - it is *the engineering solution* to the central business problem of retention.
 
-### Phase 1 — The PoC (mid-2000s)
+### Phase 1 - The PoC (mid-2000s)
 
 **Question:** Can we predict a user's tastes using the rating data ("stars") we have?
 
@@ -266,7 +266,7 @@ Streaming is a saturated market with low switching costs. Acquiring new customer
 
 The famous "Netflix Prize" (2006) was effectively a public PoC: $1M for a 10% improvement on their baseline. The PoC confirmed a strong signal existed.
 
-### Phase 2 — The MVP
+### Phase 2 - The MVP
 
 **Pivot in question:** From "Can we do it?" to "If we do it, will anybody care?"
 
@@ -276,7 +276,7 @@ The famous "Netflix Prize" (2006) was effectively a public PoC: $1M for a 10% im
 
 This is the textbook MVP - not a small product, but a sharp test of one value hypothesis with a clean measurable outcome.
 
-### Phase 3 (early) — Feature expansion
+### Phase 3 (early) - Feature expansion
 
 From MVP to expansion: the basic personalisation worked, so the roadmap asked **what else can be personalised?**
 
@@ -284,18 +284,18 @@ From MVP to expansion: the basic personalisation worked, so the roadmap asked **
 - Beyond single titles: entire personalised categories ("Comedies for you").
 - Immersive personalisation across the homepage.
 
-### Critical decision point — beyond the click
+### Critical decision point - beyond the click
 
 The most consequential pivot: Netflix realised that **optimising for CTR was producing clickbait recommendations**. Users clicked but didn't enjoy what they watched. The metric was wrong.
 
 The pivot: **optimise for long-term retention, not short-term clicks**. Switch the primary metric from CTR to viewing time, completion rates, and ultimately retention. This is the metric-alignment story from [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) playing out in production.
 
-### Phase 3 (advanced) — Algorithm ecosystem
+### Phase 3 (advanced) - Algorithm ecosystem
 
 - From single model to ensemble: deep learning, RNNs, contextual bandits, multiple specialised models stacked.
 - Personalised artwork: the AI selects the preview image based on user taste. Same film, different cover - dark-toned for thriller fans, comedic still for comedy fans.
 
-### Phase 3 — Scaling and MLOps
+### Phase 3 - Scaling and MLOps
 
 The architectural challenge: serve recommendations to hundreds of millions of users in real time. The MVP-era architecture cannot support this.
 
@@ -357,11 +357,11 @@ Real-time serving of deep-learning models at hundreds-of-millions scale has enor
 ## See also
 
 ### Other notes
-- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) — TCO model that anticipates the cost trajectory of scaling
-- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) — the metric-evolution discipline that powered the Netflix CTR→retention pivot
-- [03_case_studies.md](03_case_studies.md) — the success and failure patterns whose mechanics are dissected here
-- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) — the PM and SA roles that own the phase transitions and the GTM strategy
-- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) — the hypothesis-and-experiment apparatus driving each phase
-- [07_project_management_methodologies.md](07_project_management_methodologies.md) — Scrum-like cadence supports Build-Measure-Learn at MVP; Kanban supports Customer Development flow post-launch
-- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) — scaling and operating a generative system in production
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — the deployment + scaling layer for agentic systems
+- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) - TCO model that anticipates the cost trajectory of scaling
+- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) - the metric-evolution discipline that powered the Netflix CTR→retention pivot
+- [03_case_studies.md](03_case_studies.md) - the success and failure patterns whose mechanics are dissected here
+- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) - the PM and SA roles that own the phase transitions and the GTM strategy
+- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) - the hypothesis-and-experiment apparatus driving each phase
+- [07_project_management_methodologies.md](07_project_management_methodologies.md) - Scrum-like cadence supports Build-Measure-Learn at MVP; Kanban supports Customer Development flow post-launch
+- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) - scaling and operating a generative system in production
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - the deployment + scaling layer for agentic systems

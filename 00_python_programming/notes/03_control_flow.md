@@ -48,7 +48,7 @@ No parentheses around the condition; indentation defines the block. Multiple `el
 label = "even" if x % 2 == 0 else "odd"
 ```
 
-Readable for simple conditions. Avoid nesting more than one level deep — the result becomes hard to parse and obscures the logic.
+Readable for simple conditions. Avoid nesting more than one level deep - the result becomes hard to parse and obscures the logic.
 
 ### `match` / `case` (3.10+)
 
@@ -96,8 +96,8 @@ name = input() or "default"     # short-circuits: use "default" if input is empt
 
 ```python
 x = None
-val = x or 42                   # 42 — x is falsy, returns the right operand
-val = x and x.strip()           # None — short-circuits before calling .strip() on None
+val = x or 42                   # 42 - x is falsy, returns the right operand
+val = x and x.strip()           # None - short-circuits before calling .strip() on None
 ```
 
 The `and x.strip()` pattern is a common safe-call idiom: if `x` is None or empty, evaluation stops at `x`; otherwise `.strip()` is called.
@@ -106,7 +106,7 @@ The `and x.strip()` pattern is a common safe-call idiom: if `x` is None or empty
 
 ## `for` loop
 
-Iterates over any **iterable**: lists, tuples, strings, dicts, files, generators, ranges. There is no C-style "loop with counter" in Python — use `range`, `enumerate`, or `zip` instead.
+Iterates over any **iterable**: lists, tuples, strings, dicts, files, generators, ranges. There is no C-style "loop with counter" in Python - use `range`, `enumerate`, or `zip` instead.
 
 ```python
 for item in [1, 2, 3]:
@@ -224,7 +224,7 @@ def find_pair(matrix, target):
     return None, None
 ```
 
-Other options exist — flag variables, `itertools.product` to flatten the nest, raising and catching a custom exception — but extracting a function is almost always the cleanest.
+Other options exist - flag variables, `itertools.product` to flatten the nest, raising and catching a custom exception - but extracting a function is almost always the cleanest.
 
 ---
 
@@ -310,7 +310,7 @@ def windows(seq, n):
 
 ## See also
 
-- [01_types_and_variables.md](01_types_and_variables.md) — falsy values, truthiness in detail
-- [02_collections.md](02_collections.md) — comprehensions, generator expressions, slicing
-- [04_functions.md](04_functions.md) — `*args`, `**kwargs`, default arguments
-- [05_functional_programming.md](05_functional_programming.md) — generators, `itertools`, `map`/`filter`
+- [01_types_and_variables.md](01_types_and_variables.md) - falsy values, truthiness in detail
+- [02_collections.md](02_collections.md) - comprehensions, generator expressions, slicing
+- [04_functions.md](04_functions.md) - `*args`, `**kwargs`, default arguments
+- [05_functional_programming.md](05_functional_programming.md) - generators, `itertools`, `map`/`filter`

@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A model is **parametric** if its number of parameters is fixed in advance (linear / logistic regression, neural networks); **non-parametric** if the parameter count grows with the training data (KNN, decision trees, kernel SVM, Gaussian processes). Non-parametric doesn't mean "no parameters" — it means parameters aren't fixed up front. The **No Free Lunch theorem** is the antidote to model fanaticism: no single algorithm is best across all possible datasets, so always evaluate multiple model families on the actual data. The standard workflow: start with the simplest baseline (constant-prediction or linear), then evaluate stronger candidates in cross-validation, then tune hyperparameters of the top one or two, then a single test-set evaluation to report. **Tabular data** is dominated by gradient-boosted trees (XGBoost, LightGBM, CatBoost); random forest is the strong, low-tuning baseline; linear / logistic regression remain useful when interpretability matters or data is tiny. **Unstructured data** (images, text, audio) is dominated by neural networks. The trade-off space has three axes: **interpretability** (linear ≫ trees ≫ NN), **expressiveness** (NN ≈ boosting ≫ linear), and **computational cost** (training: NN > boosting > RF > linear; inference: KNN > NN > boosting ≈ RF > linear). Picking a model means picking your spot in this triangle; **Occam's razor in ML** says prefer the simpler model when performance is comparable, because simpler models generalise more reliably to distribution shifts.
+A model is **parametric** if its number of parameters is fixed in advance (linear / logistic regression, neural networks); **non-parametric** if the parameter count grows with the training data (KNN, decision trees, kernel SVM, Gaussian processes). Non-parametric doesn't mean "no parameters" - it means parameters aren't fixed up front. The **No Free Lunch theorem** is the antidote to model fanaticism: no single algorithm is best across all possible datasets, so always evaluate multiple model families on the actual data. The standard workflow: start with the simplest baseline (constant-prediction or linear), then evaluate stronger candidates in cross-validation, then tune hyperparameters of the top one or two, then a single test-set evaluation to report. **Tabular data** is dominated by gradient-boosted trees (XGBoost, LightGBM, CatBoost); random forest is the strong, low-tuning baseline; linear / logistic regression remain useful when interpretability matters or data is tiny. **Unstructured data** (images, text, audio) is dominated by neural networks. The trade-off space has three axes: **interpretability** (linear ≫ trees ≫ NN), **expressiveness** (NN ≈ boosting ≫ linear), and **computational cost** (training: NN > boosting > RF > linear; inference: KNN > NN > boosting ≈ RF > linear). Picking a model means picking your spot in this triangle; **Occam's razor in ML** says prefer the simpler model when performance is comparable, because simpler models generalise more reliably to distribution shifts.
 
 ## Cheatsheet
 
@@ -51,7 +51,7 @@ A model is **non-parametric** if the number of parameters can **grow** with the 
 - More flexible: complexity adapts to data size and structure.
 - Examples: KNN, kernel SVM, decision trees (without depth constraints), Gaussian processes.
 
-"Non-parametric" doesn't mean "no parameters" — it means parameters aren't fixed in advance. KNN has a hyperparameter ($k$) but no learned parameters at all; it stores the data. A decision tree has as many learned parameters (split rules) as it has nodes, which grows with data.
+"Non-parametric" doesn't mean "no parameters" - it means parameters aren't fixed in advance. KNN has a hyperparameter ($k$) but no learned parameters at all; it stores the data. A decision tree has as many learned parameters (split rules) as it has nodes, which grows with data.
 
 ### Comparison
 
@@ -71,7 +71,7 @@ A model is **non-parametric** if the number of parameters can **grow** with the 
 
 No single algorithm is universally best across all possible datasets. Every model embeds assumptions, and those assumptions help on some problem distributions and hurt on others.
 
-Practical implication: **always evaluate multiple model families on your specific dataset**. Don't default to the latest model class because it won a benchmark on a different problem. Domain knowledge informs the prior — if you know the relationship is linear, don't reach for a neural network; if the data is high-dimensional and structured (images, text), don't expect linear models to compete.
+Practical implication: **always evaluate multiple model families on your specific dataset**. Don't default to the latest model class because it won a benchmark on a different problem. Domain knowledge informs the prior - if you know the relationship is linear, don't reach for a neural network; if the data is high-dimensional and structured (images, text), don't expect linear models to compete.
 
 ---
 
@@ -90,7 +90,7 @@ Practical implication: **always evaluate multiple model families on your specifi
 | **K-Means / DBSCAN** | Unsupervised grouping; no labels available |
 | **Naive Bayes** | Text classification; very fast; works surprisingly well with small data and many features |
 
-In 2024, on tabular data with structured features, **gradient boosting wins** in most empirical comparisons. On unstructured data (images, language, audio), **neural networks win** by a wide margin. The choice between paradigms is rarely close — it's usually clear which family the data belongs to.
+In 2024, on tabular data with structured features, **gradient boosting wins** in most empirical comparisons. On unstructured data (images, language, audio), **neural networks win** by a wide margin. The choice between paradigms is rarely close - it's usually clear which family the data belongs to.
 
 ---
 
@@ -134,7 +134,7 @@ Post-hoc interpretability tools (**SHAP** for additive explanations, **LIME** fo
 
 Symbols: $m$ = samples, $n$ = features, $B$ = trees, $E$ = epochs, $P$ = parameters.
 
-KNN's training cost is zero, but every query touches every training point — production-scale KNN needs approximate nearest-neighbour libraries (FAISS, Annoy, HNSW). Neural network training cost is dominated by the number of epochs times the parameter count; inference cost is just $O(P)$ per sample, which is why even a billion-parameter model can serve queries quickly with the right hardware.
+KNN's training cost is zero, but every query touches every training point - production-scale KNN needs approximate nearest-neighbour libraries (FAISS, Annoy, HNSW). Neural network training cost is dominated by the number of epochs times the parameter count; inference cost is just $O(P)$ per sample, which is why even a billion-parameter model can serve queries quickly with the right hardware.
 
 ---
 
@@ -187,7 +187,7 @@ model.get_params()                      # view hyperparameters
 model.set_params(**params)              # set hyperparameters
 ```
 
-This uniform API is one of sklearn's biggest practical contributions — it makes "try five models" a one-line change instead of five separate adapters.
+This uniform API is one of sklearn's biggest practical contributions - it makes "try five models" a one-line change instead of five separate adapters.
 
 ---
 
@@ -231,11 +231,11 @@ This uniform API is one of sklearn's biggest practical contributions — it make
 
 ## See also
 
-- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) — pipelines, leakage prevention
-- [02_regression.md](02_regression.md) — linear / polynomial regression in depth
-- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) — cross-validation, hyperparameter tuning
-- [04_classification.md](04_classification.md) — classification metrics, threshold tuning
-- [05_knn.md](05_knn.md) — KNN as the canonical lazy non-parametric baseline
-- [06_decision_trees_and_random_forests.md](06_decision_trees_and_random_forests.md) — tree ensembles in depth
-- [07_clustering.md](07_clustering.md) — unsupervised model choice
-- [08_neural_networks.md](08_neural_networks.md) — when neural networks are the right call
+- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) - pipelines, leakage prevention
+- [02_regression.md](02_regression.md) - linear / polynomial regression in depth
+- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) - cross-validation, hyperparameter tuning
+- [04_classification.md](04_classification.md) - classification metrics, threshold tuning
+- [05_knn.md](05_knn.md) - KNN as the canonical lazy non-parametric baseline
+- [06_decision_trees_and_random_forests.md](06_decision_trees_and_random_forests.md) - tree ensembles in depth
+- [07_clustering.md](07_clustering.md) - unsupervised model choice
+- [08_neural_networks.md](08_neural_networks.md) - when neural networks are the right call

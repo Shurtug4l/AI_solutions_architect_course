@@ -315,13 +315,13 @@ For most tasks, **prompting beats fine-tuning** on time-to-value. Fine-tuning is
 ## See also
 
 ### Other notes
-- [01_llm_foundations.md](01_llm_foundations.md) — why decoder LLMs are amenable to prompting at all (next-token training + instruction tuning)
-- [02_model_landscape.md](02_model_landscape.md) — choice of model is upstream of prompt design
-- [04_rag_fundamentals.md](04_rag_fundamentals.md) — the prompt + retrieved context pattern
-- [05_advanced_rag.md](05_advanced_rag.md) — query expansion is a prompting technique on the retrieval side
-- Module 03 [02_agent_components.md](../../03_agentic_ai/notes/02_agent_components.md) — system prompts as the spec for agent behaviour
-- Module 03 [03_paradigms_react_planexecute_reflexion.md](../../03_agentic_ai/notes/03_paradigms_react_planexecute_reflexion.md) — ReAct extends chain-of-thought into the agent loop
+- [01_llm_foundations.md](01_llm_foundations.md) - why decoder LLMs are amenable to prompting at all (next-token training + instruction tuning)
+- [02_model_landscape.md](02_model_landscape.md) - choice of model is upstream of prompt design
+- [04_rag_fundamentals.md](04_rag_fundamentals.md) - the prompt + retrieved context pattern
+- [05_advanced_rag.md](05_advanced_rag.md) - query expansion is a prompting technique on the retrieval side
+- Module 03 [02_agent_components.md](../../03_agentic_ai/notes/02_agent_components.md) - system prompts as the spec for agent behaviour
+- Module 03 [03_paradigms_react_planexecute_reflexion.md](../../03_agentic_ai/notes/03_paradigms_react_planexecute_reflexion.md) - ReAct extends chain-of-thought into the agent loop
 
 ### Related work in this repo
-- Module 02 exercise 03 (`03_ex_langchain_prompt_pipeline.ipynb`) — system prompt + few-shot, RAG-grounding, CoT+self-critique side by side
-- Module 03 exercise 01 (weather workflow) — extraction prompt design that pays off the few-shot rules above
+- Module 02 exercise 03 (`03_ex_langchain_prompt_pipeline.ipynb`) - system prompt + few-shot, RAG-grounding, CoT+self-critique side by side
+- Module 03 exercise 01 (weather workflow) - extraction prompt design that pays off the few-shot rules above

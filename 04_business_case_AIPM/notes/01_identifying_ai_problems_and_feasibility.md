@@ -269,10 +269,10 @@ The total is often 3-5x the visible Year 1 number. If the project still has a po
 ## See also
 
 ### Other notes
-- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) — KPIs as the translation layer, lifecycle phases, model drift in depth
-- [03_case_studies.md](03_case_studies.md) — what wins and what fails when these principles are ignored
-- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) — who builds, who decides, who validates
-- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) — once the matrix has selected the candidates, prioritisation frameworks (MoSCoW, RICE, Kano)
-- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) — the journey from PoC to MVP to production scaling
-- [07_project_management_methodologies.md](07_project_management_methodologies.md) — how to run the project after the business case is approved
-- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) — error-tolerance constraints become regulatory constraints in regulated domains
+- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) - KPIs as the translation layer, lifecycle phases, model drift in depth
+- [03_case_studies.md](03_case_studies.md) - what wins and what fails when these principles are ignored
+- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) - who builds, who decides, who validates
+- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) - once the matrix has selected the candidates, prioritisation frameworks (MoSCoW, RICE, Kano)
+- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) - the journey from PoC to MVP to production scaling
+- [07_project_management_methodologies.md](07_project_management_methodologies.md) - how to run the project after the business case is approved
+- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) - error-tolerance constraints become regulatory constraints in regulated domains

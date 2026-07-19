@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A **module** is any `.py` file; its top-level functions, classes, and variables become attributes of the imported module object. A **package** is a directory containing an `__init__.py` file, possibly nested. Imports are cached in `sys.modules`: the first `import foo` finds the file on `sys.path`, executes it, and stores the result; subsequent imports return the cached object without re-executing. The `if __name__ == '__main__':` idiom lets a file be both importable as a module and runnable as a script. **`__init__.py`** runs once when its package is first imported and is the place to define the package's public API by re-exporting names from submodules. **Relative imports** (`from . import x`, `from ..sib import y`) work inside packages but not in top-level scripts. **Circular imports** are usually a design smell — fix them by extracting shared code to a third module, deferring imports inside function bodies, or using `from typing import TYPE_CHECKING` for annotation-only imports. The current best-practice project layout uses a `src/` directory to prevent accidental imports of the local package instead of the installed one during testing.
+A **module** is any `.py` file; its top-level functions, classes, and variables become attributes of the imported module object. A **package** is a directory containing an `__init__.py` file, possibly nested. Imports are cached in `sys.modules`: the first `import foo` finds the file on `sys.path`, executes it, and stores the result; subsequent imports return the cached object without re-executing. The `if __name__ == '__main__':` idiom lets a file be both importable as a module and runnable as a script. **`__init__.py`** runs once when its package is first imported and is the place to define the package's public API by re-exporting names from submodules. **Relative imports** (`from . import x`, `from ..sib import y`) work inside packages but not in top-level scripts. **Circular imports** are usually a design smell - fix them by extracting shared code to a third module, deferring imports inside function bodies, or using `from typing import TYPE_CHECKING` for annotation-only imports. The current best-practice project layout uses a `src/` directory to prevent accidental imports of the local package instead of the installed one during testing.
 
 ## Cheatsheet
 
@@ -40,7 +40,7 @@ math_utils.circle_area(5)
 math_utils.PI
 ```
 
-The module object is a regular Python object — you can assign attributes to it, list its contents with `dir(math_utils)`, and inspect its file path via `math_utils.__file__`.
+The module object is a regular Python object - you can assign attributes to it, list its contents with `dir(math_utils)`, and inspect its file path via `math_utils.__file__`.
 
 ---
 
@@ -56,7 +56,7 @@ sqrt(16)
 from math import sqrt as sq             # alias
 sq(16)
 
-from math import *                      # imports every public name — avoid in production
+from math import *                      # imports every public name - avoid in production
 ```
 
 **Prefer `import module` over `from module import *`**. Explicit imports make it clear where each name comes from and prevent silent collisions when two modules export the same name. `from module import name` is appropriate when the name is used frequently and the module prefix adds no clarity (e.g., `from pathlib import Path`).
@@ -69,7 +69,7 @@ Wildcard imports (`from module import *`) are problematic for two reasons: they 
 
 When Python encounters `import foo`:
 
-1. It checks `sys.modules` — a dict mapping module names to module objects. If `foo` is already there, the cached object is returned.
+1. It checks `sys.modules` - a dict mapping module names to module objects. If `foo` is already there, the cached object is returned.
 2. If not cached, Python searches `sys.path` (a list of directories) for `foo.py` or a package directory `foo/`.
 3. It compiles the file to bytecode (cached in `__pycache__/`) and executes it.
 4. It stores the resulting module object in `sys.modules['foo']`.
@@ -131,7 +131,7 @@ Executed once when the package is first imported. It serves three purposes:
 
 - **Define the public API** by re-exporting names from submodules.
 - **Hide the internal layout** so callers don't need to know which submodule contains which symbol.
-- **Run package-level initialisation** (logging setup, configuration loading) — sparingly, since it runs the first time anyone imports anything from the package.
+- **Run package-level initialisation** (logging setup, configuration loading) - sparingly, since it runs the first time anyone imports anything from the package.
 
 ```python
 # mypackage/__init__.py
@@ -188,7 +188,7 @@ Even without `__all__`, the convention is that names starting with `_` are priva
 
 ## Namespace packages (Python 3.3+)
 
-Packages without `__init__.py`. Useful for distributing parts of a single logical package across multiple directories or installation paths (a plugin system, for example). Not commonly needed in application code — when in doubt, write the `__init__.py`.
+Packages without `__init__.py`. Useful for distributing parts of a single logical package across multiple directories or installation paths (a plugin system, for example). Not commonly needed in application code - when in doubt, write the `__init__.py`.
 
 ---
 
@@ -218,13 +218,13 @@ The `src/` layout prevents a subtle and infuriating class of bug: if your packag
 
 ## Circular imports
 
-When module A imports B and B imports A, you have a circular dependency. Python doesn't infinitely recurse — it caches the partial module in `sys.modules` and returns whatever has been built so far — but it can produce `ImportError` or surprising `None` values for not-yet-defined names.
+When module A imports B and B imports A, you have a circular dependency. Python doesn't infinitely recurse - it caches the partial module in `sys.modules` and returns whatever has been built so far - but it can produce `ImportError` or surprising `None` values for not-yet-defined names.
 
 Three standard fixes:
 
-1. **Restructure** — extract the shared code into a third module that both A and B import. This is almost always the cleanest solution and signals that the design has a missing layer.
-2. **Defer the import** — move it inside the function body that needs it, so it runs at call time rather than module-load time. This breaks the cycle at the cost of a tiny per-call lookup.
-3. **`TYPE_CHECKING` guard** for annotation-only imports — when the cycle exists only because of type hints:
+1. **Restructure** - extract the shared code into a third module that both A and B import. This is almost always the cleanest solution and signals that the design has a missing layer.
+2. **Defer the import** - move it inside the function body that needs it, so it runs at call time rather than module-load time. This breaks the cycle at the cost of a tiny per-call lookup.
+3. **`TYPE_CHECKING` guard** for annotation-only imports - when the cycle exists only because of type hints:
 
 ```python
 from __future__ import annotations         # defer evaluation of annotations
@@ -290,6 +290,6 @@ math.__package__        # parent package name (or '' for top-level)
 
 ## See also
 
-- [04_functions.md](04_functions.md) — `if __name__ == '__main__':` block as entry point
-- [10_environments_and_tooling.md](10_environments_and_tooling.md) — virtual environments, `pip install -e .`, `pyproject.toml`
-- [11_standard_library.md](11_standard_library.md) — `importlib`, `pkgutil`, `runpy`
+- [04_functions.md](04_functions.md) - `if __name__ == '__main__':` block as entry point
+- [10_environments_and_tooling.md](10_environments_and_tooling.md) - virtual environments, `pip install -e .`, `pyproject.toml`
+- [11_standard_library.md](11_standard_library.md) - `importlib`, `pkgutil`, `runpy`

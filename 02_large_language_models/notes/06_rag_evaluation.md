@@ -417,12 +417,12 @@ Long-term retention of evaluation data also matters for compliance. GDPR-style a
 ## See also
 
 ### Other notes
-- [04_rag_fundamentals.md](04_rag_fundamentals.md) — the pipeline these metrics evaluate
-- [05_advanced_rag.md](05_advanced_rag.md) — the upgrades a low metric tells you to add
-- [07_rag_production.md](07_rag_production.md) — caching, monitoring, scaling
-- [08_ethics_and_governance.md](08_ethics_and_governance.md) — bias in LLM judges, audit requirements
-- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) — RAGAS metrics also covered there from the agent-memory angle
+- [04_rag_fundamentals.md](04_rag_fundamentals.md) - the pipeline these metrics evaluate
+- [05_advanced_rag.md](05_advanced_rag.md) - the upgrades a low metric tells you to add
+- [07_rag_production.md](07_rag_production.md) - caching, monitoring, scaling
+- [08_ethics_and_governance.md](08_ethics_and_governance.md) - bias in LLM judges, audit requirements
+- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) - RAGAS metrics also covered there from the agent-memory angle
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — confidence score from top-K similarity used as a proxy faithfulness signal
-- Module 03 exercise 06 — the structured-extraction iteration story is a small evaluation loop in miniature: each fix was driven by a specific failure mode in the verify node's behaviour
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) - confidence score from top-K similarity used as a proxy faithfulness signal
+- Module 03 exercise 06 - the structured-extraction iteration story is a small evaluation loop in miniature: each fix was driven by a specific failure mode in the verify node's behaviour

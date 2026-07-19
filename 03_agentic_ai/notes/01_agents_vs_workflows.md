@@ -57,19 +57,19 @@ Four phases, repeated until the goal is reached or an explicit cap is hit.
                 └────────────────┬────────────────┘
                                  ▼
                        ┌───────────────────┐
-                       │   Plan  🧠         │   LLM decides next step
+                       │   Plan            │   LLM decides next step
                        └─────────┬─────────┘
                                  ▼
                        ┌───────────────────┐
-                       │   Act  🛠️         │   Tool is invoked
+                       │   Act             │   Tool is invoked
                        └─────────┬─────────┘
                                  ▼
                        ┌───────────────────┐
-                       │   Observe  🧐     │   Result captured
+                       │   Observe         │   Result captured
                        └─────────┬─────────┘
                                  ▼
                        ┌───────────────────┐
-                       │   Update  🔄      │   History appended; goal reached?
+                       │   Update          │   History appended; goal reached?
                        └─────────┬─────────┘
                                  ▼
                        goal? ──── no ──── loop back to Plan
@@ -255,7 +255,7 @@ Four concrete reasons (this is the angle slide 04 of the deck makes explicit):
 1. **Specialisation**. A focused agent with a small system prompt and a small tool catalogue produces better results than one omnivorous agent with everything bolted on. The narrow scope is what lets the model reason cleanly.
 2. **Permission control**. The orchestrator can refuse to route to an agent based on the user's role or context. A "delete subscription" agent can be gated to admins; a "send marketing email" agent to a specific team. Centralising the routing is what makes that policy enforceable.
 3. **Scalability**. Adding a new capability is a new agent + an entry in the orchestrator's prompt, not a rewrite of the existing one.
-4. **Logging and observability**. Every routing decision becomes a structured log line: `orchestrator: route → weather_agent (reason: …)`. The trace tells you not just *what* the agent did but *why this agent and not another*.
+4. **Logging and observability**. Every routing decision becomes a structured log line: `orchestrator: route → weather_agent (reason: ...)`. The trace tells you not just *what* the agent did but *why this agent and not another*.
 
 ### The cost
 
@@ -298,15 +298,15 @@ This is the territory module 04 (*Framework per l'Agentic AI*) makes explicit: L
 
 ## See also
 
-- [02_agent_components.md](02_agent_components.md) — planning, memory, tool calling, structured output in depth
-- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) — ReAct, Plan-Execute, Reflexion and how they compose with the loop
-- [04_frameworks.md](04_frameworks.md) — LangChain and LangGraph, where orchestration becomes a first-class graph
-- [05_short_term_memory.md](05_short_term_memory.md) — trimming and summarisation of the conversation history
-- [07_deployment.md](07_deployment.md) — wrapping an agent in an HTTP service with sessions, timeouts, container, secrets
+- [02_agent_components.md](02_agent_components.md) - planning, memory, tool calling, structured output in depth
+- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) - ReAct, Plan-Execute, Reflexion and how they compose with the loop
+- [04_frameworks.md](04_frameworks.md) - LangChain and LangGraph, where orchestration becomes a first-class graph
+- [05_short_term_memory.md](05_short_term_memory.md) - trimming and summarisation of the conversation history
+- [07_deployment.md](07_deployment.md) - wrapping an agent in an HTTP service with sessions, timeouts, container, secrets
 
 ### Exercises that exercise the concepts in this note
 
-- [`01_ex_weather_agent_workflow_italian_cities.ipynb`](../exercises/01_ex_weather_agent_workflow_italian_cities.ipynb) — workflow with rule-based dispatch
-- [`02_ex_translation_wikipedia_agent.ipynb`](../exercises/02_ex_translation_wikipedia_agent.ipynb) — pure agent with LLM-driven tool calling, agentic loop, retry handling
-- [`03_ex_fact_checker_react_reflexion.ipynb`](../exercises/03_ex_fact_checker_react_reflexion.ipynb) — hand-rolled loop with structured output and Reflexion outer loop
-- [`07_ex_shopassist_deployment.ipynb`](../exercises/07_ex_shopassist_deployment.ipynb) — the same shape wrapped into a deployable service
+- [`01_ex_weather_agent_workflow_italian_cities.ipynb`](../exercises/01_ex_weather_agent_workflow_italian_cities.ipynb) - workflow with rule-based dispatch
+- [`02_ex_translation_wikipedia_agent.ipynb`](../exercises/02_ex_translation_wikipedia_agent.ipynb) - pure agent with LLM-driven tool calling, agentic loop, retry handling
+- [`03_ex_fact_checker_react_reflexion.ipynb`](../exercises/03_ex_fact_checker_react_reflexion.ipynb) - hand-rolled loop with structured output and Reflexion outer loop
+- [`07_ex_shopassist_deployment.ipynb`](../exercises/07_ex_shopassist_deployment.ipynb) - the same shape wrapped into a deployable service

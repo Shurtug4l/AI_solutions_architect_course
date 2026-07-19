@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A **decision tree** recursively partitions the feature space with axis-aligned splits, putting a prediction at each leaf — majority class for classification, mean target for regression. The split criterion is **Gini impurity** or **entropy** for classification, **MSE** for regression; in practice Gini and entropy give similar results and Gini is cheaper. Trees are scale-invariant and handle mixed feature types natively, but a single unrestricted tree has very high variance — it grows until leaves are pure and memorises noise. **Pruning** controls this: pre-pruning via `max_depth`, `min_samples_leaf`, `min_samples_split`; post-pruning via cost-complexity (`ccp_alpha` in sklearn). **Ensembles** are the right way to use trees in production. **Bagging** trains independent trees on bootstrap samples and averages — variance drops, bias unchanged. **Random forests** add feature randomness at each split (`max_features='sqrt'` by default) to further decorrelate trees, plus a free out-of-bag (OOB) generalisation estimate. **Gradient boosting** trains trees sequentially, each correcting the previous ensemble's residuals — reduces bias too, usually wins on tabular data, but takes more tuning. The default for tabular ML in 2024 is one of XGBoost / LightGBM / CatBoost; random forest is the strong, low-tuning baseline.
+A **decision tree** recursively partitions the feature space with axis-aligned splits, putting a prediction at each leaf - majority class for classification, mean target for regression. The split criterion is **Gini impurity** or **entropy** for classification, **MSE** for regression; in practice Gini and entropy give similar results and Gini is cheaper. Trees are scale-invariant and handle mixed feature types natively, but a single unrestricted tree has very high variance - it grows until leaves are pure and memorises noise. **Pruning** controls this: pre-pruning via `max_depth`, `min_samples_leaf`, `min_samples_split`; post-pruning via cost-complexity (`ccp_alpha` in sklearn). **Ensembles** are the right way to use trees in production. **Bagging** trains independent trees on bootstrap samples and averages - variance drops, bias unchanged. **Random forests** add feature randomness at each split (`max_features='sqrt'` by default) to further decorrelate trees, plus a free out-of-bag (OOB) generalisation estimate. **Gradient boosting** trains trees sequentially, each correcting the previous ensemble's residuals - reduces bias too, usually wins on tabular data, but takes more tuning. The default for tabular ML in 2024 is one of XGBoost / LightGBM / CatBoost; random forest is the strong, low-tuning baseline.
 
 ## Cheatsheet
 
@@ -83,7 +83,7 @@ dt = DecisionTreeClassifier(
 
 ### Overfitting and pruning
 
-An unrestricted decision tree grows until leaves are pure — it memorises training data, achieves zero training error, and generalises terribly. Some kind of pruning is mandatory.
+An unrestricted decision tree grows until leaves are pure - it memorises training data, achieves zero training error, and generalises terribly. Some kind of pruning is mandatory.
 
 **Pre-pruning** controls growth during training:
 
@@ -111,7 +111,7 @@ importances = pd.Series(dt.feature_importances_, index=feature_names) \
     .sort_values(ascending=False)
 ```
 
-This impurity-based importance can be **biased toward high-cardinality features** (continuous variables, IDs) that have more split candidates and accumulate small impurity reductions across many splits. Use **permutation importance** as a more reliable alternative — shuffle a feature's values and measure the drop in validation score; if shuffling barely affects performance, the feature isn't really being used.
+This impurity-based importance can be **biased toward high-cardinality features** (continuous variables, IDs) that have more split candidates and accumulate small impurity reductions across many splits. Use **permutation importance** as a more reliable alternative - shuffle a feature's values and measure the drop in validation score; if shuffling barely affects performance, the feature isn't really being used.
 
 ### Strengths and weaknesses
 
@@ -127,15 +127,15 @@ This impurity-based importance can be **biased toward high-cardinality features*
 
 ## Ensemble methods: motivation
 
-A single tree has high variance — train it on a slightly different sample and you can get a very different model. **Ensembles** combine many models to reduce variance (or bias).
+A single tree has high variance - train it on a slightly different sample and you can get a very different model. **Ensembles** combine many models to reduce variance (or bias).
 
-The mathematical insight: averaging $n$ uncorrelated estimators each with variance $\sigma^2$ produces an average with variance $\sigma^2 / n$. The challenge is that real ensemble members are not fully uncorrelated — bagging and random forests work by introducing controlled randomness to push correlation down.
+The mathematical insight: averaging $n$ uncorrelated estimators each with variance $\sigma^2$ produces an average with variance $\sigma^2 / n$. The challenge is that real ensemble members are not fully uncorrelated - bagging and random forests work by introducing controlled randomness to push correlation down.
 
 ---
 
 ## Bagging (Bootstrap Aggregating)
 
-**Bagging** trains $B$ independent base learners on different **bootstrap samples** — random samples with replacement, same size as the original training set — and aggregates their predictions:
+**Bagging** trains $B$ independent base learners on different **bootstrap samples** - random samples with replacement, same size as the original training set - and aggregates their predictions:
 
 - **Classification**: majority vote.
 - **Regression**: mean of predictions.
@@ -144,7 +144,7 @@ Each bootstrap sample uses ~63.2% of the original samples; the remaining ~36.8% 
 
 ### Why variance is reduced
 
-Each tree sees a slightly different training set due to sampling with replacement. Their errors are partially decorrelated, so when you average them, the error variance shrinks. **Bias is unchanged** — averaging biased estimators gives a biased average. Bagging is a variance-reduction technique, not a bias-reduction technique.
+Each tree sees a slightly different training set due to sampling with replacement. Their errors are partially decorrelated, so when you average them, the error variance shrinks. **Bias is unchanged** - averaging biased estimators gives a biased average. Bagging is a variance-reduction technique, not a bias-reduction technique.
 
 ---
 
@@ -178,7 +178,7 @@ print(rf.oob_score_)            # OOB accuracy
 
 Each tree was trained on ~63% of the data, so the remaining ~37% (OOB samples for that tree) form a free validation set. Aggregating OOB predictions across the forest gives a reliable estimate of generalisation error without a separate cross-validation loop.
 
-OOB is one of random forest's quiet superpowers — for many use cases it removes the need for explicit cross-validation entirely.
+OOB is one of random forest's quiet superpowers - for many use cases it removes the need for explicit cross-validation entirely.
 
 ### Feature importance in random forests
 
@@ -199,14 +199,14 @@ Unlike bagging, **boosting** trains trees **sequentially**: each new tree correc
 - Higher accuracy than random forests on most tabular benchmarks.
 - Slower to train (sequential, not parallel).
 - More hyperparameters (learning rate, tree count, tree depth, subsampling, regularisation).
-- More prone to overfitting on noisy data — early stopping and regularisation are essential.
+- More prone to overfitting on noisy data - early stopping and regularisation are essential.
 
 Implementations (in order of typical preference for tabular data):
 
-- **XGBoost** — historically dominant, well-tuned defaults, fast.
-- **LightGBM** — faster on large data via histogram-based splits and leaf-wise growth.
-- **CatBoost** — best handling of categorical features out of the box.
-- **sklearn `GradientBoostingClassifier`** — pure Python, slower; use `HistGradientBoostingClassifier` for the histogram-based variant.
+- **XGBoost** - historically dominant, well-tuned defaults, fast.
+- **LightGBM** - faster on large data via histogram-based splits and leaf-wise growth.
+- **CatBoost** - best handling of categorical features out of the box.
+- **sklearn `GradientBoostingClassifier`** - pure Python, slower; use `HistGradientBoostingClassifier` for the histogram-based variant.
 
 **Key distinction** from bagging:
 
@@ -266,7 +266,7 @@ Implementations (in order of typical preference for tabular data):
 
 ## See also
 
-- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) — encoding strategies for categorical features
-- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) — variance reduction via ensembles
-- [04_classification.md](04_classification.md) — alternative classifiers, evaluation metrics
-- [09_model_selection.md](09_model_selection.md) — choosing between trees, forests, boosting, neural networks
+- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) - encoding strategies for categorical features
+- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) - variance reduction via ensembles
+- [04_classification.md](04_classification.md) - alternative classifiers, evaluation metrics
+- [09_model_selection.md](09_model_selection.md) - choosing between trees, forests, boosting, neural networks

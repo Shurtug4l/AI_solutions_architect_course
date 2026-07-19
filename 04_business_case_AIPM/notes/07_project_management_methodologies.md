@@ -73,11 +73,11 @@ In AI projects, the Project Manager works in tandem with the AI PM and the Solut
 
 Every project, regardless of methodology, goes through these phases (the names vary):
 
-1. **Initiation** — define the project, justify it, secure approval.
-2. **Planning** — define scope, schedule, budget, resources, risks.
-3. **Execution** — do the work.
-4. **Monitoring and control** — track progress, manage changes, surface issues.
-5. **Closure** — deliver, document, retrospective.
+1. **Initiation** - define the project, justify it, secure approval.
+2. **Planning** - define scope, schedule, budget, resources, risks.
+3. **Execution** - do the work.
+4. **Monitoring and control** - track progress, manage changes, surface issues.
+5. **Closure** - deliver, document, retrospective.
 
 The differences between methodologies are mostly about *how long* each phase takes, *how strictly* phases are sequenced, and *how often* the cycle repeats.
 
@@ -198,9 +198,9 @@ But note: this fit is for the *project management* layer, not the *modelling act
 
 **Scrum** is an Agile framework for managing complex projects through iterative and incremental cycles. Key principles:
 
-- **Value delivered in small steps** — not a single big-bang release.
-- **Constant customer collaboration** — feedback every cycle, not just at the end.
-- **Continuous improvement** — the team itself gets better over time.
+- **Value delivered in small steps** - not a single big-bang release.
+- **Constant customer collaboration** - feedback every cycle, not just at the end.
+- **Continuous improvement** - the team itself gets better over time.
 
 ### The three roles
 
@@ -286,7 +286,7 @@ A typical Kanban board with columns representing workflow states:
 
 Each card represents one unit of work. As work progresses, cards move left to right. WIP limits cap how many items can sit in each column simultaneously.
 
-### WIP limits — the key mechanism
+### WIP limits - the key mechanism
 
 This is what makes Kanban work. If the "Doing" column is limited to 3 items, a 4th item cannot enter until something exits to "Review". This:
 
@@ -410,11 +410,11 @@ In practice, most AI projects sit somewhere in between, and the answer is **hybr
 ## See also
 
 ### Other notes
-- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) — feasibility / business case work that typically uses predictive structure
-- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) — the AI lifecycle phases this methodology layer executes; the experimental nature explains why pure Waterfall fails on modelling
-- [03_case_studies.md](03_case_studies.md) — Family 4 failures (no MLOps) map onto missing Kanban-style operations discipline
-- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) — the AI PM and SA work alongside the Project Manager defined here
-- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) — the Hypothesis Statements that become sprint goals
-- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) — PoC fits experimental Kanban, MVP fits Scrum, Scaling fits hybrid with strong ops Kanban
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — the operational layer where Kanban-style flow management lives
-- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) — compliance constraints that push the project frame toward Waterfall
+- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) - feasibility / business case work that typically uses predictive structure
+- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) - the AI lifecycle phases this methodology layer executes; the experimental nature explains why pure Waterfall fails on modelling
+- [03_case_studies.md](03_case_studies.md) - Family 4 failures (no MLOps) map onto missing Kanban-style operations discipline
+- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) - the AI PM and SA work alongside the Project Manager defined here
+- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) - the Hypothesis Statements that become sprint goals
+- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) - PoC fits experimental Kanban, MVP fits Scrum, Scaling fits hybrid with strong ops Kanban
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - the operational layer where Kanban-style flow management lives
+- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) - compliance constraints that push the project frame toward Waterfall

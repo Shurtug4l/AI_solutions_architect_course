@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Clustering is **unsupervised**: there are no labels; the goal is to discover inherent group structure based on feature similarity. Three algorithms cover the bulk of practical use cases. **K-Means** partitions data into $k$ spherical clusters by minimising within-cluster distance to centroids — fast and scalable, but assumes spherical clusters of similar size, requires $k$ in advance, is sensitive to outliers and feature scale (always scale first), and can land in local minima (use `n_init` > 1, K-Means++ initialisation is the sklearn default). **Hierarchical clustering** builds a dendrogram by repeatedly merging the closest clusters; you get the full hierarchy for free and don't need to commit to $k$ up front, but the $O(m^2)$ complexity makes it impractical above tens of thousands of points. **DBSCAN** groups points by density — discovers clusters of arbitrary shape, automatically labels outliers as noise, doesn't need $k$, but is sensitive to its `eps` and `min_samples` parameters and struggles with clusters of varying density. Without ground truth, evaluate via the **silhouette score** (cohesion vs separation, range [-1, 1], higher is better) or **Davies-Bouldin** (lower is better); when ground truth exists, use **Adjusted Rand Index (ARI)** or **Normalized Mutual Information (NMI)**. The right algorithm depends on the cluster shape you expect: spherical → K-Means, hierarchical structure → agglomerative, arbitrary shape with outliers → DBSCAN.
+Clustering is **unsupervised**: there are no labels; the goal is to discover inherent group structure based on feature similarity. Three algorithms cover the bulk of practical use cases. **K-Means** partitions data into $k$ spherical clusters by minimising within-cluster distance to centroids - fast and scalable, but assumes spherical clusters of similar size, requires $k$ in advance, is sensitive to outliers and feature scale (always scale first), and can land in local minima (use `n_init` > 1, K-Means++ initialisation is the sklearn default). **Hierarchical clustering** builds a dendrogram by repeatedly merging the closest clusters; you get the full hierarchy for free and don't need to commit to $k$ up front, but the $O(m^2)$ complexity makes it impractical above tens of thousands of points. **DBSCAN** groups points by density - discovers clusters of arbitrary shape, automatically labels outliers as noise, doesn't need $k$, but is sensitive to its `eps` and `min_samples` parameters and struggles with clusters of varying density. Without ground truth, evaluate via the **silhouette score** (cohesion vs separation, range [-1, 1], higher is better) or **Davies-Bouldin** (lower is better); when ground truth exists, use **Adjusted Rand Index (ARI)** or **Normalized Mutual Information (NMI)**. The right algorithm depends on the cluster shape you expect: spherical → K-Means, hierarchical structure → agglomerative, arbitrary shape with outliers → DBSCAN.
 
 ## Cheatsheet
 
@@ -28,13 +28,13 @@ Clustering is **unsupervised**: there are no labels; the goal is to discover inh
 
 Clustering is an **unsupervised** task: there are no labels. The algorithm is asked to discover group structure that exists in the feature distribution itself. Common applications:
 
-- **Customer segmentation** — group buyers by behaviour for targeted campaigns.
-- **Anomaly detection** — points far from any cluster are outliers worth investigating.
-- **Document grouping** — bucket similar articles, news stories, or research papers.
-- **Gene expression analysis** — find co-expressed gene groups.
-- **Vector quantisation / data compression** — replace each point by its nearest centroid.
+- **Customer segmentation** - group buyers by behaviour for targeted campaigns.
+- **Anomaly detection** - points far from any cluster are outliers worth investigating.
+- **Document grouping** - bucket similar articles, news stories, or research papers.
+- **Gene expression analysis** - find co-expressed gene groups.
+- **Vector quantisation / data compression** - replace each point by its nearest centroid.
 
-There is no universally "correct" clustering — different algorithms produce different groups, and the right choice depends on what you mean by "similar".
+There is no universally "correct" clustering - different algorithms produce different groups, and the right choice depends on what you mean by "similar".
 
 ---
 
@@ -53,7 +53,7 @@ $$J = \sum_{i=1}^{k} \sum_{\mathbf{x} \in C_i} \| \mathbf{x} - \boldsymbol{\mu}_
 
 ### Convergence and local minima
 
-K-Means **always converges** but only to a local minimum, not necessarily the global one — the result depends on the initialisation. The standard mitigation is to run multiple times with different initialisations (`n_init` in sklearn) and keep the result with the lowest inertia.
+K-Means **always converges** but only to a local minimum, not necessarily the global one - the result depends on the initialisation. The standard mitigation is to run multiple times with different initialisations (`n_init` in sklearn) and keep the result with the lowest inertia.
 
 ### K-Means++ initialisation
 
@@ -63,7 +63,7 @@ It is the default in sklearn (`init='k-means++'`).
 
 ### Choosing k: the elbow method
 
-Plot inertia vs $k$. The "elbow" — the point where adding more clusters stops paying off — suggests a good $k$. In practice, this inflection point is often ambiguous; combine with the silhouette score for confirmation:
+Plot inertia vs $k$. The "elbow" - the point where adding more clusters stops paying off - suggests a good $k$. In practice, this inflection point is often ambiguous; combine with the silhouette score for confirmation:
 
 ```python
 inertias = []
@@ -83,7 +83,7 @@ for k in range(2, 11):
 | Assumes similar cluster sizes | Large clusters dominate the inertia objective |
 | Sensitive to feature scale | Always scale features first |
 | Requires $k$ in advance | Not always known a priori |
-| Sensitive to outliers | Centroid is the mean — pulled by extreme values |
+| Sensitive to outliers | Centroid is the mean - pulled by extreme values |
 | Cannot find non-convex shapes | Concentric rings, crescents, etc., are split incorrectly |
 
 ```python
@@ -112,7 +112,7 @@ Builds a nested hierarchy of clusters without requiring $k$ upfront.
 2. Merge the two closest clusters.
 3. Repeat until one cluster remains.
 
-The result is represented as a **dendrogram** — a tree diagram showing which clusters merged at what distance. **Cutting the dendrogram** at a chosen height gives $k$ clusters; cutting higher merges more, lower keeps more clusters separate.
+The result is represented as a **dendrogram** - a tree diagram showing which clusters merged at what distance. **Cutting the dendrogram** at a chosen height gives $k$ clusters; cutting higher merges more, lower keeps more clusters separate.
 
 ### Linkage methods
 
@@ -127,7 +127,7 @@ The linkage defines distance between clusters (not individual points):
 
 **Ward linkage** is the most commonly used; it tends to produce compact, equally-sized clusters, with a similar objective to K-Means but without committing to a specific $k$.
 
-Single linkage suffers from **chaining** — long, snake-like clusters where each member is close only to the next. Complete linkage produces more compact clusters but can break large groups apart.
+Single linkage suffers from **chaining** - long, snake-like clusters where each member is close only to the next. Complete linkage produces more compact clusters but can break large groups apart.
 
 ```python
 from sklearn.cluster import AgglomerativeClustering
@@ -146,7 +146,7 @@ labels = hc.fit_predict(X_scaled)
 
 ### Divisive (top-down)
 
-Start with all samples in one cluster and recursively split. Less common because of the computational cost — finding the optimal split at each step is itself expensive.
+Start with all samples in one cluster and recursively split. Less common because of the computational cost - finding the optimal split at each step is itself expensive.
 
 ---
 
@@ -156,8 +156,8 @@ Start with all samples in one cluster and recursively split. Less common because
 
 ### Parameters
 
-- **`eps` (ε)** — the maximum radius of a neighbourhood.
-- **`min_samples`** — the minimum number of points within `eps` to form a dense region.
+- **`eps` (ε)** - the maximum radius of a neighbourhood.
+- **`min_samples`** - the minimum number of points within `eps` to form a dense region.
 
 ### Point types
 
@@ -183,7 +183,7 @@ Start with all samples in one cluster and recursively split. Less common because
 
 **Weaknesses**:
 
-- Sensitive to `eps` and `min_samples` — hard to set when clusters have varying density.
+- Sensitive to `eps` and `min_samples` - hard to set when clusters have varying density.
 - Struggles in high dimensions (curse of dimensionality affects neighbourhood density).
 - A single `eps` can't capture clusters with very different densities; consider HDBSCAN for that case.
 
@@ -203,7 +203,7 @@ A common heuristic for `eps`: plot the distance to the $k$-th nearest neighbour 
 
 ## Cluster evaluation (no ground truth)
 
-When true labels are unavailable, use internal metrics — measures of cluster compactness and separation that don't require knowing the right answer.
+When true labels are unavailable, use internal metrics - measures of cluster compactness and separation that don't require knowing the right answer.
 
 ### Silhouette score
 
@@ -211,8 +211,8 @@ For each sample $i$:
 
 $$s(i) = \frac{b(i) - a(i)}{\max(a(i), b(i))}$$
 
-- $a(i)$ — mean distance to other samples in the **same cluster** (cohesion).
-- $b(i)$ — mean distance to samples in the **nearest other cluster** (separation).
+- $a(i)$ - mean distance to other samples in the **same cluster** (cohesion).
+- $b(i)$ - mean distance to samples in the **nearest other cluster** (separation).
 - Range: [-1, 1]. Higher is better. 0 means on a cluster boundary. Negative means probably mis-assigned.
 
 The dataset-level silhouette is the mean of $s(i)$ across all samples.
@@ -232,10 +232,10 @@ Ratio of between-cluster dispersion to within-cluster dispersion. Higher is bett
 
 ### When ground truth is available (benchmarking)
 
-For supervised evaluation of clustering — for example, when comparing algorithms on a labelled dataset:
+For supervised evaluation of clustering - for example, when comparing algorithms on a labelled dataset:
 
-- **Adjusted Rand Index (ARI)** — agreement between predicted and true labels, adjusted for chance. Range [-1, 1]; 1 = perfect; ~0 = random.
-- **Normalized Mutual Information (NMI)** — information-theoretic agreement. Range [0, 1].
+- **Adjusted Rand Index (ARI)** - agreement between predicted and true labels, adjusted for chance. Range [-1, 1]; 1 = perfect; ~0 = random.
+- **Normalized Mutual Information (NMI)** - information-theoretic agreement. Range [0, 1].
 
 ```python
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
@@ -243,7 +243,7 @@ ari = adjusted_rand_score(y_true, labels)
 nmi = normalized_mutual_info_score(y_true, labels)
 ```
 
-These measure agreement up to label permutation — they don't penalise the algorithm for putting cluster A's samples in label 0 vs 1.
+These measure agreement up to label permutation - they don't penalise the algorithm for putting cluster A's samples in label 0 vs 1.
 
 ---
 
@@ -296,7 +296,7 @@ These measure agreement up to label permutation — they don't penalise the algo
 
 ## See also
 
-- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) — feature scaling (mandatory before all distance-based methods)
-- [05_knn.md](05_knn.md) — distance-based prediction, curse of dimensionality
-- [08_neural_networks.md](08_neural_networks.md) — autoencoders for dim reduction before clustering
-- [09_model_selection.md](09_model_selection.md) — comparing models, choosing between paradigms
+- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) - feature scaling (mandatory before all distance-based methods)
+- [05_knn.md](05_knn.md) - distance-based prediction, curse of dimensionality
+- [08_neural_networks.md](08_neural_networks.md) - autoencoders for dim reduction before clustering
+- [09_model_selection.md](09_model_selection.md) - comparing models, choosing between paradigms

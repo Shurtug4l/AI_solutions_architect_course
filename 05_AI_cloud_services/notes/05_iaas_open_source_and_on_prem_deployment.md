@@ -244,13 +244,13 @@ The "deploy of an image on cloud" exercise in section 5 is the bridge between **
 ## See also
 
 ### Other notes
-- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — the abstract layers that on-prem stacks reimplement in OSS form
-- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md), [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md), [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — the PaaS alternatives this note compares against
-- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — direct comparison: when each model wins
-- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) — most real systems mix at least PaaS and OSS
+- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) - the abstract layers that on-prem stacks reimplement in OSS form
+- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md), [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md), [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) - the PaaS alternatives this note compares against
+- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) - direct comparison: when each model wins
+- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) - most real systems mix at least PaaS and OSS
 
 ### Cross-module
-- Module 02 [02_introduction_llm.md](../../02_large_language_models/notes/02_introduction_llm.md) and the rest of module 02 — the OSS LLMs (Llama, Mistral) referenced here
-- Module 03 [04_frameworks.md](../../03_agentic_ai/notes/04_frameworks.md) — LangChain / LangGraph deployments often follow the FastAPI + Docker pattern
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — agent deployment overlap (container, secrets, stateless serving)
-- Module 02 PRJ `02_large_language_models/_PRJ_rag_system_for_company_knowledge/` — a concrete OSS local stack: Ollama, ChromaDB, BM25, no paid APIs
+- Module 02 [02_introduction_llm.md](../../02_large_language_models/notes/02_introduction_llm.md) and the rest of module 02 - the OSS LLMs (Llama, Mistral) referenced here
+- Module 03 [04_frameworks.md](../../03_agentic_ai/notes/04_frameworks.md) - LangChain / LangGraph deployments often follow the FastAPI + Docker pattern
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - agent deployment overlap (container, secrets, stateless serving)
+- Module 02 PRJ `02_large_language_models/_PRJ_rag_system_for_company_knowledge/` - a concrete OSS local stack: Ollama, ChromaDB, BM25, no paid APIs

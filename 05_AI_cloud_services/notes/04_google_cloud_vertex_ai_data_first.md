@@ -282,12 +282,12 @@ The point is not "look at this case study", it is **the pattern**: every step is
 ## See also
 
 ### Other notes
-- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — the abstract pipeline; GCP just collapses the seams
-- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) — AWS comparison (S3 ↔ Cloud Storage, SageMaker ↔ Vertex AI, no native BigQuery analogue)
-- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) — Azure comparison (Azure AI Services ↔ AI APIs, Azure ML ↔ Vertex AI, Azure AI Foundry ↔ Vertex AI Agent Builder)
-- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — Vertex AI is the PaaS choice; sometimes you do not want it
-- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) — when to mix BigQuery with non-GCP workloads
+- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) - the abstract pipeline; GCP just collapses the seams
+- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) - AWS comparison (S3 ↔ Cloud Storage, SageMaker ↔ Vertex AI, no native BigQuery analogue)
+- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) - Azure comparison (Azure AI Services ↔ AI APIs, Azure ML ↔ Vertex AI, Azure AI Foundry ↔ Vertex AI Agent Builder)
+- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) - Vertex AI is the PaaS choice; sometimes you do not want it
+- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) - when to mix BigQuery with non-GCP workloads
 
 ### Cross-module
-- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) — the model selection logic that AutoML automates
-- Module 02 [08_vector_stores_chroma_pinecone_weaviate.md](../../02_large_language_models/notes/08_vector_stores_chroma_pinecone_weaviate.md) — Vertex AI Vector Search is the GCP take on this layer
+- Module 01 [09_model_selection.md](../../01_machine_learning/notes/09_model_selection.md) - the model selection logic that AutoML automates
+- Module 02 [08_vector_stores_chroma_pinecone_weaviate.md](../../02_large_language_models/notes/08_vector_stores_chroma_pinecone_weaviate.md) - Vertex AI Vector Search is the GCP take on this layer

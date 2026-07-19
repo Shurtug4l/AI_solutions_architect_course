@@ -293,9 +293,9 @@ The interesting failures are not about extraction quality but about **updates ov
 
 | Case | Behaviour |
 |---|---|
-| **Update** — user corrects a previously stated fact | `entities["budget"] = "15,000€"` overwrites the old value |
-| **Conflict** — user states two contradictory things in different turns | Keep the most recent; log the conflict for debugging |
-| **Removal** — user revokes a constraint | `entities["constraints"].remove("no cloud")` |
+| **Update** - user corrects a previously stated fact | `entities["budget"] = "15,000€"` overwrites the old value |
+| **Conflict** - user states two contradictory things in different turns | Keep the most recent; log the conflict for debugging |
+| **Removal** - user revokes a constraint | `entities["constraints"].remove("no cloud")` |
 
 A real production extractor handles all three; a minimal one handles only the update case and accepts the others as known limitations.
 
@@ -366,12 +366,12 @@ The pattern generalises beyond chat: any agent that has to remember things withi
 ## See also
 
 ### Other notes
-- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) — where this memory plugs into the loop
-- [02_agent_components.md](02_agent_components.md) — memory as one of the five building blocks
-- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) — Reflexion stores lessons in a separate "experience" channel that behaves like Entity Memory at the lesson level
-- [04_frameworks.md](04_frameworks.md) — LangChain `trim_messages`, LangGraph `InMemorySaver`, the legacy `ConversationBufferWindowMemory`
-- [06_long_term_memory.md](06_long_term_memory.md) — when entity memory grows into a vector store and becomes cross-session
+- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) - where this memory plugs into the loop
+- [02_agent_components.md](02_agent_components.md) - memory as one of the five building blocks
+- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) - Reflexion stores lessons in a separate "experience" channel that behaves like Entity Memory at the lesson level
+- [04_frameworks.md](04_frameworks.md) - LangChain `trim_messages`, LangGraph `InMemorySaver`, the legacy `ConversationBufferWindowMemory`
+- [06_long_term_memory.md](06_long_term_memory.md) - when entity memory grows into a vector store and becomes cross-session
 
 ### Exercises that exercise the concepts in this note
-- [`05_ex_qa_agent_short_term_memory.ipynb`](../exercises/05_ex_qa_agent_short_term_memory.ipynb) — manual trimming with `trim_messages` and rolling summarisation built side by side on a 15-turn dialogue, with sentinel-fact recall test
-- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) — entity memory with Pydantic schema, `"NONE"` sentinel, persistent-issue trigger
+- [`05_ex_qa_agent_short_term_memory.ipynb`](../exercises/05_ex_qa_agent_short_term_memory.ipynb) - manual trimming with `trim_messages` and rolling summarisation built side by side on a 15-turn dialogue, with sentinel-fact recall test
+- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) - entity memory with Pydantic schema, `"NONE"` sentinel, persistent-issue trigger

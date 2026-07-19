@@ -362,13 +362,13 @@ The answer is never "the AI". It is always one or more of:
 ## See also
 
 ### Other notes
-- [01_llm_foundations.md](01_llm_foundations.md) — where the biases are baked in during pretraining
-- [02_model_landscape.md](02_model_landscape.md) — closed vs open-weights affects data residency and licensing
-- [04_rag_fundamentals.md](04_rag_fundamentals.md) — RAG as the architectural answer to GDPR deletion (user data in retrieval, not in weights)
-- [06_rag_evaluation.md](06_rag_evaluation.md) — faithfulness measurement is the hallucination defence; bias measurement is the same shape
-- [07_rag_production.md](07_rag_production.md) — security, audit, compliance as operational concerns
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — secret hygiene, access control, the deployment side
+- [01_llm_foundations.md](01_llm_foundations.md) - where the biases are baked in during pretraining
+- [02_model_landscape.md](02_model_landscape.md) - closed vs open-weights affects data residency and licensing
+- [04_rag_fundamentals.md](04_rag_fundamentals.md) - RAG as the architectural answer to GDPR deletion (user data in retrieval, not in weights)
+- [06_rag_evaluation.md](06_rag_evaluation.md) - faithfulness measurement is the hallucination defence; bias measurement is the same shape
+- [07_rag_production.md](07_rag_production.md) - security, audit, compliance as operational concerns
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - secret hygiene, access control, the deployment side
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — uses a multilingual embedder for an Italian corpus; the licensing posture of the embedder is the kind of audit item this note demands
-- Module 03 exercise 06 — episodic memory dict is structured precisely so it can be deleted per-user (GDPR Art 17 compliance shape)
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) - uses a multilingual embedder for an Italian corpus; the licensing posture of the embedder is the kind of audit item this note demands
+- Module 03 exercise 06 - episodic memory dict is structured precisely so it can be deleted per-user (GDPR Art 17 compliance shape)

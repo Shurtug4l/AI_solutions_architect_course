@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Every Python project should have its own **virtual environment**. Different projects need different versions of the same dependency, and installing globally guarantees conflicts sooner or later. The standard-library tool is **`venv`** (`python -m venv .venv`); for new projects in 2024+ the faster, modern alternative is **`uv`** (Rust-based, drop-in for `pip` + `venv`). Dependencies are declared in **`pyproject.toml`** (PEP 621), which replaces the legacy `setup.py` / `setup.cfg` / `requirements.txt` triad with a single declarative file. The dependency convention has crystallised around three layers: **direct** dependencies in `pyproject.toml` (with version bounds, not pins), a **lock file** for reproducible installs (`uv.lock` or `poetry.lock`), and **dev/test extras** declared in `[project.optional-dependencies]`. For code quality, two tools cover most needs: **`ruff`** (lint + format + import sort, replacing flake8 + black + isort with a single fast tool) and **`mypy`** (static type checking). Environment-specific values (API keys, database URLs) belong in `.env` files loaded with `python-dotenv` — never committed to git.
+Every Python project should have its own **virtual environment**. Different projects need different versions of the same dependency, and installing globally guarantees conflicts sooner or later. The standard-library tool is **`venv`** (`python -m venv .venv`); for new projects in 2024+ the faster, modern alternative is **`uv`** (Rust-based, drop-in for `pip` + `venv`). Dependencies are declared in **`pyproject.toml`** (PEP 621), which replaces the legacy `setup.py` / `setup.cfg` / `requirements.txt` triad with a single declarative file. The dependency convention has crystallised around three layers: **direct** dependencies in `pyproject.toml` (with version bounds, not pins), a **lock file** for reproducible installs (`uv.lock` or `poetry.lock`), and **dev/test extras** declared in `[project.optional-dependencies]`. For code quality, two tools cover most needs: **`ruff`** (lint + format + import sort, replacing flake8 + black + isort with a single fast tool) and **`mypy`** (static type checking). Environment-specific values (API keys, database URLs) belong in `.env` files loaded with `python-dotenv` - never committed to git.
 
 ## Cheatsheet
 
@@ -82,7 +82,7 @@ numpy==1.26.2
 pandas==2.1.4
 ```
 
-`pip freeze` captures the entire environment including transitive dependencies — perfect for reproducibility but verbose. For hand-written files, you can pin only your direct dependencies and let pip resolve the rest. Either way, `requirements.txt` is being supplanted by `pyproject.toml` for new projects.
+`pip freeze` captures the entire environment including transitive dependencies - perfect for reproducibility but verbose. For hand-written files, you can pin only your direct dependencies and let pip resolve the rest. Either way, `requirements.txt` is being supplanted by `pyproject.toml` for new projects.
 
 ---
 
@@ -122,13 +122,13 @@ Install with the dev extras:
 pip install -e ".[dev]"
 ```
 
-Use **version ranges**, not exact pins, for direct dependencies in `pyproject.toml` — pinning is the lock file's job, while `pyproject.toml` declares what your code is compatible with.
+Use **version ranges**, not exact pins, for direct dependencies in `pyproject.toml` - pinning is the lock file's job, while `pyproject.toml` declares what your code is compatible with.
 
 ---
 
-## `uv` — fast Python package manager
+## `uv` - fast Python package manager
 
-`uv` (from Astral) is a Rust-based drop-in replacement for `pip` + `venv`. It is dramatically faster for dependency resolution and installation — minutes-long resolves typically finish in seconds.
+`uv` (from Astral) is a Rust-based drop-in replacement for `pip` + `venv`. It is dramatically faster for dependency resolution and installation - minutes-long resolves typically finish in seconds.
 
 ```bash
 # Install uv
@@ -241,7 +241,7 @@ build/
 .env
 ```
 
-Two things you must never commit: the virtual environment directory (`.venv/`) and `.env` files containing secrets. Generated artefacts (`__pycache__`, `dist/`, `build/`, `.egg-info`) belong out of version control too — they're produced by tools, not authored.
+Two things you must never commit: the virtual environment directory (`.venv/`) and `.env` files containing secrets. Generated artefacts (`__pycache__`, `dist/`, `build/`, `.egg-info`) belong out of version control too - they're produced by tools, not authored.
 
 ---
 
@@ -309,6 +309,6 @@ For production deployments, prefer reading from the actual environment (set by y
 
 ## See also
 
-- [08_modules_and_packages.md](08_modules_and_packages.md) — `pyproject.toml`, project layout
-- [07_exceptions.md](07_exceptions.md) — logging configuration
-- [11_standard_library.md](11_standard_library.md) — `os.environ`, `sys`, `argparse`
+- [08_modules_and_packages.md](08_modules_and_packages.md) - `pyproject.toml`, project layout
+- [07_exceptions.md](07_exceptions.md) - logging configuration
+- [11_standard_library.md](11_standard_library.md) - `os.environ`, `sys`, `argparse`

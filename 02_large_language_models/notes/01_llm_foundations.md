@@ -377,12 +377,12 @@ This asymmetry is what makes hosted APIs viable: pay a few dollars per million t
 ## See also
 
 ### Other notes
-- [02_model_landscape.md](02_model_landscape.md) — closed vs open weights, modern model families
-- [03_prompt_engineering.md](03_prompt_engineering.md) — extracting useful behaviour from decoder models
-- [04_rag_fundamentals.md](04_rag_fundamentals.md) — using LLMs with external knowledge
-- Module 03 [02_agent_components.md](../../03_agentic_ai/notes/02_agent_components.md) — LLMs as one of the five building blocks of an agent
-- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) — embeddings as the foundation of vector search
+- [02_model_landscape.md](02_model_landscape.md) - closed vs open weights, modern model families
+- [03_prompt_engineering.md](03_prompt_engineering.md) - extracting useful behaviour from decoder models
+- [04_rag_fundamentals.md](04_rag_fundamentals.md) - using LLMs with external knowledge
+- Module 03 [02_agent_components.md](../../03_agentic_ai/notes/02_agent_components.md) - LLMs as one of the five building blocks of an agent
+- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) - embeddings as the foundation of vector search
 
 ### Related work in this repo
-- Module 02 exercises 01-04 (text analysis, NER with BERT, LangChain prompt pipeline, RAG chatbot) — first practical contact with these foundations
-- `01_machine_learning/notes/08_neural_networks.md` — the upstream context: from neural networks to deep learning to Transformers
+- Module 02 exercises 01-04 (text analysis, NER with BERT, LangChain prompt pipeline, RAG chatbot) - first practical contact with these foundations
+- `01_machine_learning/notes/08_neural_networks.md` - the upstream context: from neural networks to deep learning to Transformers

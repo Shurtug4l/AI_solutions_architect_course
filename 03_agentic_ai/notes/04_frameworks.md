@@ -239,7 +239,7 @@ graph.add_conditional_edges("evaluate", should_retry)
 
 This is exactly the Reflexion pattern (note [03](03_paradigms_react_planexecute_reflexion.md)): generate, evaluate, retry on low score. Without a graph runtime, you build this loop by hand.
 
-> ⚠️ **Always set `max_iterations` or an explicit exit condition.** A cycle without a bound is an infinite loop waiting to happen. Module 03 exercise 04 hits this twice while tuning the verify-node threshold.
+> **Always set `max_iterations` or an explicit exit condition.** A cycle without a bound is an infinite loop waiting to happen. Module 03 exercise 04 hits this twice while tuning the verify-node threshold.
 
 ### Parallelism
 
@@ -415,12 +415,12 @@ Best when the enterprise is already on Azure, governance and compliance matter, 
 ## See also
 
 ### Other notes
-- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) — what the framework wraps around
-- [02_agent_components.md](02_agent_components.md) — primitives every framework exposes
-- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) — patterns that map cleanly onto LangGraph nodes and edges
-- [05_short_term_memory.md](05_short_term_memory.md) — message-history strategies; both frameworks have native support
-- [07_deployment.md](07_deployment.md) — wrapping a LangChain/LangGraph agent in an HTTP service
+- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) - what the framework wraps around
+- [02_agent_components.md](02_agent_components.md) - primitives every framework exposes
+- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) - patterns that map cleanly onto LangGraph nodes and edges
+- [05_short_term_memory.md](05_short_term_memory.md) - message-history strategies; both frameworks have native support
+- [07_deployment.md](07_deployment.md) - wrapping a LangChain/LangGraph agent in an HTTP service
 
 ### Exercises that exercise the concepts in this note
-- [`04_ex_fact_checker_langchain_vs_langgraph.ipynb`](../exercises/04_ex_fact_checker_langchain_vs_langgraph.ipynb) — same fact-checker in both frameworks, with a 300-word reasoned choice document at the end
-- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) — `ChatOllama` + LangChain primitives + `with_structured_output` for episodic memory extraction
+- [`04_ex_fact_checker_langchain_vs_langgraph.ipynb`](../exercises/04_ex_fact_checker_langchain_vs_langgraph.ipynb) - same fact-checker in both frameworks, with a 300-word reasoned choice document at the end
+- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) - `ChatOllama` + LangChain primitives + `with_structured_output` for episodic memory extraction

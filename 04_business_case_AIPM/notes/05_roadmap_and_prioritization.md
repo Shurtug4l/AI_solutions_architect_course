@@ -121,7 +121,7 @@ The numbers are organisation-specific, but the principle is universal: **innovat
 
 ---
 
-## Part 2: Decomposing roadmap into work — Epic, Feature, Hypothesis
+## Part 2: Decomposing roadmap into work - Epic, Feature, Hypothesis
 
 ### Why traditional user stories fail in AI
 
@@ -215,7 +215,7 @@ The final reframe: AI planning is not about writing requirements that promise ce
 
 Once the backlog is full of hypotheses, the team must choose what to do next. Three complementary frameworks; pick by question being asked.
 
-### MoSCoW — qualitative, negotiation-oriented
+### MoSCoW - qualitative, negotiation-oriented
 
 #### What it is
 
@@ -247,7 +247,7 @@ A qualitative prioritisation framework with four buckets:
 - Aligning non-technical stakeholders with simple trade-off language.
 - Early-stage projects without enough data for quantitative frameworks.
 
-### RICE — quantitative, data-informed
+### RICE - quantitative, data-informed
 
 #### What it is
 
@@ -285,7 +285,7 @@ RICE = ──────────────────  =  ────�
 - Comparing many heterogeneous initiatives objectively (model vs. UX vs. infra).
 - Avoid when the team is new or the data is unreliable; MoSCoW is the better starting point.
 
-### Kano Model — customer-centric, vision-oriented
+### Kano Model - customer-centric, vision-oriented
 
 #### What it is
 
@@ -385,10 +385,10 @@ In a mature org, all three coexist at different levels of the planning hierarchy
 ## See also
 
 ### Other notes
-- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) — the Value/Feasibility matrix that feeds the initiatives the roadmap turns into hypotheses
-- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) — the dual KPI / technical metric chain that becomes dual acceptance criteria
-- [03_case_studies.md](03_case_studies.md) — Netflix as a textbook example of the build-measure-learn engine at scale
-- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) — who runs the prioritisation conversation (PM with stakeholders, mediated by SA as translator)
-- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) — the journey from validated hypothesis to scaled production
-- [07_project_management_methodologies.md](07_project_management_methodologies.md) — Scrum and Kanban as the execution layer for the prioritised backlog
-- Module 01 [01_intro_ml_workflow.md](../../01_machine_learning/notes/01_intro_ml_workflow.md) — the train/validate/test discipline that underlies technical acceptance criteria
+- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) - the Value/Feasibility matrix that feeds the initiatives the roadmap turns into hypotheses
+- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) - the dual KPI / technical metric chain that becomes dual acceptance criteria
+- [03_case_studies.md](03_case_studies.md) - Netflix as a textbook example of the build-measure-learn engine at scale
+- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) - who runs the prioritisation conversation (PM with stakeholders, mediated by SA as translator)
+- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) - the journey from validated hypothesis to scaled production
+- [07_project_management_methodologies.md](07_project_management_methodologies.md) - Scrum and Kanban as the execution layer for the prioritised backlog
+- Module 01 [01_intro_ml_workflow.md](../../01_machine_learning/notes/01_intro_ml_workflow.md) - the train/validate/test discipline that underlies technical acceptance criteria

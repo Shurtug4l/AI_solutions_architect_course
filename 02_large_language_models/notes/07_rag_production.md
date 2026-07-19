@@ -458,12 +458,12 @@ The deck flags three practices:
 ## See also
 
 ### Other notes
-- [04_rag_fundamentals.md](04_rag_fundamentals.md) — the pipeline being scaled
-- [05_advanced_rag.md](05_advanced_rag.md) — the upgrade components added in production
-- [06_rag_evaluation.md](06_rag_evaluation.md) — the metrics that drive monitoring
-- [08_ethics_and_governance.md](08_ethics_and_governance.md) — GDPR, AI Act, the regulatory ceiling
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — the HTTP-service wrapper around the agent + RAG
+- [04_rag_fundamentals.md](04_rag_fundamentals.md) - the pipeline being scaled
+- [05_advanced_rag.md](05_advanced_rag.md) - the upgrade components added in production
+- [06_rag_evaluation.md](06_rag_evaluation.md) - the metrics that drive monitoring
+- [08_ethics_and_governance.md](08_ethics_and_governance.md) - GDPR, AI Act, the regulatory ceiling
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - the HTTP-service wrapper around the agent + RAG
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — in-memory pipeline that would map cleanly onto these production primitives if it were to ship
-- Module 03 exercise 07 — the deployment wrapper covered for a single-agent service
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) - in-memory pipeline that would map cleanly onto these production primitives if it were to ship
+- Module 03 exercise 07 - the deployment wrapper covered for a single-agent service

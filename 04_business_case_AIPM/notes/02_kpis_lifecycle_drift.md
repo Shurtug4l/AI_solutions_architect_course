@@ -279,11 +279,11 @@ The closing point of the original slide deck captures it well: **drift is inevit
 ## See also
 
 ### Other notes
-- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) — the upstream filter and TCO that this note operationalises
-- [03_case_studies.md](03_case_studies.md) — concrete wins and losses where these principles either held or failed
-- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) — who owns each phase, who runs the perpetual service
-- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) — the product-side companion to the technical lifecycle
-- [07_project_management_methodologies.md](07_project_management_methodologies.md) — how the experimental lifecycle reshapes Waterfall/Scrum/Kanban choices
-- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) — monitoring and drift specifically in RAG pipelines
-- Module 01 [03_classification.md](../../01_machine_learning/notes/03_classification.md) — accuracy vs precision vs recall as ML metrics
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — the deployment + monitoring layer for agentic systems
+- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) - the upstream filter and TCO that this note operationalises
+- [03_case_studies.md](03_case_studies.md) - concrete wins and losses where these principles either held or failed
+- [04_roles_and_stakeholders.md](04_roles_and_stakeholders.md) - who owns each phase, who runs the perpetual service
+- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) - the product-side companion to the technical lifecycle
+- [07_project_management_methodologies.md](07_project_management_methodologies.md) - how the experimental lifecycle reshapes Waterfall/Scrum/Kanban choices
+- Module 02 [07_rag_production.md](../../02_large_language_models/notes/07_rag_production.md) - monitoring and drift specifically in RAG pipelines
+- Module 01 [03_classification.md](../../01_machine_learning/notes/03_classification.md) - accuracy vs precision vs recall as ML metrics
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - the deployment + monitoring layer for agentic systems

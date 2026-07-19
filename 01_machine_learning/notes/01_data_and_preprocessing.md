@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Every supervised ML pipeline starts with the same discipline: split data into **train / validation / test** before doing anything else, and never let the test set inform any decision until the final evaluation. **Data leakage** — fitting a scaler or imputer on the full dataset before splitting, using a feature that is a proxy for the label, shuffling time-ordered data — is the single most common cause of inflated metrics that don't survive deployment. Numerical features need **scaling** for distance- and gradient-based models (KNN, SVM, linear regression with regularisation, neural networks); tree-based models (random forests, gradient boosting) are scale-invariant. Categorical features need **encoding**: one-hot for nominal, ordinal-integer only when a meaningful order exists. Imbalanced classes ruin accuracy as a metric — switch to precision / recall / F1 / ROC-AUC and consider class weights or SMOTE. The operational rule that prevents most leakage bugs: **wrap every preprocessing step plus the model in a sklearn `Pipeline`**, so each transformer is refit only on the training portion of every CV fold.
+Every supervised ML pipeline starts with the same discipline: split data into **train / validation / test** before doing anything else, and never let the test set inform any decision until the final evaluation. **Data leakage** - fitting a scaler or imputer on the full dataset before splitting, using a feature that is a proxy for the label, shuffling time-ordered data - is the single most common cause of inflated metrics that don't survive deployment. Numerical features need **scaling** for distance- and gradient-based models (KNN, SVM, linear regression with regularisation, neural networks); tree-based models (random forests, gradient boosting) are scale-invariant. Categorical features need **encoding**: one-hot for nominal, ordinal-integer only when a meaningful order exists. Imbalanced classes ruin accuracy as a metric - switch to precision / recall / F1 / ROC-AUC and consider class weights or SMOTE. The operational rule that prevents most leakage bugs: **wrap every preprocessing step plus the model in a sklearn `Pipeline`**, so each transformer is refit only on the training portion of every CV fold.
 
 ## Cheatsheet
 
@@ -43,9 +43,9 @@ A **dataset** is a collection of **samples** (rows), each described by **feature
 | **Numerical, discrete** | Count | Number of rooms, age in years | Often treat as continuous |
 | **Categorical, nominal** | No order | Country, colour, job title | One-hot encoding |
 | **Categorical, ordinal** | Ordered | Education level, size (S / M / L) | Ordinal encoding |
-| **Binary** | — | Yes / No, True / False | 0 / 1 |
+| **Binary** | - | Yes / No, True / False | 0 / 1 |
 
-The encoding choice depends on whether the feature has a meaningful order. Treating a nominal feature as ordinal — assigning integers 0, 1, 2 to "red", "blue", "green" — implies a distance relationship that doesn't exist and confuses linear models.
+The encoding choice depends on whether the feature has a meaningful order. Treating a nominal feature as ordinal - assigning integers 0, 1, 2 to "red", "blue", "green" - implies a distance relationship that doesn't exist and confuses linear models.
 
 ---
 
@@ -62,7 +62,7 @@ Full dataset
 
 The **test set is touched exactly once**, at the end. Using it to iterate (looking at test scores while still tuning) is data leakage by another name; you end up overfitting to the test set instead of the training set, and your reported metrics no longer predict deployed performance. With cross-validation a separate validation set is often unnecessary, but the test set still must stay held out.
 
-For **time-series data** the splits must be **chronological** — no shuffling — or you leak future information into training. Use `TimeSeriesSplit`.
+For **time-series data** the splits must be **chronological** - no shuffling - or you leak future information into training. Use `TimeSeriesSplit`.
 
 **Stratified split** preserves the class distribution in each split. Always stratify in classification, especially with imbalanced classes.
 
@@ -92,16 +92,16 @@ Common sources:
 | **Drop column** | Feature missing in more than ~40-50% of samples |
 | **Mean / median imputation** | Numerical, missing-at-random, no strong skew (use median if skewed) |
 | **Mode imputation** | Categorical features |
-| **Constant imputation** | When "missing" is itself informative — fill with 0, "Unknown", etc., and consider an indicator column |
+| **Constant imputation** | When "missing" is itself informative - fill with 0, "Unknown", etc., and consider an indicator column |
 | **Model-based imputation** | KNN imputer, iterative imputer; complex but better when patterns exist |
 
 ### MCAR / MAR / MNAR
 
 The missingness mechanism affects which strategies are safe:
 
-- **MCAR** (Missing Completely At Random) — missingness is independent of all variables. Simple imputation is safe.
-- **MAR** (Missing At Random) — missingness depends on observed variables. Conditional imputation (or model-based) is safer.
-- **MNAR** (Missing Not At Random) — missingness depends on the unobserved value itself. Imputation is biased; consider an explicit indicator column to capture the signal.
+- **MCAR** (Missing Completely At Random) - missingness is independent of all variables. Simple imputation is safe.
+- **MAR** (Missing At Random) - missingness depends on observed variables. Conditional imputation (or model-based) is safer.
+- **MNAR** (Missing Not At Random) - missingness depends on the unobserved value itself. Imputation is biased; consider an explicit indicator column to capture the signal.
 
 When in doubt, add a binary indicator column for "was this value missing?" alongside the imputed value. The model can then learn whether missingness itself is predictive.
 
@@ -199,7 +199,7 @@ If the rarest class is below ~10%, treat it as imbalanced.
 
 | Strategy | Mechanism | Pros / cons |
 |---|---|---|
-| **Class weights** | `class_weight='balanced'` in sklearn — penalises minority misclassification more | Simple, no resampling, reproducible |
+| **Class weights** | `class_weight='balanced'` in sklearn - penalises minority misclassification more | Simple, no resampling, reproducible |
 | **SMOTE** (oversampling) | Synthesise new minority samples by interpolating between near neighbours | Restores balance; can introduce noise if minority is itself heterogeneous |
 | **Undersampling** | Remove majority samples | Loses information; use only when majority is huge |
 | **Threshold tuning** | Adjust the decision threshold post-training | Doesn't change training, free metric trade-off |
@@ -210,16 +210,16 @@ If the rarest class is below ~10%, treat it as imbalanced.
 
 ## Feature engineering
 
-Creating new features from existing ones to expose patterns the model can't extract on its own. The line between "preprocessing" and "feature engineering" is fuzzy — both transform the input space.
+Creating new features from existing ones to expose patterns the model can't extract on its own. The line between "preprocessing" and "feature engineering" is fuzzy - both transform the input space.
 
 Common transformations:
 
-- **Log transform** (`np.log1p(x)`) — compresses right-skewed distributions; common for prices, counts, durations.
-- **Polynomial features** (`x²`, `x₁ * x₂`) — captures non-linearity for linear models.
-- **Binning** — discretise continuous values into buckets when the relationship is non-monotonic (e.g., risk by age band).
-- **Date decomposition** — extract year, month, day-of-week, hour, season from timestamps.
-- **Interaction terms** — product of two features when the combination is meaningful (e.g., `price * frequency`).
-- **Domain ratios** — derived features like BMI = weight / height² that encode known physics or domain knowledge.
+- **Log transform** (`np.log1p(x)`) - compresses right-skewed distributions; common for prices, counts, durations.
+- **Polynomial features** (`x²`, `x₁ * x₂`) - captures non-linearity for linear models.
+- **Binning** - discretise continuous values into buckets when the relationship is non-monotonic (e.g., risk by age band).
+- **Date decomposition** - extract year, month, day-of-week, hour, season from timestamps.
+- **Interaction terms** - product of two features when the combination is meaningful (e.g., `price * frequency`).
+- **Domain ratios** - derived features like BMI = weight / height² that encode known physics or domain knowledge.
 
 Feature engineering is domain-driven. No transformation is universally good; each must be justified by the data distribution and the model's assumptions. Tree-based models extract interactions automatically and need less engineering; linear models benefit most.
 
@@ -227,7 +227,7 @@ Feature engineering is domain-driven. No transformation is universally good; eac
 
 ## Pipelines
 
-A sklearn `Pipeline` chains preprocessing steps and the estimator. Beyond saving keystrokes, it enforces the fit-on-train-only discipline automatically — every transformer is refit on each training fold during cross-validation, and never sees validation data.
+A sklearn `Pipeline` chains preprocessing steps and the estimator. Beyond saving keystrokes, it enforces the fit-on-train-only discipline automatically - every transformer is refit on each training fold during cross-validation, and never sees validation data.
 
 ```python
 from sklearn.pipeline import Pipeline
@@ -243,7 +243,7 @@ pipe.fit(X_train, y_train)
 pipe.score(X_test, y_test)
 ```
 
-`ColumnTransformer` applies different transformations to different feature subsets — typically scaling for numerical features and one-hot for categorical:
+`ColumnTransformer` applies different transformations to different feature subsets - typically scaling for numerical features and one-hot for categorical:
 
 ```python
 from sklearn.compose import ColumnTransformer
@@ -309,8 +309,8 @@ pipe = Pipeline([
 
 ## See also
 
-- [02_regression.md](02_regression.md) — assumptions, multicollinearity, why scaling matters for regularised regression
-- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) — cross-validation, leakage during regularisation
-- [04_classification.md](04_classification.md) — class imbalance metrics, classification pipelines
-- [05_knn.md](05_knn.md) — distance-based methods that mandate scaling
-- [09_model_selection.md](09_model_selection.md) — full pipelines, nested CV
+- [02_regression.md](02_regression.md) - assumptions, multicollinearity, why scaling matters for regularised regression
+- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) - cross-validation, leakage during regularisation
+- [04_classification.md](04_classification.md) - class imbalance metrics, classification pipelines
+- [05_knn.md](05_knn.md) - distance-based methods that mandate scaling
+- [09_model_selection.md](09_model_selection.md) - full pipelines, nested CV

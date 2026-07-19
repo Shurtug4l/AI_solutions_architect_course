@@ -291,14 +291,14 @@ Use leaderboards to **narrow** the candidate set; pick the final model with an e
 ## See also
 
 ### Other notes
-- [01_llm_foundations.md](01_llm_foundations.md) — the architectural foundations these models build on
-- [03_prompt_engineering.md](03_prompt_engineering.md) — extracting useful behaviour from any of these models
-- [04_rag_fundamentals.md](04_rag_fundamentals.md) — augmenting any of these models with external knowledge
-- [08_ethics_and_governance.md](08_ethics_and_governance.md) — the responsibility side: bias, hallucination, EU AI Act, GDPR
-- Module 03 [04_frameworks.md](../../03_agentic_ai/notes/04_frameworks.md) — LangChain abstracts most provider differences; LangGraph builds graphs across them
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — running these models behind an HTTP service
+- [01_llm_foundations.md](01_llm_foundations.md) - the architectural foundations these models build on
+- [03_prompt_engineering.md](03_prompt_engineering.md) - extracting useful behaviour from any of these models
+- [04_rag_fundamentals.md](04_rag_fundamentals.md) - augmenting any of these models with external knowledge
+- [08_ethics_and_governance.md](08_ethics_and_governance.md) - the responsibility side: bias, hallucination, EU AI Act, GDPR
+- Module 03 [04_frameworks.md](../../03_agentic_ai/notes/04_frameworks.md) - LangChain abstracts most provider differences; LangGraph builds graphs across them
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - running these models behind an HTTP service
 
 ### Related work in this repo
-- Module 02 exercises 03 and 04 (LangChain prompt pipeline, RAG chatbot) — use Ollama with `llama3.2` and `mistral` locally
-- Module 03 exercises 02-07 — settle on `qwen2.5:14b` for tool-calling and structured-output reliability
-- Module 02 PRJ (`PRJ_rag_system_for_company_knowledge.py`) — hybrid retrieval pipeline that could front any of these models
+- Module 02 exercises 03 and 04 (LangChain prompt pipeline, RAG chatbot) - use Ollama with `llama3.2` and `mistral` locally
+- Module 03 exercises 02-07 - settle on `qwen2.5:14b` for tool-calling and structured-output reliability
+- Module 02 PRJ (`PRJ_rag_system_for_company_knowledge.py`) - hybrid retrieval pipeline that could front any of these models

@@ -473,11 +473,11 @@ The container fetches the secret at startup via an IAM-authenticated call. The r
 ## See also
 
 ### Other notes
-- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) — the agent that gets wrapped here
-- [02_agent_components.md](02_agent_components.md) — tools, the surface this note hardens
-- [04_frameworks.md](04_frameworks.md) — LangChain / LangGraph agents are what `run_agent` typically calls
-- [05_short_term_memory.md](05_short_term_memory.md) — the session store is the production version of STM
-- [06_long_term_memory.md](06_long_term_memory.md) — vector DB persistence and the same secret hygiene applies to the embedder API key
+- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) - the agent that gets wrapped here
+- [02_agent_components.md](02_agent_components.md) - tools, the surface this note hardens
+- [04_frameworks.md](04_frameworks.md) - LangChain / LangGraph agents are what `run_agent` typically calls
+- [05_short_term_memory.md](05_short_term_memory.md) - the session store is the production version of STM
+- [06_long_term_memory.md](06_long_term_memory.md) - vector DB persistence and the same secret hygiene applies to the embedder API key
 
 ### Exercises that exercise the concepts in this note
-- [`07_ex_shopassist_deployment.ipynb`](../exercises/07_ex_shopassist_deployment.ipynb) — full ShopAssist deployment: Pydantic-validated requests, session manager, sanitised tool, FastAPI with `/chat` timeout and `/report` async pattern, Dockerfile + .env hygiene + docker-compose with healthcheck
+- [`07_ex_shopassist_deployment.ipynb`](../exercises/07_ex_shopassist_deployment.ipynb) - full ShopAssist deployment: Pydantic-validated requests, session manager, sanitised tool, FastAPI with `/chat` timeout and `/report` async pattern, Dockerfile + .env hygiene + docker-compose with healthcheck

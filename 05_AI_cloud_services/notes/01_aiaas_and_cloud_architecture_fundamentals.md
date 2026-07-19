@@ -217,13 +217,13 @@ CT is the one that distinguishes "MLOps" from "DevOps applied to ML". A model is
 ## See also
 
 ### Other notes
-- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) — these primitives instantiated on AWS (S3, DynamoDB, Aurora, SageMaker)
-- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) — Azure's pyramid of services, from Azure AI Services to Azure ML and AI Foundry
-- [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — GCP's data-first take, BigQuery + Vertex AI
-- [05_iaas_open_source_and_on_prem_deployment.md](05_iaas_open_source_and_on_prem_deployment.md) — what changes if you skip the managed platform
-- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) — comparison and decision criteria across all three models
-- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) — when one cloud or one model is not enough
+- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md) - these primitives instantiated on AWS (S3, DynamoDB, Aurora, SageMaker)
+- [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md) - Azure's pyramid of services, from Azure AI Services to Azure ML and AI Foundry
+- [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) - GCP's data-first take, BigQuery + Vertex AI
+- [05_iaas_open_source_and_on_prem_deployment.md](05_iaas_open_source_and_on_prem_deployment.md) - what changes if you skip the managed platform
+- [06_paas_vs_iaas_vs_oss_decision_framework.md](06_paas_vs_iaas_vs_oss_decision_framework.md) - comparison and decision criteria across all three models
+- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) - when one cloud or one model is not enough
 
 ### Cross-module
-- Module 04 [01_identifying_ai_problems_and_feasibility.md](../../04_business_case_AIPM/notes/01_identifying_ai_problems_and_feasibility.md) — total cost of ownership, the hidden costs that determine cloud vs on-prem TCO
-- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) — the drift signals that drive Continuous Training
+- Module 04 [01_identifying_ai_problems_and_feasibility.md](../../04_business_case_AIPM/notes/01_identifying_ai_problems_and_feasibility.md) - total cost of ownership, the hidden costs that determine cloud vs on-prem TCO
+- Module 04 [02_kpis_lifecycle_drift.md](../../04_business_case_AIPM/notes/02_kpis_lifecycle_drift.md) - the drift signals that drive Continuous Training

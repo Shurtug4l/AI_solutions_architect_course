@@ -13,8 +13,8 @@ The expected error of a model decomposes into three pieces: **bias** (systematic
 | Stratified K-fold | `StratifiedKFold(n_splits=5)` | Classification with imbalanced classes |
 | LOOCV | `LeaveOneOut()` | Very small datasets only (slow, high variance) |
 | Time series CV | `TimeSeriesSplit(n_splits=5)` | Time-ordered data, prevents future leaking into past |
-| Ridge (L2) | `Ridge(alpha=λ)` — `MSE + λ Σ wⱼ²` | Multicollinearity, smooth shrinkage, no feature drop |
-| Lasso (L1) | `Lasso(alpha=λ)` — `MSE + λ Σ |wⱼ|` | Sparse weights, automatic feature selection |
+| Ridge (L2) | `Ridge(alpha=λ)` - `MSE + λ Σ wⱼ²` | Multicollinearity, smooth shrinkage, no feature drop |
+| Lasso (L1) | `Lasso(alpha=λ)` - `MSE + λ Σ |wⱼ|` | Sparse weights, automatic feature selection |
 | Elastic Net | `ElasticNet(alpha, l1_ratio)` | Sparse + stable when correlated features are present |
 | Grid search | `GridSearchCV(model, param_grid, cv)` | Few discrete hyperparameters |
 | Random search | `RandomizedSearchCV(model, dist, n_iter, cv)` | Many or continuous hyperparameters |
@@ -28,17 +28,17 @@ For a model trained on a random sample, the expected prediction error at a new p
 
 $$\text{Error} = \text{Bias}^2 + \text{Variance} + \text{Irreducible Noise}$$
 
-Intuitively, **bias** is how wrong your predictions are on average across all possible training sets — a measure of the model class's inability to capture the true relationship. **Variance** is how much your predictions wiggle as you swap in a different training sample of the same size. **Irreducible noise** is the floor set by labelling errors and unobserved variables; no model can drive the total error below it.
+Intuitively, **bias** is how wrong your predictions are on average across all possible training sets - a measure of the model class's inability to capture the true relationship. **Variance** is how much your predictions wiggle as you swap in a different training sample of the same size. **Irreducible noise** is the floor set by labelling errors and unobserved variables; no model can drive the total error below it.
 
 | Component | Meaning | Cause |
 |---|---|---|
-| **Bias** | Systematic error — the model class consistently misses the true relationship | Model too simple, wrong assumptions, or strong implicit constraints |
+| **Bias** | Systematic error - the model class consistently misses the true relationship | Model too simple, wrong assumptions, or strong implicit constraints |
 | **Variance** | Sensitivity to fluctuations in the training data | Model too flexible relative to sample size |
 | **Irreducible noise** | Error from measurement or labelling noise | Inherent to the data; cannot be reduced by changing the model |
 
-**Underfitting** = high bias, low variance — the model fails to capture the signal even on the training set (e.g., a linear model on clearly non-linear data).
+**Underfitting** = high bias, low variance - the model fails to capture the signal even on the training set (e.g., a linear model on clearly non-linear data).
 
-**Overfitting** = low bias, high variance — the model memorises the training data, including its noise, and generalises poorly (e.g., an unconstrained decision tree on a small dataset).
+**Overfitting** = low bias, high variance - the model memorises the training data, including its noise, and generalises poorly (e.g., an unconstrained decision tree on a small dataset).
 
 ### Diagnosis via learning curves
 
@@ -96,7 +96,7 @@ cv = TimeSeriesSplit(n_splits=5)
 
 ## Regularization
 
-Regularization adds a penalty term to the loss function that grows with the size of the weights. Minimising the penalised loss yields a model that fits the data well but keeps its weights small — a trade that increases bias slightly while reducing variance substantially. Both common penalties depend on the **absolute magnitude** of the weights, so features measured in different units (millimetres vs kilometres, or 0–1 vs 0–10⁶) produce wildly different penalty contributions. **Always standardise features (mean 0, std 1) before fitting a regularised model**, and do it inside a `Pipeline` so the scaler is refit per fold during CV.
+Regularization adds a penalty term to the loss function that grows with the size of the weights. Minimising the penalised loss yields a model that fits the data well but keeps its weights small - a trade that increases bias slightly while reducing variance substantially. Both common penalties depend on the **absolute magnitude** of the weights, so features measured in different units (millimetres vs kilometres, or 0-1 vs 0-10⁶) produce wildly different penalty contributions. **Always standardise features (mean 0, std 1) before fitting a regularised model**, and do it inside a `Pipeline` so the scaler is refit per fold during CV.
 
 ### Ridge (L2)
 
@@ -141,13 +141,13 @@ en    = ElasticNet(alpha=0.1, l1_ratio=0.5)
 | Solution uniqueness | Always | Not guaranteed | Yes |
 | Closed form | Yes | No | No |
 
-As $\lambda$ increases, all coefficients shrink. Lasso produces a **sparse** weight vector (many exact zeros); Ridge compresses every coefficient toward zero proportionally. Plotting coefficient values against $\log \lambda$ gives the **regularization path** — a useful diagnostic for understanding which features survive at each penalty level.
+As $\lambda$ increases, all coefficients shrink. Lasso produces a **sparse** weight vector (many exact zeros); Ridge compresses every coefficient toward zero proportionally. Plotting coefficient values against $\log \lambda$ gives the **regularization path** - a useful diagnostic for understanding which features survive at each penalty level.
 
 ---
 
 ## Hyperparameter tuning
 
-The penalty strength ($\lambda$, `alpha`) is a hyperparameter — not learned from data, chosen via validation. The choice should be made on data the model has not seen, otherwise you optimise toward the validation set and inflate your estimate of how well the model will generalise.
+The penalty strength ($\lambda$, `alpha`) is a hyperparameter - not learned from data, chosen via validation. The choice should be made on data the model has not seen, otherwise you optimise toward the validation set and inflate your estimate of how well the model will generalise.
 
 ### Grid search
 
@@ -184,7 +184,7 @@ For mixed continuous/discrete spaces and more than four or five hyperparameters,
 
 ## Early stopping
 
-Iteratively trained models — neural networks, gradient boosting, gradient-descent linear models — minimise training loss on every step. Without intervention, the validation loss eventually starts to climb again as the model fits noise. Early stopping monitors validation loss and halts training when it stops improving for a configurable number of consecutive evaluations (`patience`).
+Iteratively trained models - neural networks, gradient boosting, gradient-descent linear models - minimise training loss on every step. Without intervention, the validation loss eventually starts to climb again as the model fits noise. Early stopping monitors validation loss and halts training when it stops improving for a configurable number of consecutive evaluations (`patience`).
 
 ```python
 from tensorflow.keras.callbacks import EarlyStopping
@@ -199,7 +199,7 @@ model.fit(X_train, y_train,
          epochs=1000)
 ```
 
-`restore_best_weights=True` is essential: without it, training ends with the weights from the worst recent epoch, not the best one observed. Conceptually, early stopping plays the same role as L2 regularization for gradient-based models — it prevents the weights from growing unbounded, achieving a similar bias-variance trade-off without modifying the loss function.
+`restore_best_weights=True` is essential: without it, training ends with the weights from the worst recent epoch, not the best one observed. Conceptually, early stopping plays the same role as L2 regularization for gradient-based models - it prevents the weights from growing unbounded, achieving a similar bias-variance trade-off without modifying the loss function.
 
 ---
 
@@ -240,7 +240,7 @@ model.fit(X_train, y_train,
 
 ## See also
 
-- [02_regression.md](02_regression.md) — OLS, the unregularised baseline (Ridge with $\lambda = 0$)
-- [04_classification.md](04_classification.md) — equivalent regularisation in logistic regression (`C = 1/λ`)
-- [08_neural_networks.md](08_neural_networks.md) — early stopping, dropout, weight decay in practice
-- [09_model_selection.md](09_model_selection.md) — full pipelines, nested CV, model comparison
+- [02_regression.md](02_regression.md) - OLS, the unregularised baseline (Ridge with $\lambda = 0$)
+- [04_classification.md](04_classification.md) - equivalent regularisation in logistic regression (`C = 1/λ`)
+- [08_neural_networks.md](08_neural_networks.md) - early stopping, dropout, weight decay in practice
+- [09_model_selection.md](09_model_selection.md) - full pipelines, nested CV, model comparison

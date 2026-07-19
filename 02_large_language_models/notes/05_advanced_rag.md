@@ -413,13 +413,13 @@ Multimodal pipelines are heavier than text-only ones (more storage, slower index
 ## See also
 
 ### Other notes
-- [04_rag_fundamentals.md](04_rag_fundamentals.md) — the naive pipeline this note extends
-- [06_rag_evaluation.md](06_rag_evaluation.md) — RAGAS metrics; identify the bottleneck before adding components
-- [07_rag_production.md](07_rag_production.md) — caching, streaming, scaling all interact with the advanced components
-- Module 03 [03_paradigms_react_planexecute_reflexion.md](../../03_agentic_ai/notes/03_paradigms_react_planexecute_reflexion.md) — Plan-Execute is the agentic shape of query decomposition
-- Module 03 [04_frameworks.md](../../03_agentic_ai/notes/04_frameworks.md) — LangGraph as the natural fit for modular RAG (each module is a node)
-- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) — Reranking, hybrid search and RAG vs CAG also covered there with the agent-memory lens
+- [04_rag_fundamentals.md](04_rag_fundamentals.md) - the naive pipeline this note extends
+- [06_rag_evaluation.md](06_rag_evaluation.md) - RAGAS metrics; identify the bottleneck before adding components
+- [07_rag_production.md](07_rag_production.md) - caching, streaming, scaling all interact with the advanced components
+- Module 03 [03_paradigms_react_planexecute_reflexion.md](../../03_agentic_ai/notes/03_paradigms_react_planexecute_reflexion.md) - Plan-Execute is the agentic shape of query decomposition
+- Module 03 [04_frameworks.md](../../03_agentic_ai/notes/04_frameworks.md) - LangGraph as the natural fit for modular RAG (each module is a node)
+- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) - Reranking, hybrid search and RAG vs CAG also covered there with the agent-memory lens
 
 ### Related work in this repo
-- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — production-shaped hybrid retrieval with semantic + BM25 + recency, category and date filters
-- Module 03 exercise 06 (`06_ex_customer_support_rag_cag_episodic.ipynb`) — RAG + CAG fallback (modular pattern in miniature)
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) - production-shaped hybrid retrieval with semantic + BM25 + recency, category and date filters
+- Module 03 exercise 06 (`06_ex_customer_support_rag_cag_episodic.ipynb`) - RAG + CAG fallback (modular pattern in miniature)

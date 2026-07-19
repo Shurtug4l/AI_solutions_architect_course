@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Exceptions are objects that signal something went wrong. When one is **raised**, Python unwinds the call stack until it finds a matching `except` clause; if none does, the program terminates with a traceback. The block structure has four parts: `try` (the protected code), `except` (handler, possibly multiple), `else` (runs only if no exception was raised), `finally` (always runs, before any return or propagation). Catch the **narrowest** exception type that covers your case — `except Exception` (and especially `except BaseException`) hides bugs. Pythonic style is **EAFP** (Easier to Ask Forgiveness than Permission): try the operation and handle failure, instead of pre-checking conditions. **Custom exceptions** subclass `Exception` and let callers handle application errors generically; keep the hierarchy shallow. **Context managers** (`with` statement) generalise the resource-acquire / cleanup pattern far beyond file handles — write them as classes with `__enter__` / `__exit__` or as `@contextlib.contextmanager` generators. Two operational rules: never silently swallow an exception (always log or re-raise), and prefer `logger.exception(...)` over `logger.error(...)` inside `except` blocks because it captures the full traceback.
+Exceptions are objects that signal something went wrong. When one is **raised**, Python unwinds the call stack until it finds a matching `except` clause; if none does, the program terminates with a traceback. The block structure has four parts: `try` (the protected code), `except` (handler, possibly multiple), `else` (runs only if no exception was raised), `finally` (always runs, before any return or propagation). Catch the **narrowest** exception type that covers your case - `except Exception` (and especially `except BaseException`) hides bugs. Pythonic style is **EAFP** (Easier to Ask Forgiveness than Permission): try the operation and handle failure, instead of pre-checking conditions. **Custom exceptions** subclass `Exception` and let callers handle application errors generically; keep the hierarchy shallow. **Context managers** (`with` statement) generalise the resource-acquire / cleanup pattern far beyond file handles - write them as classes with `__enter__` / `__exit__` or as `@contextlib.contextmanager` generators. Two operational rules: never silently swallow an exception (always log or re-raise), and prefer `logger.exception(...)` over `logger.error(...)` inside `except` blocks because it captures the full traceback.
 
 ## Cheatsheet
 
@@ -64,9 +64,9 @@ finally:
 
 ### When to use each clause
 
-- **`except`** — handle or log the error. Catch the most specific type that makes sense.
-- **`else`** — code that should run only if the `try` succeeded. Putting it here (rather than at the end of the `try` block) keeps the success path out of the protected region, so its exceptions are not accidentally caught by the `except`.
-- **`finally`** — resource cleanup that must happen regardless of outcome (close files, release locks, disconnect from databases). Runs before any `return`, exception propagation, or even `sys.exit`.
+- **`except`** - handle or log the error. Catch the most specific type that makes sense.
+- **`else`** - code that should run only if the `try` succeeded. Putting it here (rather than at the end of the `try` block) keeps the success path out of the protected region, so its exceptions are not accidentally caught by the `except`.
+- **`finally`** - resource cleanup that must happen regardless of outcome (close files, release locks, disconnect from databases). Runs before any `return`, exception propagation, or even `sys.exit`.
 
 ---
 
@@ -104,7 +104,7 @@ except LookupError:                 # catches both IndexError and KeyError
     ...
 ```
 
-This is useful for high-level groups (`except OSError` covers all file/network errors) but be deliberate — broader handlers risk hiding more.
+This is useful for high-level groups (`except OSError` covers all file/network errors) but be deliberate - broader handlers risk hiding more.
 
 ---
 
@@ -131,7 +131,7 @@ except ConnectionError as e:
 raise NewError("...") from None
 ```
 
-`raise ... from e` adds an explicit "during handling of X, Y occurred" link to the traceback, which makes debugging much easier than a bare `raise NewError(...)` that loses the cause. `from None` strips the chain — appropriate when the underlying error would only confuse callers.
+`raise ... from e` adds an explicit "during handling of X, Y occurred" link to the traceback, which makes debugging much easier than a bare `raise NewError(...)` that loses the cause. `from None` strips the chain - appropriate when the underlying error would only confuse callers.
 
 ---
 
@@ -168,7 +168,7 @@ Keep the hierarchy shallow. A deep tree of exception types adds complexity and r
 
 ## Context managers
 
-A context manager is an object that defines `__enter__` and `__exit__`. The `with` statement guarantees that `__exit__` runs no matter how the block ends — normal completion, exception, even `sys.exit` (it does not run on `os._exit`, which bypasses cleanup entirely).
+A context manager is an object that defines `__enter__` and `__exit__`. The `with` statement guarantees that `__exit__` runs no matter how the block ends - normal completion, exception, even `sys.exit` (it does not run on `os._exit`, which bypasses cleanup entirely).
 
 ```python
 with open("file.txt", "r") as f:
@@ -212,7 +212,7 @@ with timer():
     do_something()
 ```
 
-`@contextmanager` converts a single-`yield` generator function into a context manager. Code before `yield` is the entry; code after (typically inside `finally`) is the exit. The `try/finally` is essential — without it, exceptions in the `with` block would skip cleanup.
+`@contextmanager` converts a single-`yield` generator function into a context manager. Code before `yield` is the entry; code after (typically inside `finally`) is the exit. The `try/finally` is essential - without it, exceptions in the `with` block would skip cleanup.
 
 ### `contextlib` utilities
 
@@ -239,10 +239,10 @@ with ExitStack() as stack:
 
 ## Exception best practices
 
-**Be specific** — catch the narrowest exception that covers your case:
+**Be specific** - catch the narrowest exception that covers your case:
 
 ```python
-# Too broad — hides bugs
+# Too broad - hides bugs
 try:
     result = compute(data)
 except Exception:
@@ -256,7 +256,7 @@ except (KeyError, ValueError) as e:
     result = default
 ```
 
-**EAFP over LBYL**: Pythonic style is "Easier to Ask Forgiveness than Permission" — try the operation and handle failure, rather than pre-checking conditions:
+**EAFP over LBYL**: Pythonic style is "Easier to Ask Forgiveness than Permission" - try the operation and handle failure, rather than pre-checking conditions:
 
 ```python
 # LBYL (Look Before You Leap)
@@ -272,7 +272,7 @@ except KeyError:
 
 EAFP is preferred when the "happy path" is the common case (saves a lookup) and when there's a race condition between the check and the action (LBYL is unsafe in concurrent code). LBYL still wins when the check is dramatically cheaper than the operation (e.g., `os.path.exists` before a network call).
 
-**Always log or re-raise** — never silently swallow an exception:
+**Always log or re-raise** - never silently swallow an exception:
 
 ```python
 import logging
@@ -328,7 +328,7 @@ except RiskyError:
 
 ## See also
 
-- [04_functions.md](04_functions.md) — `try` / `finally` inside functions, decorators that handle errors
-- [06_oop.md](06_oop.md) — `__enter__` / `__exit__` as part of the data model
-- [09_file_io.md](09_file_io.md) — `with open(...)` and file-related exceptions
-- [10_environments_and_tooling.md](10_environments_and_tooling.md) — logging configuration
+- [04_functions.md](04_functions.md) - `try` / `finally` inside functions, decorators that handle errors
+- [06_oop.md](06_oop.md) - `__enter__` / `__exit__` as part of the data model
+- [09_file_io.md](09_file_io.md) - `with open(...)` and file-related exceptions
+- [10_environments_and_tooling.md](10_environments_and_tooling.md) - logging configuration

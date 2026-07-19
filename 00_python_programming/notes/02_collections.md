@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Python ships four core container types that cover almost every data-structure need. **List** is the ordered, mutable workhorse — append at end is amortised O(1), insert/remove in the middle is O(n). **Tuple** is its immutable, hashable cousin: use it for fixed-shape records and as dict keys. **Dict** is the ordered (insertion-order since 3.7) key-value mapping with O(1) average lookup; keys must be hashable. **Set** is an unordered collection of unique, hashable elements with O(1) average membership tests — use it the moment you find yourself doing many `x in lst` checks. **Comprehensions** build any of these from an iterable in one expression; their lazy cousin, the **generator expression**, produces values on demand and uses O(1) memory. The `collections` module adds drop-in upgrades — `defaultdict` for missing-key handling, `Counter` for frequency tables, `deque` for fast operations on both ends.
+Python ships four core container types that cover almost every data-structure need. **List** is the ordered, mutable workhorse - append at end is amortised O(1), insert/remove in the middle is O(n). **Tuple** is its immutable, hashable cousin: use it for fixed-shape records and as dict keys. **Dict** is the ordered (insertion-order since 3.7) key-value mapping with O(1) average lookup; keys must be hashable. **Set** is an unordered collection of unique, hashable elements with O(1) average membership tests - use it the moment you find yourself doing many `x in lst` checks. **Comprehensions** build any of these from an iterable in one expression; their lazy cousin, the **generator expression**, produces values on demand and uses O(1) memory. The `collections` module adds drop-in upgrades - `defaultdict` for missing-key handling, `Counter` for frequency tables, `deque` for fast operations on both ends.
 
 ## Cheatsheet
 
@@ -20,16 +20,16 @@ Python ships four core container types that cover almost every data-structure ne
 | Operation | List | Dict / Set |
 |---|---|---|
 | Membership `x in c` | O(n) | O(1) average |
-| Append / insert end | O(1) amortised | — |
-| Insert / remove middle | O(n) | — |
-| Lookup / insert by key | — | O(1) average |
-| Slice | O(k) | — |
+| Append / insert end | O(1) amortised | - |
+| Insert / remove middle | O(n) | - |
+| Lookup / insert by key | - | O(1) average |
+| Slice | O(k) | - |
 
 ---
 
 ## List
 
-Ordered, mutable sequence. The general-purpose workhorse — when in doubt, use a list.
+Ordered, mutable sequence. The general-purpose workhorse - when in doubt, use a list.
 
 ```python
 lst = [1, 2, 3, "four", True]   # heterogeneous works, but homogeneous is better practice
@@ -37,17 +37,17 @@ lst = [1, 2, 3, "four", True]   # heterogeneous works, but homogeneous is better
 # Access
 lst[0]          # 1
 lst[-1]         # True
-lst[1:3]        # [2, 3]      — slicing returns a new list
-lst[::2]        # [1, 3, True] — every other element
+lst[1:3]        # [2, 3]      - slicing returns a new list
+lst[::2]        # [1, 3, True] - every other element
 lst[::-1]       # reversed copy
 
 # Mutation
-lst.append(5)               # add to end — O(1) amortised
-lst.extend([6, 7])          # concatenate another iterable — O(k)
-lst.insert(0, 0)            # insert at index — O(n)
-lst.pop()                   # remove and return last — O(1)
-lst.pop(0)                  # remove and return at index — O(n)
-lst.remove(3)               # remove first occurrence of value — O(n)
+lst.append(5)               # add to end - O(1) amortised
+lst.extend([6, 7])          # concatenate another iterable - O(k)
+lst.insert(0, 0)            # insert at index - O(n)
+lst.pop()                   # remove and return last - O(1)
+lst.pop(0)                  # remove and return at index - O(n)
+lst.remove(3)               # remove first occurrence of value - O(n)
 lst.index(2)                # find index of first occurrence
 lst.count(1)                # count occurrences of a value
 lst.reverse()               # in-place reverse
@@ -56,9 +56,9 @@ lst.sort(key=lambda x: x[1], reverse=True)  # custom sort key
 sorted(lst)                 # new sorted list, leaves original untouched
 
 # Copy
-copy_lst = lst.copy()       # shallow — equivalent to lst[:]
+copy_lst = lst.copy()       # shallow - equivalent to lst[:]
 import copy
-deep_copy = copy.deepcopy(lst)   # deep — for nested mutable objects
+deep_copy = copy.deepcopy(lst)   # deep - for nested mutable objects
 ```
 
 Shallow copy duplicates the list container but not the inner objects: nested mutables are still shared. Use `copy.deepcopy` when nested mutables exist and you need full independence.
@@ -67,7 +67,7 @@ Shallow copy duplicates the list container but not the inner objects: nested mut
 
 ## Tuple
 
-Ordered, immutable sequence. Use it for heterogeneous data with a fixed shape — coordinates, database records, function return values — where mutation would be a bug, not a feature.
+Ordered, immutable sequence. Use it for heterogeneous data with a fixed shape - coordinates, database records, function return values - where mutation would be a bug, not a feature.
 
 ```python
 t = (1, 2, 3)
@@ -83,12 +83,12 @@ len(t)          # 3
 x, y, z = t
 x, *rest = t            # x = 1, rest = [2, 3]
 
-# Named tuple — tuple with field access
+# Named tuple - tuple with field access
 from collections import namedtuple
 Point = namedtuple('Point', ['x', 'y'])
 p = Point(1, 2)
 p.x             # 1
-p[0]            # 1 — still indexable
+p[0]            # 1 - still indexable
 
 # Tuples are hashable if all elements are, so they can be dict keys
 d = {(0, 0): 'origin', (1, 1): 'diagonal'}
@@ -122,7 +122,7 @@ d.setdefault('f', 0)            # if 'f' absent, insert with default; return val
 # Iteration
 d.keys()                        # dict_keys view
 d.values()                      # dict_values view
-d.items()                       # dict_items view — pairs (key, value)
+d.items()                       # dict_items view - pairs (key, value)
 
 for key, value in d.items():
     print(key, value)
@@ -145,7 +145,7 @@ Unordered collection of **unique, hashable** elements. No indexing or slicing.
 
 ```python
 s = {1, 2, 3}
-s = set([1, 2, 2, 3])           # {1, 2, 3} — duplicates removed
+s = set([1, 2, 2, 3])           # {1, 2, 3} - duplicates removed
 empty = set()                    # not {}, which is an empty dict
 
 s.add(4)
@@ -157,16 +157,16 @@ s.pop()                         # remove and return an arbitrary element
 a = {1, 2, 3}
 b = {2, 3, 4}
 
-a | b           # {1, 2, 3, 4}  — union
-a & b           # {2, 3}        — intersection
-a - b           # {1}           — difference
-a ^ b           # {1, 4}        — symmetric difference
+a | b           # {1, 2, 3, 4}  - union
+a & b           # {2, 3}        - intersection
+a - b           # {1}           - difference
+a ^ b           # {1, 4}        - symmetric difference
 
 a.issubset(b)   # a <= b
 a.issuperset(b) # a >= b
 a.isdisjoint(b) # no common elements
 
-# Fast membership test — O(1) average vs O(n) for list
+# Fast membership test - O(1) average vs O(n) for list
 42 in s
 ```
 
@@ -176,7 +176,7 @@ a.isdisjoint(b) # no common elements
 
 ## Comprehensions
 
-Concise syntax for building collections from an iterable in a single expression. Comprehensions are preferred over manual loops when the logic is simple — they read top-to-bottom and avoid the boilerplate of pre-allocating, looping, and appending.
+Concise syntax for building collections from an iterable in a single expression. Comprehensions are preferred over manual loops when the logic is simple - they read top-to-bottom and avoid the boilerplate of pre-allocating, looping, and appending.
 
 ### List comprehension
 
@@ -232,7 +232,7 @@ Applies to sequences (`list`, `tuple`, `str`, `bytes`). Syntax: `seq[start:stop:
 | `s[:]` | shallow copy |
 | `s[-3:]` | last 3 elements |
 
-Slicing **never raises** `IndexError` — out-of-range indices are silently clamped.
+Slicing **never raises** `IndexError` - out-of-range indices are silently clamped.
 
 ```python
 lst = [0, 1, 2, 3, 4]
@@ -276,7 +276,7 @@ dd['b'].append(2)               # creates a new list automatically
 c = Counter("aabbbc")           # Counter({'b': 3, 'a': 2, 'c': 1})
 c.most_common(2)                # [('b', 3), ('a', 2)]
 c['b']                          # 3
-c['z']                          # 0 — no KeyError, missing keys read as zero
+c['z']                          # 0 - no KeyError, missing keys read as zero
 
 # deque: O(1) operations on both ends, ideal for queues and bounded buffers
 dq = deque([1, 2, 3], maxlen=5)
@@ -302,7 +302,7 @@ od.move_to_end('a')
 | Shallow copy of nested lists | Modifying inner lists changes both copies | `copy.deepcopy(lst)` |
 | Using a list as dict key | `TypeError: unhashable type: 'list'` | Convert to tuple: `tuple(lst)` |
 | `lst.sort()` returns `None` | Forgetting it sorts in place | Use `sorted(lst)` if you need a return value |
-| Single-element tuple | `(42)` is just `42` | `(42,)` — trailing comma mandatory |
+| Single-element tuple | `(42)` is just `42` | `(42,)` - trailing comma mandatory |
 | `set` ordering | Iteration order is implementation-dependent | Don't rely on it; sort if order matters |
 | `dict.fromkeys(keys, [])` | All keys share the same list | Use comprehension: `{k: [] for k in keys}` |
 | `lst1 = lst2` then mutating `lst1` | Both names reference the same list | Use `lst1 = lst2.copy()` or `list(lst2)` |
@@ -330,7 +330,7 @@ od.move_to_end('a')
 
 ## See also
 
-- [01_types_and_variables.md](01_types_and_variables.md) — mutability, identity vs equality
-- [03_control_flow.md](03_control_flow.md) — `for` loops, iteration protocol, comprehensions in context
-- [05_functional_programming.md](05_functional_programming.md) — generators, `map`/`filter`, `itertools`
-- [11_standard_library.md](11_standard_library.md) — more from `collections` and `itertools`
+- [01_types_and_variables.md](01_types_and_variables.md) - mutability, identity vs equality
+- [03_control_flow.md](03_control_flow.md) - `for` loops, iteration protocol, comprehensions in context
+- [05_functional_programming.md](05_functional_programming.md) - generators, `map`/`filter`, `itertools`
+- [11_standard_library.md](11_standard_library.md) - more from `collections` and `itertools`

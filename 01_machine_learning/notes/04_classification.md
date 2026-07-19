@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Classification maps an input to a **discrete class label**. The classical baseline is **logistic regression** — despite the name, it's a classification algorithm: it produces a probability via the **sigmoid** (binary) or **softmax** (multiclass) function and is trained with **cross-entropy** loss. Cross-entropy is convex (no local minima for unregularised models) and penalises confidently-wrong predictions heavily, which is why MSE is not used here. Five metrics drive evaluation: **accuracy** (misleading on imbalanced data), **precision** (minimise false positives), **recall** (minimise false negatives), **F1** (harmonic mean of the two), and **ROC-AUC** (threshold-independent ranking quality). The choice between precision and recall is application-specific: minimise FP when false alarms are costly (spam filtering), minimise FN when missed positives are dangerous (cancer screening). For multiclass with a binary base classifier, **One-vs-Rest** trains $k$ classifiers and is fast; **One-vs-One** trains $\binom{k}{2}$ classifiers and can be more accurate when individual binary classifiers struggle with imbalance. The default decision threshold of 0.5 is arbitrary — tune it on the precision-recall curve to match the operational cost of FP vs FN.
+Classification maps an input to a **discrete class label**. The classical baseline is **logistic regression** - despite the name, it's a classification algorithm: it produces a probability via the **sigmoid** (binary) or **softmax** (multiclass) function and is trained with **cross-entropy** loss. Cross-entropy is convex (no local minima for unregularised models) and penalises confidently-wrong predictions heavily, which is why MSE is not used here. Five metrics drive evaluation: **accuracy** (misleading on imbalanced data), **precision** (minimise false positives), **recall** (minimise false negatives), **F1** (harmonic mean of the two), and **ROC-AUC** (threshold-independent ranking quality). The choice between precision and recall is application-specific: minimise FP when false alarms are costly (spam filtering), minimise FN when missed positives are dangerous (cancer screening). For multiclass with a binary base classifier, **One-vs-Rest** trains $k$ classifiers and is fast; **One-vs-One** trains $\binom{k}{2}$ classifiers and can be more accurate when individual binary classifiers struggle with imbalance. The default decision threshold of 0.5 is arbitrary - tune it on the precision-recall curve to match the operational cost of FP vs FN.
 
 ## Cheatsheet
 
@@ -31,9 +31,9 @@ Classification maps an input to a **discrete class label**. The classical baseli
 
 Classification maps an input $\mathbf{x}$ to a discrete class label $y \in \{c_1, c_2, \ldots, c_k\}$.
 
-- **Binary** — two classes (positive / negative).
-- **Multiclass** — more than two mutually exclusive classes.
-- **Multilabel** — each sample can belong to multiple classes simultaneously (e.g., a news article tagged "tech", "politics", "AI").
+- **Binary** - two classes (positive / negative).
+- **Multiclass** - more than two mutually exclusive classes.
+- **Multilabel** - each sample can belong to multiple classes simultaneously (e.g., a news article tagged "tech", "politics", "AI").
 
 Multiclass is the default extension of binary classification; multilabel requires different metrics and architectures (one binary classifier per label is the simplest baseline).
 
@@ -45,7 +45,7 @@ Despite the name, logistic regression is a **classification** algorithm. It mode
 
 $$P(y = 1 \mid \mathbf{x}) = \sigma(\mathbf{w}^T \mathbf{x} + b) = \frac{1}{1 + e^{-(\mathbf{w}^T \mathbf{x} + b)}}$$
 
-The sigmoid maps any real number to $(0, 1)$, making it interpretable as a probability. The **decision boundary** — the hyperplane where $P(y=1) = 0.5$, equivalently where $\mathbf{w}^T \mathbf{x} + b = 0$ — is **linear** in the feature space. Logistic regression cannot learn non-linear boundaries on its own; it needs polynomial / interaction features or a non-linear model class for that.
+The sigmoid maps any real number to $(0, 1)$, making it interpretable as a probability. The **decision boundary** - the hyperplane where $P(y=1) = 0.5$, equivalently where $\mathbf{w}^T \mathbf{x} + b = 0$ - is **linear** in the feature space. Logistic regression cannot learn non-linear boundaries on its own; it needs polynomial / interaction features or a non-linear model class for that.
 
 ### Loss: binary cross-entropy (log loss)
 
@@ -102,7 +102,7 @@ cm = confusion_matrix(y_test, y_pred)
 ConfusionMatrixDisplay(cm).plot()
 ```
 
-The confusion matrix is the foundation for every other classification metric — internalise the four cells and the rest follows.
+The confusion matrix is the foundation for every other classification metric - internalise the four cells and the rest follows.
 
 ---
 
@@ -118,13 +118,13 @@ Misleading on imbalanced datasets: a model predicting "negative" always achieves
 
 $$\text{Precision} = \frac{TP}{TP + FP}$$
 
-"Of all predicted positives, how many are actually positive?" Maximise precision when **false alarms are costly** — spam filtering (you don't want to lose real email), fraud flagging in low-tolerance systems, recommendation surfaces where bad recs erode trust.
+"Of all predicted positives, how many are actually positive?" Maximise precision when **false alarms are costly** - spam filtering (you don't want to lose real email), fraud flagging in low-tolerance systems, recommendation surfaces where bad recs erode trust.
 
 ### Recall (sensitivity, true positive rate)
 
 $$\text{Recall} = \frac{TP}{TP + FN}$$
 
-"Of all actual positives, how many did we catch?" Maximise recall when **missing a positive is dangerous** — cancer screening, fraud detection, threat detection. The cost of a missed positive far exceeds the cost of a false alarm.
+"Of all actual positives, how many did we catch?" Maximise recall when **missing a positive is dangerous** - cancer screening, fraud detection, threat detection. The cost of a missed positive far exceeds the cost of a false alarm.
 
 ### F1-score
 
@@ -159,7 +159,7 @@ $$\text{FPR} = \frac{FP}{FP + TN} = 1 - \text{Specificity}$$
 - Diagonal = random classifier.
 - **AUC** (Area Under the Curve) is the probability that the model ranks a random positive sample higher than a random negative sample. AUC = 0.5 is random; AUC = 1.0 is perfect.
 
-AUC is **threshold-independent**, which makes it useful for comparing models without committing to a specific operational threshold. It does not depend on class imbalance directly, but can be **misleading at extreme imbalance** — a high AUC on a 0.1%-positive dataset can still leave you with poor precision-recall tradeoffs at any actual operating point. Use the **Precision-Recall curve** in those cases.
+AUC is **threshold-independent**, which makes it useful for comparing models without committing to a specific operational threshold. It does not depend on class imbalance directly, but can be **misleading at extreme imbalance** - a high AUC on a 0.1%-positive dataset can still leave you with poor precision-recall tradeoffs at any actual operating point. Use the **Precision-Recall curve** in those cases.
 
 ```python
 from sklearn.metrics import roc_auc_score, roc_curve
@@ -176,7 +176,7 @@ plt.ylabel('TPR')
 
 ### Precision-recall curve
 
-Plots Precision vs Recall at varying thresholds. **More informative than ROC when the positive class is rare** (TN dominates the FPR denominator and inflates the AUC even for poor models). High precision and high recall simultaneously is hard to achieve — the curve reveals exactly where the trade-off lies.
+Plots Precision vs Recall at varying thresholds. **More informative than ROC when the positive class is rare** (TN dominates the FPR denominator and inflates the AUC even for poor models). High precision and high recall simultaneously is hard to achieve - the curve reveals exactly where the trade-off lies.
 
 `average_precision_score` summarises the PR curve as a single number (PR-AUC), the right "AUC" to report on imbalanced problems.
 
@@ -208,7 +208,7 @@ from sklearn.metrics import classification_report
 print(classification_report(y_test, y_pred, target_names=class_names))
 ```
 
-The classification report shows precision, recall, F1, and support per class plus the three averages — it's the right starting point for any multiclass evaluation.
+The classification report shows precision, recall, F1, and support per class plus the three averages - it's the right starting point for any multiclass evaluation.
 
 ---
 
@@ -271,8 +271,8 @@ For multinomial / softmax behaviour explicitly: `multi_class='multinomial'` (the
 
 ## See also
 
-- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) — class imbalance strategies, scaling
-- [02_regression.md](02_regression.md) — linear regression, MSE, contrast with classification loss
-- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) — `C = 1/λ`, regularisation in logistic regression
-- [05_knn.md](05_knn.md) — non-linear classifier, mandates feature scaling
-- [09_model_selection.md](09_model_selection.md) — cross-validation, hyperparameter tuning for classifiers
+- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) - class imbalance strategies, scaling
+- [02_regression.md](02_regression.md) - linear regression, MSE, contrast with classification loss
+- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) - `C = 1/λ`, regularisation in logistic regression
+- [05_knn.md](05_knn.md) - non-linear classifier, mandates feature scaling
+- [09_model_selection.md](09_model_selection.md) - cross-validation, hyperparameter tuning for classifiers

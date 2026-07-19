@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Python variables are not memory containers; they are **names that reference objects**. Assignment binds a name to an object, never copies it, so `y = x` makes both names point to the same thing. Every value is an object with three immutable properties: identity (`id`), type (`type`), and a value. Numeric types include arbitrary-precision `int`, 64-bit `float`, and `complex`. Strings are immutable Unicode sequences. The single most important distinction is between **mutable** types (`list`, `dict`, `set`) and **immutable** ones (`int`, `str`, `tuple`): mutability determines whether a function can change an object passed to it, and only immutable types can be used as dict keys or set elements. Use `is` only for `None`, `True`, `False` (singletons); use `==` for value comparisons. Type hints (PEP 484) describe expected types but are erased at runtime — they exist for static analysers and IDEs.
+Python variables are not memory containers; they are **names that reference objects**. Assignment binds a name to an object, never copies it, so `y = x` makes both names point to the same thing. Every value is an object with three immutable properties: identity (`id`), type (`type`), and a value. Numeric types include arbitrary-precision `int`, 64-bit `float`, and `complex`. Strings are immutable Unicode sequences. The single most important distinction is between **mutable** types (`list`, `dict`, `set`) and **immutable** ones (`int`, `str`, `tuple`): mutability determines whether a function can change an object passed to it, and only immutable types can be used as dict keys or set elements. Use `is` only for `None`, `True`, `False` (singletons); use `==` for value comparisons. Type hints (PEP 484) describe expected types but are erased at runtime - they exist for static analysers and IDEs.
 
 ## Cheatsheet
 
@@ -51,8 +51,8 @@ Variable names are case-sensitive. The community convention is `snake_case` for 
 ### Numeric types
 
 ```python
-x = 42          # int — arbitrary precision, no overflow
-y = 3.14        # float — 64-bit IEEE 754 double
+x = 42          # int - arbitrary precision, no overflow
+y = 3.14        # float - 64-bit IEEE 754 double
 z = 2 + 3j      # complex
 
 10 // 3         # 3   (floor division)
@@ -60,8 +60,8 @@ z = 2 + 3j      # complex
 2 ** 10         # 1024 (exponentiation)
 abs(-7)         # 7
 
-0.1 + 0.2       # 0.30000000000000004 — IEEE 754 representation artifact
-round(2.675, 2) # 2.67 — same artifact
+0.1 + 0.2       # 0.30000000000000004 - IEEE 754 representation artifact
+round(2.675, 2) # 2.67 - same artifact
 ```
 
 `int` has unlimited precision in Python 3, so integer overflow does not exist. `float` is always a 64-bit double; there is no separate `double` type. For exact decimal arithmetic (money, scientific tolerances) use `decimal.Decimal`. For rationals use `fractions.Fraction`.
@@ -71,7 +71,7 @@ round(2.675, 2) # 2.67 — same artifact
 `bool` is a subclass of `int`, so `True == 1` and `False == 0`. Anything passed to `bool()` is reduced to true/false using a fixed set of falsy values:
 
 ```python
-True + True     # 2 — bool inherits from int
+True + True     # 2 - bool inherits from int
 bool(0)         # False
 bool("")        # False
 bool([])        # False
@@ -108,13 +108,13 @@ s.split(',')        # list of parts split on the separator
 ','.join(['a','b']) # 'a,b'
 s.replace('l','r')  # 'herro'
 s.startswith('he')  # True
-s.find('ll')        # 2 — index, or -1 if not found
+s.find('ll')        # 2 - index, or -1 if not found
 'll' in s           # True
 
 s[0]        # 'h'
 s[-1]       # 'o'
 s[1:4]      # 'ell'
-s[::-1]     # 'olleh' — reversed copy
+s[::-1]     # 'olleh' - reversed copy
 ```
 
 f-strings are the preferred way to interpolate values into strings. They support format specifiers and a debug form that prints the expression along with its value:
@@ -122,8 +122,8 @@ f-strings are the preferred way to interpolate values into strings. They support
 ```python
 name, age = "Alice", 30
 f"{name} is {age} years old"
-f"{3.14159:.2f}"        # '3.14' — format spec after the colon
-f"{2**10 = }"           # '2**10 = 1024' — debug form (3.8+)
+f"{3.14159:.2f}"        # '3.14' - format spec after the colon
+f"{2**10 = }"           # '2**10 = 1024' - debug form (3.8+)
 ```
 
 ---
@@ -132,14 +132,14 @@ f"{2**10 = }"           # '2**10 = 1024' — debug form (3.8+)
 
 ```python
 int("42")               # 42
-int(3.9)                # 3 — truncates toward zero, does not round
+int(3.9)                # 3 - truncates toward zero, does not round
 float("3.14")           # 3.14
 str(42)                 # '42'
 bool(0)                 # False
 list("abc")             # ['a', 'b', 'c']
 
 type(x)                 # <class 'int'>
-isinstance(x, int)      # True — preferred over `type(x) == int`, handles inheritance
+isinstance(x, int)      # True - preferred over `type(x) == int`, handles inheritance
 isinstance(x, (int, float))  # True if x is either
 ```
 
@@ -149,7 +149,7 @@ isinstance(x, (int, float))  # True if x is either
 
 ## Mutability
 
-Mutability is the single most important property to track when reading Python code. Mutable objects can change in place; immutable ones cannot. The distinction matters when passing objects to functions (a mutating function call alters the caller's state) and when using objects as dict keys or set elements (only hashable — practically, immutable — objects qualify).
+Mutability is the single most important property to track when reading Python code. Mutable objects can change in place; immutable ones cannot. The distinction matters when passing objects to functions (a mutating function call alters the caller's state) and when using objects as dict keys or set elements (only hashable - practically, immutable - objects qualify).
 
 | Immutable | Mutable |
 |---|---|
@@ -169,7 +169,7 @@ def append(x, lst=[]):
     return lst
 
 append(1)       # [1]
-append(2)       # [1, 2]    — not the fresh list you expected!
+append(2)       # [1, 2]    - not the fresh list you expected!
 
 # Correct: use a None sentinel and create the container inside the body
 def append(x, lst=None):
@@ -190,16 +190,16 @@ a = [1, 2, 3]
 b = [1, 2, 3]
 c = a
 
-a == b      # True  — same value
-a is b      # False — different objects in memory
-a is c      # True  — same object
+a == b      # True  - same value
+a is b      # False - different objects in memory
+a is c      # True  - same object
 
 id(a)       # memory address (CPython implementation detail)
 ```
 
 `is` tests **object identity**: do both names point to the same object in memory? `==` tests **value equality**: it calls `__eq__`. Use `is` only for the singletons `None`, `True`, `False`. Use `==` everywhere else.
 
-A subtle case: small integers and short strings are sometimes interned by CPython, so `a is b` may unexpectedly return `True` when both are equal. Never rely on this behavior — it is an implementation detail.
+A subtle case: small integers and short strings are sometimes interned by CPython, so `a is b` may unexpectedly return `True` when both are equal. Never rely on this behavior - it is an implementation detail.
 
 ---
 
@@ -235,9 +235,9 @@ Annotate function signatures at minimum: they document intent, enable refactorin
 
 Everything in Python is an **object**: integers, functions, classes, modules, even types themselves. Each object has three properties:
 
-- **Identity** — `id(obj)`, the memory address (in CPython); never changes during the object's lifetime.
-- **Type** — `type(obj)`, determines which operations are valid.
-- **Value** — the data the object holds.
+- **Identity** - `id(obj)`, the memory address (in CPython); never changes during the object's lifetime.
+- **Type** - `type(obj)`, determines which operations are valid.
+- **Value** - the data the object holds.
 
 Operators are sugar for **dunder methods** (double-underscore methods) on the underlying objects:
 
@@ -246,7 +246,7 @@ Operators are sugar for **dunder methods** (double-underscore methods) on the un
 - `a == b` → `a.__eq__(b)`
 - `str(x)` → `x.__str__()`
 
-Understanding this model is the entry point to operator overloading, the iteration protocol, and context managers — all covered in later notes.
+Understanding this model is the entry point to operator overloading, the iteration protocol, and context managers - all covered in later notes.
 
 ---
 
@@ -287,7 +287,7 @@ Understanding this model is the entry point to operator overloading, the iterati
 
 ## See also
 
-- [02_collections.md](02_collections.md) — list, tuple, dict, set, comprehensions, slicing
-- [03_control_flow.md](03_control_flow.md) — truthiness in conditions, falsy values
-- [04_functions.md](04_functions.md) — function signatures, type hints in depth
-- [06_oop.md](06_oop.md) — `__eq__`, `__hash__`, the data model in user classes
+- [02_collections.md](02_collections.md) - list, tuple, dict, set, comprehensions, slicing
+- [03_control_flow.md](03_control_flow.md) - truthiness in conditions, falsy values
+- [04_functions.md](04_functions.md) - function signatures, type hints in depth
+- [06_oop.md](06_oop.md) - `__eq__`, `__hash__`, the data model in user classes

@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-In Python, classes are factories for objects with shared behaviour, not the rigid contracts they are in Java or C++. Every method takes the instance as its first argument (named `self` by convention) and **`__init__` is not the constructor** — the object already exists when `__init__` is called; the real constructor is `__new__`. Three method flavours: instance methods take `self`, class methods take `cls` (used for alternate constructors), static methods take neither. **Properties** turn methods into computed attributes, useful for read-only views, lazy computation, and validation. Inheritance gives you polymorphism via shared interfaces; **multiple inheritance** is supported and method resolution follows the **C3 linearisation** (the MRO). The data model is exposed through **dunder methods** — define `__add__` to make `+` work, `__eq__` for `==`, `__iter__` for `for x in obj`. **Dataclasses** auto-generate boilerplate (`__init__`, `__repr__`, `__eq__`) from type-annotated fields and should be your default for plain data containers. Two operational reminders: if you define `__eq__` you must define `__hash__` (or accept the object becoming unhashable), and `field(default_factory=list)` is the dataclass equivalent of the mutable-default-argument fix.
+In Python, classes are factories for objects with shared behaviour, not the rigid contracts they are in Java or C++. Every method takes the instance as its first argument (named `self` by convention) and **`__init__` is not the constructor** - the object already exists when `__init__` is called; the real constructor is `__new__`. Three method flavours: instance methods take `self`, class methods take `cls` (used for alternate constructors), static methods take neither. **Properties** turn methods into computed attributes, useful for read-only views, lazy computation, and validation. Inheritance gives you polymorphism via shared interfaces; **multiple inheritance** is supported and method resolution follows the **C3 linearisation** (the MRO). The data model is exposed through **dunder methods** - define `__add__` to make `+` work, `__eq__` for `==`, `__iter__` for `for x in obj`. **Dataclasses** auto-generate boilerplate (`__init__`, `__repr__`, `__eq__`) from type-annotated fields and should be your default for plain data containers. Two operational reminders: if you define `__eq__` you must define `__hash__` (or accept the object becoming unhashable), and `field(default_factory=list)` is the dataclass equivalent of the mutable-default-argument fix.
 
 ## Cheatsheet
 
@@ -33,7 +33,7 @@ In Python, classes are factories for objects with shared behaviour, not the rigi
 class Dog:
     species = "Canis lupus familiaris"      # class attribute (shared across instances)
 
-    def __init__(self, name, age):          # initialiser — called when instance is created
+    def __init__(self, name, age):          # initialiser - called when instance is created
         self.name = name                    # instance attributes (unique per instance)
         self.age = age
 
@@ -47,12 +47,12 @@ rex = Dog("Rex", 3)
 rex.bark()              # "Rex says woof!"
 rex.name                # "Rex"
 Dog.species             # "Canis lupus familiaris"
-rex.species             # also works — instance lookup falls through to the class
+rex.species             # also works - instance lookup falls through to the class
 ```
 
 `self` is a convention, not a keyword. Every instance method's first parameter receives the instance.
 
-`__init__` is not technically a constructor — by the time it runs, the object already exists, allocated by `__new__`. In day-to-day code you only ever override `__init__` to populate instance state; `__new__` matters for metaclasses and for immutable types where you need to control creation.
+`__init__` is not technically a constructor - by the time it runs, the object already exists, allocated by `__new__`. In day-to-day code you only ever override `__init__` to populate instance state; `__new__` matters for metaclasses and for immutable types where you need to control creation.
 
 ---
 
@@ -73,7 +73,7 @@ a.id                                # 1
 b.id                                # 2
 ```
 
-When you write `self.count = x`, you create a new **instance attribute** that shadows the class attribute on this instance only — the class attribute is unchanged. Mutating a class-level mutable (e.g., `self.shared.append(x)` where `shared` is a class attribute) is a classic bug because every instance shares the same list.
+When you write `self.count = x`, you create a new **instance attribute** that shadows the class attribute on this instance only - the class attribute is unchanged. Mutating a class-level mutable (e.g., `self.shared.append(x)` where `shared` is a class attribute) is a classic bug because every instance shares the same list.
 
 ---
 
@@ -85,7 +85,7 @@ The standard form: receive the instance as `self`, can read and write instance s
 
 ### Class methods
 
-Receive the class as `cls` (not the instance). The canonical use case is **alternate constructors** — factory methods that build an instance from a different input shape:
+Receive the class as `cls` (not the instance). The canonical use case is **alternate constructors** - factory methods that build an instance from a different input shape:
 
 ```python
 class Date:
@@ -142,12 +142,12 @@ class Circle:
         return math.pi * self._radius ** 2
 
 c = Circle(5)
-c.radius            # 5  — calls the getter
+c.radius            # 5  - calls the getter
 c.radius = 10       # calls the setter (validated)
-c.area              # 314.15... — computed on access
+c.area              # 314.15... - computed on access
 ```
 
-For values you compute once per instance and want to cache, use `functools.cached_property` instead — same syntax, value memoised on first access.
+For values you compute once per instance and want to cache, use `functools.cached_property` instead - same syntax, value memoised on first access.
 
 ---
 
@@ -199,7 +199,7 @@ class D(B, C): pass
 D.__mro__       # (D, B, C, A, object)
 ```
 
-`super()` follows the MRO — it calls the next class in the linearisation, which may not be the direct parent. This is what makes **cooperative multiple inheritance** possible: every `__init__` in the chain can call `super().__init__()` and the resulting traversal visits each parent once, in a consistent order.
+`super()` follows the MRO - it calls the next class in the linearisation, which may not be the direct parent. This is what makes **cooperative multiple inheritance** possible: every `__init__` in the chain can call `super().__init__()` and the resulting traversal visits each parent once, in a consistent order.
 
 ---
 
@@ -221,7 +221,7 @@ Define how instances respond to built-in operations. Choose the right ones and y
 | `__eq__(self, other)` | `obj == other` |
 | `__lt__(self, other)` | `obj < other` |
 | `__hash__(self)` | `hash(obj)`, use as dict key or set element |
-| `__call__(self, ...)` | `obj(...)` — instance becomes callable |
+| `__call__(self, ...)` | `obj(...)` - instance becomes callable |
 | `__enter__` / `__exit__` | `with obj:` |
 | `__add__`, `__mul__`, ... | `obj + other`, `obj * other` |
 
@@ -271,7 +271,7 @@ class Rectangle(Shape):
     def perimeter(self):
         return 2 * (self.w + self.h)
 
-Shape()                 # TypeError — cannot instantiate an abstract class
+Shape()                 # TypeError - cannot instantiate an abstract class
 Rectangle(3, 4).area()  # 12
 ```
 
@@ -281,7 +281,7 @@ Abstract classes can include concrete methods alongside abstract ones, allowing 
 
 ## Dataclasses
 
-`@dataclass` auto-generates `__init__`, `__repr__`, and `__eq__` from type-annotated fields. Use it as the default for plain data containers — every line of class body that just initialises a field is now redundant.
+`@dataclass` auto-generates `__init__`, `__repr__`, and `__eq__` from type-annotated fields. Use it as the default for plain data containers - every line of class body that just initialises a field is now redundant.
 
 ```python
 from dataclasses import dataclass, field
@@ -299,7 +299,7 @@ class Config:
 
 @dataclass
 class Inventory:
-    items: list = field(default_factory=list)   # mutable default — use field()
+    items: list = field(default_factory=list)   # mutable default - use field()
 
 p = Point(1.0, 2.0)
 p.x                     # 1.0
@@ -337,7 +337,7 @@ Name mangling is rarely needed in application code. Use `_prefix` for internals 
 | **Dependency Inversion** | Depend on abstractions (ABCs), not on concrete implementations |
 | **Composition over Inheritance** | Prefer building with small, single-purpose objects rather than deep class hierarchies |
 
-These are guidelines, not laws — favour the principle that improves the specific design at hand.
+These are guidelines, not laws - favour the principle that improves the specific design at hand.
 
 ---
 
@@ -378,7 +378,7 @@ These are guidelines, not laws — favour the principle that improves the specif
 
 ## See also
 
-- [01_types_and_variables.md](01_types_and_variables.md) — identity vs equality, mutability, the data model
-- [04_functions.md](04_functions.md) — `@property`, `@classmethod`, `@staticmethod`, decorators
-- [05_functional_programming.md](05_functional_programming.md) — `functools.cached_property`, `lru_cache` on methods
-- [07_exceptions.md](07_exceptions.md) — context managers, custom exception classes
+- [01_types_and_variables.md](01_types_and_variables.md) - identity vs equality, mutability, the data model
+- [04_functions.md](04_functions.md) - `@property`, `@classmethod`, `@staticmethod`, decorators
+- [05_functional_programming.md](05_functional_programming.md) - `functools.cached_property`, `lru_cache` on methods
+- [07_exceptions.md](07_exceptions.md) - context managers, custom exception classes

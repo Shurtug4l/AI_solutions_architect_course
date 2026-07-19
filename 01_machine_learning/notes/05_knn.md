@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-KNN is a **lazy, non-parametric, instance-based** algorithm: it doesn't really train, it just stores the training set. At inference time, it computes the distance from the query point to every training point, picks the $k$ nearest, and predicts by **majority vote** (classification) or **mean** (regression). Two operational rules: **always scale features** before KNN — the algorithm is entirely distance-based, so a feature with range [0, 10000] would dominate one with range [0, 1] — and **choose $k$ via cross-validation**, with odd values for binary classification to avoid ties. Small $k$ (1, 3) gives high-variance, locally-noisy predictions; large $k$ smooths the boundary toward high bias. The standard distance is **Euclidean (L2)**; **Manhattan (L1)** is more robust in high dimensions; **cosine** is preferred for text and direction-sensitive data. KNN suffers severely from the **curse of dimensionality** — beyond ~20-30 features, all points become approximately equidistant and the algorithm degrades. Inference cost is $O(m \cdot n)$ per query; for large training sets, KD-trees (low dimensions), Ball trees (higher), or approximate nearest-neighbour libraries (FAISS, Annoy) are necessary to keep query latency bounded.
+KNN is a **lazy, non-parametric, instance-based** algorithm: it doesn't really train, it just stores the training set. At inference time, it computes the distance from the query point to every training point, picks the $k$ nearest, and predicts by **majority vote** (classification) or **mean** (regression). Two operational rules: **always scale features** before KNN - the algorithm is entirely distance-based, so a feature with range [0, 10000] would dominate one with range [0, 1] - and **choose $k$ via cross-validation**, with odd values for binary classification to avoid ties. Small $k$ (1, 3) gives high-variance, locally-noisy predictions; large $k$ smooths the boundary toward high bias. The standard distance is **Euclidean (L2)**; **Manhattan (L1)** is more robust in high dimensions; **cosine** is preferred for text and direction-sensitive data. KNN suffers severely from the **curse of dimensionality** - beyond ~20-30 features, all points become approximately equidistant and the algorithm degrades. Inference cost is $O(m \cdot n)$ per query; for large training sets, KD-trees (low dimensions), Ball trees (higher), or approximate nearest-neighbour libraries (FAISS, Annoy) are necessary to keep query latency bounded.
 
 ## Cheatsheet
 
@@ -25,7 +25,7 @@ KNN is a **lazy, non-parametric, instance-based** algorithm: it doesn't really t
 
 ## Core idea
 
-KNN is a **lazy, non-parametric** algorithm. It stores the entire training set verbatim and makes predictions at inference time by looking at the $k$ most similar training samples. There is no explicit training phase — the model **is** the training data.
+KNN is a **lazy, non-parametric** algorithm. It stores the entire training set verbatim and makes predictions at inference time by looking at the $k$ most similar training samples. There is no explicit training phase - the model **is** the training data.
 
 This makes KNN simple to understand and impossible to "train slow", but expensive to predict (every query touches every training sample) and fragile in high dimensions.
 
@@ -84,7 +84,7 @@ Measures the angle between vectors, ignoring their magnitudes. Right choice for 
 $k$ is the primary hyperparameter of KNN.
 
 - **Small $k$** (e.g., $k = 1$): very local decisions, high variance, fits noise. The decision boundary is jagged.
-- **Large $k$**: smoother decision boundary, high bias. At $k = m$ (training-set size), the model always predicts the global majority class or the global mean — completely under-fit.
+- **Large $k$**: smoother decision boundary, high bias. At $k = m$ (training-set size), the model always predicts the global majority class or the global mean - completely under-fit.
 
 Select $k$ via cross-validation. In practice, **odd $k$** (5, 7, 11) avoids ties in binary classification.
 
@@ -94,7 +94,7 @@ Select $k$ via cross-validation. In practice, **odd $k$** (5, 7, 11) avoids ties
 
 ## Feature scaling is mandatory
 
-KNN is **entirely distance-based**. If one feature has a range of [0, 10000] and another [0, 1], the first dominates the distance computation completely and the second is effectively ignored — no matter how informative it would have been on its own scale.
+KNN is **entirely distance-based**. If one feature has a range of [0, 10000] and another [0, 1], the first dominates the distance computation completely and the second is effectively ignored - no matter how informative it would have been on its own scale.
 
 **Always apply `StandardScaler` (or `MinMaxScaler` if a bounded range is preferable) before KNN.** This is non-negotiable; KNN without scaling is unreliable. The cleanest enforcement is to wrap scaler + KNN in a `Pipeline` so the scaler is refit per fold during cross-validation.
 
@@ -114,14 +114,14 @@ In sklearn: `weights='distance'` (default is `'uniform'`). Distance weighting of
 
 | Phase | Naive KNN |
 |---|---|
-| Training | $O(1)$ — just store the data |
-| Prediction | $O(m \cdot n)$ per query — distance to all $m$ training points in $n$ dimensions |
+| Training | $O(1)$ - just store the data |
+| Prediction | $O(m \cdot n)$ per query - distance to all $m$ training points in $n$ dimensions |
 
 For large datasets, exact KNN becomes prohibitively slow. Three classes of fixes:
 
-- **KD-trees** — efficient for low-dimensional data ($n < 20$); average $O(\log m)$ per query.
-- **Ball trees** — better for higher dimensions or non-Euclidean metrics; worse-case $O(\log m)$.
-- **Approximate nearest neighbours (ANN)** — FAISS, Annoy, HNSW. Trade exact correctness for orders-of-magnitude speedup at very large scale (millions to billions of points). The right choice for production-scale KNN.
+- **KD-trees** - efficient for low-dimensional data ($n < 20$); average $O(\log m)$ per query.
+- **Ball trees** - better for higher dimensions or non-Euclidean metrics; worse-case $O(\log m)$.
+- **Approximate nearest neighbours (ANN)** - FAISS, Annoy, HNSW. Trade exact correctness for orders-of-magnitude speedup at very large scale (millions to billions of points). The right choice for production-scale KNN.
 
 sklearn picks an algorithm automatically (`algorithm='auto'`). For exact control, set `algorithm='kd_tree'`, `'ball_tree'`, or `'brute'` manually.
 
@@ -129,7 +129,7 @@ sklearn picks an algorithm automatically (`algorithm='auto'`). For exact control
 
 ## Curse of dimensionality
 
-As the number of features $n$ grows, all points become approximately equidistant from each other — the notion of "nearest neighbour" loses meaning. This happens because:
+As the number of features $n$ grows, all points become approximately equidistant from each other - the notion of "nearest neighbour" loses meaning. This happens because:
 
 - The volume of a high-dimensional space grows exponentially with $n$.
 - Holding a fixed fraction of the training data "nearby" requires exponentially more samples as $n$ grows.
@@ -208,8 +208,8 @@ KNN is the canonical example of a **lazy, non-parametric, instance-based** learn
 
 ## See also
 
-- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) — feature scaling, why distance-based methods need it
-- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) — choosing $k$ via CV, bias-variance tradeoff
-- [04_classification.md](04_classification.md) — alternative classifiers when KNN doesn't fit
-- [06_decision_trees_and_random_forests.md](06_decision_trees_and_random_forests.md) — non-parametric, scale-invariant alternative
-- [09_model_selection.md](09_model_selection.md) — pipelines, hyperparameter tuning
+- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) - feature scaling, why distance-based methods need it
+- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) - choosing $k$ via CV, bias-variance tradeoff
+- [04_classification.md](04_classification.md) - alternative classifiers when KNN doesn't fit
+- [06_decision_trees_and_random_forests.md](06_decision_trees_and_random_forests.md) - non-parametric, scale-invariant alternative
+- [09_model_selection.md](09_model_selection.md) - pipelines, hyperparameter tuning

@@ -267,11 +267,11 @@ When all four are true, the orchestra plays together and AI ambition translates 
 ## See also
 
 ### Other notes
-- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) — the early-phase work where PM and SA collaborate most intensely
-- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) — the translation chain that the SA owns, plus the lifecycle the MLOps team operates
-- [03_case_studies.md](03_case_studies.md) — Family 5 failures (silos, weak governance) are role-and-stakeholder failures
-- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) — the prioritisation tools the PM uses to choose what to build next
-- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) — where the DS → MLE handoff happens
-- [07_project_management_methodologies.md](07_project_management_methodologies.md) — how Scrum/Kanban map onto these roles
-- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) — the MLOps operational layer for agentic systems
-- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) — governance roles that complement PM/SA in regulated contexts
+- [01_identifying_ai_problems_and_feasibility.md](01_identifying_ai_problems_and_feasibility.md) - the early-phase work where PM and SA collaborate most intensely
+- [02_kpis_lifecycle_drift.md](02_kpis_lifecycle_drift.md) - the translation chain that the SA owns, plus the lifecycle the MLOps team operates
+- [03_case_studies.md](03_case_studies.md) - Family 5 failures (silos, weak governance) are role-and-stakeholder failures
+- [05_roadmap_and_prioritization.md](05_roadmap_and_prioritization.md) - the prioritisation tools the PM uses to choose what to build next
+- [06_product_lifecycle_poc_to_scale.md](06_product_lifecycle_poc_to_scale.md) - where the DS → MLE handoff happens
+- [07_project_management_methodologies.md](07_project_management_methodologies.md) - how Scrum/Kanban map onto these roles
+- Module 03 [07_deployment.md](../../03_agentic_ai/notes/07_deployment.md) - the MLOps operational layer for agentic systems
+- Module 02 [08_ethics_and_governance.md](../../02_large_language_models/notes/08_ethics_and_governance.md) - governance roles that complement PM/SA in regulated contexts

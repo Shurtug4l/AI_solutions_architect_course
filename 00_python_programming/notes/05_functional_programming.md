@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Python is multi-paradigm: it gives you the functional toolkit (higher-order functions, closures, immutability, lazy evaluation) without enforcing it. The four cornerstones are **higher-order functions** (`map`, `filter`, `reduce`), **functools utilities** (`partial` for partial application, `lru_cache` for memoisation, `wraps` for decorator hygiene), **generators** (functions that `yield` lazily and produce values one at a time), and **itertools** (a deep standard-library set of lazy iterator combinators). For most everyday transformations a list/generator comprehension is more readable than `map`/`filter`; reach for the functional names when the function is already named, or when you need a lazy stream. Generators are the right tool for streaming pipelines on large data — chain them together and memory stays proportional to a single element. Don't force functional style: imperative loops are clearer when state is genuinely needed, and mutation in place beats functional purity for performance-sensitive code.
+Python is multi-paradigm: it gives you the functional toolkit (higher-order functions, closures, immutability, lazy evaluation) without enforcing it. The four cornerstones are **higher-order functions** (`map`, `filter`, `reduce`), **functools utilities** (`partial` for partial application, `lru_cache` for memoisation, `wraps` for decorator hygiene), **generators** (functions that `yield` lazily and produce values one at a time), and **itertools** (a deep standard-library set of lazy iterator combinators). For most everyday transformations a list/generator comprehension is more readable than `map`/`filter`; reach for the functional names when the function is already named, or when you need a lazy stream. Generators are the right tool for streaming pipelines on large data - chain them together and memory stays proportional to a single element. Don't force functional style: imperative loops are clearer when state is genuinely needed, and mutation in place beats functional purity for performance-sensitive code.
 
 ## Cheatsheet
 
@@ -13,9 +13,9 @@ Python is multi-paradigm: it gives you the functional toolkit (higher-order func
 | `functools.reduce(f, iter, init)` | Cumulative binary operation | Eager |
 | List comp `[f(x) for x in iter]` | Build a list eagerly | No |
 | Gen expr `(f(x) for x in iter)` | Build a generator lazily | Yes |
-| `functools.partial(f, *args, **kw)` | Pre-bind arguments | — |
-| `@functools.lru_cache(maxsize=N)` | Memoise pure function with hashable args | — |
-| `@functools.wraps(func)` | Preserve metadata in decorators | — |
+| `functools.partial(f, *args, **kw)` | Pre-bind arguments | - |
+| `@functools.lru_cache(maxsize=N)` | Memoise pure function with hashable args | - |
+| `@functools.wraps(func)` | Preserve metadata in decorators | - |
 | `def f(): yield ...` | Generator function | Yes |
 | `yield from iterable` | Delegate to a sub-iterable | Yes |
 | `itertools.chain` | Concatenate iterables | Yes |
@@ -37,7 +37,7 @@ Applies a function to every element of an iterable. Returns a lazy iterator (no 
 squares = list(map(lambda x: x**2, [1, 2, 3, 4]))
 # [1, 4, 9, 16]
 
-# Multiple iterables — function takes that many positional args
+# Multiple iterables - function takes that many positional args
 sums = list(map(lambda x, y: x + y, [1, 2, 3], [10, 20, 30]))
 # [11, 22, 33]
 ```
@@ -48,7 +48,7 @@ In most everyday cases a list comprehension is more readable, because it reads t
 squares = [x**2 for x in [1, 2, 3, 4]]
 ```
 
-`map` shines when the function is already named — there's no lambda noise:
+`map` shines when the function is already named - there's no lambda noise:
 
 ```python
 strs = list(map(str, [1, 2, 3]))
@@ -68,13 +68,13 @@ evens = [x for x in range(10) if x % 2 == 0]
 
 ### `functools.reduce`
 
-Applies a binary function cumulatively, reducing an iterable to a single value. Less idiomatic in Python than in classical functional languages — Python prefers explicit loops or built-ins like `sum`, `max`, `min`, `any`, `all` for common reductions.
+Applies a binary function cumulatively, reducing an iterable to a single value. Less idiomatic in Python than in classical functional languages - Python prefers explicit loops or built-ins like `sum`, `max`, `min`, `any`, `all` for common reductions.
 
 ```python
 from functools import reduce
 
 product = reduce(lambda acc, x: acc * x, [1, 2, 3, 4, 5])
-# 120 — equivalent to (((1*2)*3)*4)*5
+# 120 - equivalent to (((1*2)*3)*4)*5
 
 # With initial value, the empty case is well-defined
 reduce(lambda acc, x: acc + x, [], 0)   # 0
@@ -127,13 +127,13 @@ Two requirements: arguments must be **hashable**, and the function must be **pur
 
 ### `functools.wraps`
 
-Preserves function metadata (`__name__`, `__doc__`, signature) when writing decorators. Always pair every wrapper with `@functools.wraps(func)` — see [04_functions.md](04_functions.md) for the full discussion.
+Preserves function metadata (`__name__`, `__doc__`, signature) when writing decorators. Always pair every wrapper with `@functools.wraps(func)` - see [04_functions.md](04_functions.md) for the full discussion.
 
 ---
 
 ## Generators
 
-A generator is a function that uses `yield` instead of `return`. Calling it does not run the body; it returns a **generator object** — an iterator that produces values on demand by executing the function up to the next `yield`.
+A generator is a function that uses `yield` instead of `return`. Calling it does not run the body; it returns a **generator object** - an iterator that produces values on demand by executing the function up to the next `yield`.
 
 ```python
 def count_up(limit):
@@ -145,7 +145,7 @@ def count_up(limit):
 gen = count_up(5)
 next(gen)       # 0
 next(gen)       # 1
-list(gen)       # [2, 3, 4] — consumes whatever is left
+list(gen)       # [2, 3, 4] - consumes whatever is left
 ```
 
 ### Why generators
@@ -203,7 +203,7 @@ for row in pipeline:
     process(row)
 ```
 
-This is the same conceptual pattern as Unix pipes — each stage transforms a stream produced by the previous one.
+This is the same conceptual pattern as Unix pipes - each stage transforms a stream produced by the previous one.
 
 ---
 
@@ -223,7 +223,7 @@ it.repeat(value, n)                     # value n times (or infinitely if n omit
 it.chain([1, 2], [3, 4], [5])           # 1, 2, 3, 4, 5
 it.chain.from_iterable([[1, 2], [3, 4]]) # flatten one level
 it.zip_longest([1, 2, 3], ['a', 'b'], fillvalue=0)  # zip with padding
-it.compress([1, 2, 3, 4], [1, 0, 1, 0]) # [1, 3] — filter by mask
+it.compress([1, 2, 3, 4], [1, 0, 1, 0]) # [1, 3] - filter by mask
 it.islice(gen, 5)                       # take first 5 from any iterable
 it.islice(gen, 2, 10, 2)                # slice with step
 it.takewhile(pred, iter)                # take while predicate is True
@@ -260,7 +260,7 @@ def batched(iterable, n):
         yield batch
 ```
 
-The walrus operator `:=` in the loop above lets the assignment and the truthiness check share one expression — a rare case where the syntax really earns its keep.
+The walrus operator `:=` in the loop above lets the assignment and the truthiness check share one expression - a rare case where the syntax really earns its keep.
 
 ---
 
@@ -318,7 +318,7 @@ Avoid forcing functional style when:
 
 ## See also
 
-- [02_collections.md](02_collections.md) — comprehensions, generator expressions, `collections` module
-- [03_control_flow.md](03_control_flow.md) — iteration protocol, common patterns
-- [04_functions.md](04_functions.md) — closures, decorators, `functools.wraps` in depth
-- [11_standard_library.md](11_standard_library.md) — wider tour of standard-library modules
+- [02_collections.md](02_collections.md) - comprehensions, generator expressions, `collections` module
+- [03_control_flow.md](03_control_flow.md) - iteration protocol, common patterns
+- [04_functions.md](04_functions.md) - closures, decorators, `functools.wraps` in depth
+- [11_standard_library.md](11_standard_library.md) - wider tour of standard-library modules

@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A neural network is a stack of **dense (linear) layers** separated by **non-linear activations**: without the non-linearity, any number of linear layers collapses to a single linear transformation. The **Universal Approximation Theorem** says one hidden layer with enough neurons can approximate any continuous function — but in practice depth matters, because deeper networks express some functions exponentially more efficiently than shallow ones. **ReLU** (`max(0, z)`) is the default hidden-layer activation — fast, no saturation for positives, prone to "dying" if pre-activations stay negative; switch to Leaky ReLU / ELU / GELU when that happens. Output layer: **sigmoid** for binary classification, **softmax** for multiclass, **linear** for regression. Training optimises a loss (cross-entropy for classification, MSE for regression) via **backpropagation** — the chain rule applied systematically backward through the layers — combined with **mini-batch SGD** or, more commonly today, **Adam**. Three operational levers fight overfitting: **early stopping** (most important — `restore_best_weights=True`), **dropout** (typical rate 0.2-0.5), and **batch normalisation** (stabilises training, allows higher learning rates). The vanishing-gradient problem in deep sigmoid/tanh networks is the historical reason ReLU + good initialisation (He for ReLU, Glorot for tanh) + batch norm + residual connections all became standard.
+A neural network is a stack of **dense (linear) layers** separated by **non-linear activations**: without the non-linearity, any number of linear layers collapses to a single linear transformation. The **Universal Approximation Theorem** says one hidden layer with enough neurons can approximate any continuous function - but in practice depth matters, because deeper networks express some functions exponentially more efficiently than shallow ones. **ReLU** (`max(0, z)`) is the default hidden-layer activation - fast, no saturation for positives, prone to "dying" if pre-activations stay negative; switch to Leaky ReLU / ELU / GELU when that happens. Output layer: **sigmoid** for binary classification, **softmax** for multiclass, **linear** for regression. Training optimises a loss (cross-entropy for classification, MSE for regression) via **backpropagation** - the chain rule applied systematically backward through the layers - combined with **mini-batch SGD** or, more commonly today, **Adam**. Three operational levers fight overfitting: **early stopping** (most important - `restore_best_weights=True`), **dropout** (typical rate 0.2-0.5), and **batch normalisation** (stabilises training, allows higher learning rates). The vanishing-gradient problem in deep sigmoid/tanh networks is the historical reason ReLU + good initialisation (He for ReLU, Glorot for tanh) + batch norm + residual connections all became standard.
 
 ## Cheatsheet
 
@@ -37,7 +37,7 @@ The perceptron is the foundational unit of a neural network. It computes a weigh
 
 $$\hat{y} = f\left(\sum_{j=1}^{n} w_j x_j + b\right) = f(\mathbf{w}^T \mathbf{x} + b)$$
 
-The original perceptron used a **step function** (threshold activation), making it a binary linear classifier. It can only represent linearly separable functions — the famous XOR limitation that put neural network research on hold until non-linear activations and multi-layer networks were established.
+The original perceptron used a **step function** (threshold activation), making it a binary linear classifier. It can only represent linearly separable functions - the famous XOR limitation that put neural network research on hold until non-linear activations and multi-layer networks were established.
 
 ---
 
@@ -45,15 +45,15 @@ The original perceptron used a **step function** (threshold activation), making 
 
 A **feedforward neural network** composed of:
 
-- **Input layer** — one node per feature.
-- **Hidden layers** — intermediate representations; apply a non-linear activation.
-- **Output layer** — one node per output (or one node per class in multiclass).
+- **Input layer** - one node per feature.
+- **Hidden layers** - intermediate representations; apply a non-linear activation.
+- **Output layer** - one node per output (or one node per class in multiclass).
 
 ```
 Input → [Dense + Activation] → ... → [Dense + Activation] → Output
 ```
 
-With at least one hidden layer and a non-linear activation, an MLP can approximate any continuous function — the **Universal Approximation Theorem**. The catch is the theorem says nothing about how wide the layer needs to be, or whether you can train the weights to find the approximation. In practice **depth matters**: deeper networks can represent some functions exponentially more efficiently than shallow ones, and modern training techniques (residual connections, normalisation, careful initialisation) are what make deep architectures trainable.
+With at least one hidden layer and a non-linear activation, an MLP can approximate any continuous function - the **Universal Approximation Theorem**. The catch is the theorem says nothing about how wide the layer needs to be, or whether you can train the weights to find the approximation. In practice **depth matters**: deeper networks can represent some functions exponentially more efficiently than shallow ones, and modern training techniques (residual connections, normalisation, careful initialisation) are what make deep architectures trainable.
 
 ---
 
@@ -65,9 +65,9 @@ Non-linearity is essential. Without it, any number of stacked linear layers coll
 
 $$\sigma(z) = \frac{1}{1 + e^{-z}} \in (0, 1)$$
 
-- Output as probability — used in binary output layers.
+- Output as probability - used in binary output layers.
 - **Saturates** at 0 and 1 → **vanishing gradient** when stacked in hidden layers (the derivative is at most 0.25, multiplying many of them together produces a gradient that effectively vanishes).
-- Not zero-centred — outputs always positive, which can slow optimisation.
+- Not zero-centred - outputs always positive, which can slow optimisation.
 
 ### Tanh
 
@@ -131,7 +131,7 @@ where $\mathbf{a}^{(0)} = \mathbf{x}$ (the input), $\mathbf{W}^{(l)}$ are the la
 | Binary classification | Binary cross-entropy | $-[y \log \hat{p} + (1-y) \log(1-\hat{p})]$ |
 | Multiclass | Categorical cross-entropy | $-\sum_k y_k \log \hat{p}_k$ |
 
-Cross-entropy paired with sigmoid / softmax outputs produces a **convex** loss landscape (for the unregularised model), which is why these pairings are the standard. MSE with sigmoid outputs is non-convex and badly conditioned — never use it for classification.
+Cross-entropy paired with sigmoid / softmax outputs produces a **convex** loss landscape (for the unregularised model), which is why these pairings are the standard. MSE with sigmoid outputs is non-convex and badly conditioned - never use it for classification.
 
 ---
 
@@ -149,7 +149,7 @@ $$\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}} = \frac{\partial \mathc
 
 This gives the gradient needed to update each weight via gradient descent.
 
-**Why the chain rule**: the loss depends on the network's output, which depends on the next-to-last layer's activations, which depend on its weights, and so on backward. Backprop applies the chain rule systematically from the output backward to the input. Modern frameworks (TensorFlow, PyTorch, JAX) compute backprop automatically via **automatic differentiation** — you write the forward pass, the framework derives the gradients.
+**Why the chain rule**: the loss depends on the network's output, which depends on the next-to-last layer's activations, which depend on its weights, and so on backward. Backprop applies the chain rule systematically from the output backward to the input. Modern frameworks (TensorFlow, PyTorch, JAX) compute backprop automatically via **automatic differentiation** - you write the forward pass, the framework derives the gradients.
 
 ---
 
@@ -194,8 +194,8 @@ Divides the learning rate by a running mean of recent gradient magnitudes. Prede
 
 ### Epochs and batches
 
-- **Epoch** — one full pass through the training dataset.
-- **Batch size** — number of samples per gradient update.
+- **Epoch** - one full pass through the training dataset.
+- **Batch size** - number of samples per gradient update.
   - Smaller batches → noisier gradient estimates (acts as regularisation), more updates per epoch, slower per epoch.
   - Larger batches → more accurate gradient, fewer updates per epoch, faster per epoch (especially on GPUs), less regularising.
 
@@ -207,10 +207,10 @@ In deep networks with sigmoid or tanh activations, gradients shrink exponentiall
 
 Fixes that became standard precisely because of this problem:
 
-- **ReLU activations** — gradient is 1 for positive values, doesn't shrink.
-- **Batch normalisation** — reduces internal covariate shift, stabilises gradients.
-- **Residual connections** (skip connections in ResNets) — provide shortcuts that bypass many layers, so gradients flow back without multiplying through every weight.
-- **Careful weight initialisation** — He initialisation for ReLU, Glorot (Xavier) for tanh.
+- **ReLU activations** - gradient is 1 for positive values, doesn't shrink.
+- **Batch normalisation** - reduces internal covariate shift, stabilises gradients.
+- **Residual connections** (skip connections in ResNets) - provide shortcuts that bypass many layers, so gradients flow back without multiplying through every weight.
+- **Careful weight initialisation** - He initialisation for ReLU, Glorot (Xavier) for tanh.
 
 ---
 
@@ -239,13 +239,13 @@ Add $\lambda \sum w^2$ to the loss. In SGD, this is equivalent to multiplying we
 
 ### Early stopping
 
-Stop training when validation loss stops improving for a number of consecutive epochs (`patience`). The single most important regularisation technique — it's free, doesn't change the loss, and prevents the model from training past the validation minimum:
+Stop training when validation loss stops improving for a number of consecutive epochs (`patience`). The single most important regularisation technique - it's free, doesn't change the loss, and prevents the model from training past the validation minimum:
 
 ```python
 keras.callbacks.EarlyStopping(
     monitor='val_loss',
     patience=10,
-    restore_best_weights=True,      # essential — keep the best epoch's weights
+    restore_best_weights=True,      # essential - keep the best epoch's weights
 )
 ```
 
@@ -333,7 +333,7 @@ For regression:
 
 ## See also
 
-- [02_regression.md](02_regression.md) — MSE loss, linear baseline
-- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) — early stopping, weight decay, regularisation theory
-- [04_classification.md](04_classification.md) — sigmoid, softmax, cross-entropy
-- [09_model_selection.md](09_model_selection.md) — when neural networks beat tree ensembles, and when they don't
+- [02_regression.md](02_regression.md) - MSE loss, linear baseline
+- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) - early stopping, weight decay, regularisation theory
+- [04_classification.md](04_classification.md) - sigmoid, softmax, cross-entropy
+- [09_model_selection.md](09_model_selection.md) - when neural networks beat tree ensembles, and when they don't

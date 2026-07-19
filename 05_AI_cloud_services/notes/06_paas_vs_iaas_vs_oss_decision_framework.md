@@ -237,12 +237,12 @@ The lesson is not "OSS is cheaper". It is **the cost function has different shap
 ## See also
 
 ### Other notes
-- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) — the abstractions this note compares
-- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md), [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md), [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) — the PaaS implementations
-- [05_iaas_open_source_and_on_prem_deployment.md](05_iaas_open_source_and_on_prem_deployment.md) — the IaaS / OSS stack in depth
-- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) — mixing models within one architecture is usually the answer
+- [01_aiaas_and_cloud_architecture_fundamentals.md](01_aiaas_and_cloud_architecture_fundamentals.md) - the abstractions this note compares
+- [02_aws_ai_ml_stack.md](02_aws_ai_ml_stack.md), [03_azure_ai_ecosystem.md](03_azure_ai_ecosystem.md), [04_google_cloud_vertex_ai_data_first.md](04_google_cloud_vertex_ai_data_first.md) - the PaaS implementations
+- [05_iaas_open_source_and_on_prem_deployment.md](05_iaas_open_source_and_on_prem_deployment.md) - the IaaS / OSS stack in depth
+- [07_hybrid_and_multi_cloud_patterns.md](07_hybrid_and_multi_cloud_patterns.md) - mixing models within one architecture is usually the answer
 
 ### Cross-module
-- Module 04 [01_identifying_ai_problems_and_feasibility.md](../../04_business_case_AIPM/notes/01_identifying_ai_problems_and_feasibility.md) — 3-year TCO discipline applied to the choice
-- Module 04 [05_roadmap_and_prioritization.md](../../04_business_case_AIPM/notes/05_roadmap_and_prioritization.md) — the "PaaS first, migrate when justified" pattern is a roadmap pattern
-- Module 04 [06_product_lifecycle_poc_to_scale.md](../../04_business_case_AIPM/notes/06_product_lifecycle_poc_to_scale.md) — scaling from PoC to production maps onto migrating from PaaS to OSS
+- Module 04 [01_identifying_ai_problems_and_feasibility.md](../../04_business_case_AIPM/notes/01_identifying_ai_problems_and_feasibility.md) - 3-year TCO discipline applied to the choice
+- Module 04 [05_roadmap_and_prioritization.md](../../04_business_case_AIPM/notes/05_roadmap_and_prioritization.md) - the "PaaS first, migrate when justified" pattern is a roadmap pattern
+- Module 04 [06_product_lifecycle_poc_to_scale.md](../../04_business_case_AIPM/notes/06_product_lifecycle_poc_to_scale.md) - scaling from PoC to production maps onto migrating from PaaS to OSS

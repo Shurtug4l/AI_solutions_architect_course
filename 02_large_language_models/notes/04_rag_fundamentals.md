@@ -368,15 +368,15 @@ In practice, both. LangChain's `Retrieval-QA` chain composes any LlamaIndex retr
 ## See also
 
 ### Other notes
-- [01_llm_foundations.md](01_llm_foundations.md) — the LLM half of every RAG pipeline
-- [02_model_landscape.md](02_model_landscape.md) — picking the generator model
-- [03_prompt_engineering.md](03_prompt_engineering.md) — the augmentation prompt is a special case
-- [05_advanced_rag.md](05_advanced_rag.md) — hybrid search, reranking, query expansion, multimodal RAG
-- [06_rag_evaluation.md](06_rag_evaluation.md) — RAGAS metrics; how to know whether your RAG works
-- [07_rag_production.md](07_rag_production.md) — caching, streaming, scaling
-- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) — RAG as long-term memory for agents
+- [01_llm_foundations.md](01_llm_foundations.md) - the LLM half of every RAG pipeline
+- [02_model_landscape.md](02_model_landscape.md) - picking the generator model
+- [03_prompt_engineering.md](03_prompt_engineering.md) - the augmentation prompt is a special case
+- [05_advanced_rag.md](05_advanced_rag.md) - hybrid search, reranking, query expansion, multimodal RAG
+- [06_rag_evaluation.md](06_rag_evaluation.md) - RAGAS metrics; how to know whether your RAG works
+- [07_rag_production.md](07_rag_production.md) - caching, streaming, scaling
+- Module 03 [06_long_term_memory.md](../../03_agentic_ai/notes/06_long_term_memory.md) - RAG as long-term memory for agents
 
 ### Related work in this repo
-- Module 02 exercise 04 (`04_ex_rag_chatbot_company_faq.ipynb`) — first hands-on RAG pipeline
-- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) — production-flavoured hybrid retrieval (sem + BM25 + recency, category filters)
-- Module 03 exercise 06 (`06_ex_customer_support_rag_cag_episodic.ipynb`) — RAG + CAG fallback + episodic memory on Ollama
+- Module 02 exercise 04 (`04_ex_rag_chatbot_company_faq.ipynb`) - first hands-on RAG pipeline
+- Module 02 capstone (`PRJ_rag_system_for_company_knowledge.py`) - production-flavoured hybrid retrieval (sem + BM25 + recency, category filters)
+- Module 03 exercise 06 (`06_ex_customer_support_rag_cag_episodic.ipynb`) - RAG + CAG fallback + episodic memory on Ollama

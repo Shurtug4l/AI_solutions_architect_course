@@ -2,13 +2,13 @@
 
 ## TL;DR
 
-Regression predicts a **continuous** output from input features. The classical workhorse is **linear regression**, which models $\hat{y}$ as a weighted combination of features and a bias. The training loss is **MSE** (mean squared error), which has a closed-form solution (the **normal equation**) for small problems but is solved by **gradient descent** for anything large or non-linear. Polynomial features extend the model to non-linear relationships while keeping it linear in the parameters — beware overfitting at high degrees. Five metrics matter: **MAE** (robust, same units as $y$), **MSE / RMSE** (penalises large errors more, RMSE is the training objective), **R²** (variance explained, can mislead by always growing with more features), and **adjusted R²** (penalised for the number of features). The classical assumptions of linear regression — linearity, homoscedasticity, independence, normality of residuals, no perfect multicollinearity — affect inference (confidence intervals, p-values), not predictive accuracy: the model still fits, it just becomes harder to make statistical claims about the coefficients. Multicollinearity destabilises coefficients (high VIF); the fix is to drop redundant features or apply Ridge regularisation (covered in 03).
+Regression predicts a **continuous** output from input features. The classical workhorse is **linear regression**, which models $\hat{y}$ as a weighted combination of features and a bias. The training loss is **MSE** (mean squared error), which has a closed-form solution (the **normal equation**) for small problems but is solved by **gradient descent** for anything large or non-linear. Polynomial features extend the model to non-linear relationships while keeping it linear in the parameters - beware overfitting at high degrees. Five metrics matter: **MAE** (robust, same units as $y$), **MSE / RMSE** (penalises large errors more, RMSE is the training objective), **R²** (variance explained, can mislead by always growing with more features), and **adjusted R²** (penalised for the number of features). The classical assumptions of linear regression - linearity, homoscedasticity, independence, normality of residuals, no perfect multicollinearity - affect inference (confidence intervals, p-values), not predictive accuracy: the model still fits, it just becomes harder to make statistical claims about the coefficients. Multicollinearity destabilises coefficients (high VIF); the fix is to drop redundant features or apply Ridge regularisation (covered in 03).
 
 ## Cheatsheet
 
 | Concept | Formula / sklearn | Note |
 |---|---|---|
-| Linear model | `LinearRegression()` — `ŷ = wᵀx + b` | Closed form via normal equation |
+| Linear model | `LinearRegression()` - `ŷ = wᵀx + b` | Closed form via normal equation |
 | Loss | MSE = `(1/m) Σ(yᵢ − ŷᵢ)²` | Convex, differentiable |
 | Closed-form | `w* = (XᵀX)⁻¹ Xᵀy` | Exact; O(n³) inversion, n = features |
 | Gradient descent | `w ← w − η ∇L` | When closed form is too costly |
@@ -40,7 +40,7 @@ where $\mathbf{w}$ are the **weights** (coefficients) and $b$ is the **bias** (i
 
 $$\mathcal{L} = \frac{1}{m} \sum_{i=1}^{m} (y_i - \hat{y}_i)^2$$
 
-MSE penalises large errors quadratically — a single big miss contributes more than many small misses combined. This makes MSE sensitive to outliers but produces a smooth, convex loss with a unique minimum, which is exactly what you want for fast, deterministic optimisation.
+MSE penalises large errors quadratically - a single big miss contributes more than many small misses combined. This makes MSE sensitive to outliers but produces a smooth, convex loss with a unique minimum, which is exactly what you want for fast, deterministic optimisation.
 
 ### Normal equation (closed-form solution)
 
@@ -62,7 +62,7 @@ Iterative optimisation. Useful when the closed form is too slow or the loss isn'
 
 $$\mathbf{w} \leftarrow \mathbf{w} - \eta \, \nabla_{\mathbf{w}} \mathcal{L}$$
 
-$\eta$ is the **learning rate** — too small and convergence crawls; too large and the iterates oscillate or diverge.
+$\eta$ is the **learning rate** - too small and convergence crawls; too large and the iterates oscillate or diverge.
 
 ### Variants
 
@@ -82,7 +82,7 @@ Extends linear regression to capture non-linear relationships by adding polynomi
 
 $$\hat{y} = w_0 + w_1 x + w_2 x^2 + w_3 x^3 + \ldots$$
 
-Crucially, this is still **linear in the parameters** $w_j$ — the model is a linear regression applied to transformed features. `PolynomialFeatures` in sklearn generates the expanded feature matrix:
+Crucially, this is still **linear in the parameters** $w_j$ - the model is a linear regression applied to transformed features. `PolynomialFeatures` in sklearn generates the expanded feature matrix:
 
 ```python
 from sklearn.preprocessing import PolynomialFeatures
@@ -106,14 +106,14 @@ Higher degree → more expressive but more prone to overfitting. The number of f
 $$\text{MAE} = \frac{1}{m} \sum_{i=1}^{m} |y_i - \hat{y}_i|$$
 
 - Robust to outliers (linear penalty).
-- Interpretable in the same units as $y$ — "the model is off by an average of $X$ units".
+- Interpretable in the same units as $y$ - "the model is off by an average of $X$ units".
 
 ### Mean squared error / root MSE
 
 $$\text{MSE} = \frac{1}{m} \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 \qquad \text{RMSE} = \sqrt{\text{MSE}}$$
 
 - RMSE is in the same units as $y$, MSE in squared units.
-- Penalises large errors more than MAE — a single 10-off prediction is treated as 100× worse than a 1-off.
+- Penalises large errors more than MAE - a single 10-off prediction is treated as 100× worse than a 1-off.
 - The training objective for linear regression. Reporting RMSE alongside MAE makes the outlier sensitivity visible.
 
 ### R² (coefficient of determination)
@@ -134,7 +134,7 @@ where $m$ = samples, $n$ = features. Penalises model complexity: adding an irrel
 
 ## Assumptions of linear regression
 
-Violations don't make the model fail outright — predictions can still be good. They affect the reliability of **statistical inference** (confidence intervals, p-values for individual coefficients, hypothesis tests):
+Violations don't make the model fail outright - predictions can still be good. They affect the reliability of **statistical inference** (confidence intervals, p-values for individual coefficients, hypothesis tests):
 
 | Assumption | What to check | Fix if violated |
 |---|---|---|
@@ -150,7 +150,7 @@ If you only care about prediction (not interpretation of individual coefficients
 
 ## Multicollinearity
 
-When features are highly correlated, coefficient estimates become **unstable** — small changes in the data produce large changes in coefficients. The model still predicts well, but the coefficients are not individually interpretable: you can't tell which of two correlated features "really" causes the effect, because they're sharing weight in arbitrary proportions.
+When features are highly correlated, coefficient estimates become **unstable** - small changes in the data produce large changes in coefficients. The model still predicts well, but the coefficients are not individually interpretable: you can't tell which of two correlated features "really" causes the effect, because they're sharing weight in arbitrary proportions.
 
 ### Variance inflation factor (VIF)
 
@@ -161,8 +161,8 @@ where $R^2_j$ is the R² from regressing feature $j$ on all other features. Rule
 ### Fixes
 
 - **Drop one of the correlated features** (the simplest, often the right answer).
-- **PCA / dimensionality reduction** — replaces correlated features with orthogonal principal components.
-- **Ridge regression** (L2 regularisation) — shrinks correlated coefficients together, stabilising the estimates without dropping features. See [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md).
+- **PCA / dimensionality reduction** - replaces correlated features with orthogonal principal components.
+- **Ridge regression** (L2 regularisation) - shrinks correlated coefficients together, stabilising the estimates without dropping features. See [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md).
 
 ---
 
@@ -223,7 +223,7 @@ print(model.intercept_)         # bias
 
 ## See also
 
-- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) — scaling, leakage, pipelines
-- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) — Ridge, Lasso, Elastic Net, cross-validation
-- [04_classification.md](04_classification.md) — logistic regression (regression's sibling for discrete targets)
-- [09_model_selection.md](09_model_selection.md) — choosing between regression models
+- [01_data_and_preprocessing.md](01_data_and_preprocessing.md) - scaling, leakage, pipelines
+- [03_bias_variance_and_regularization.md](03_bias_variance_and_regularization.md) - Ridge, Lasso, Elastic Net, cross-validation
+- [04_classification.md](04_classification.md) - logistic regression (regression's sibling for discrete targets)
+- [09_model_selection.md](09_model_selection.md) - choosing between regression models

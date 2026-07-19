@@ -27,12 +27,12 @@ A working AI agent decomposes into **five building blocks** that have to fit tog
 ┌──────────────────────────────────────────────────────┐
 │                   AI AGENT                            │
 │                                                       │
-│      🧠 LLM ────────► reasoning + decision            │
+│      LLM ────────► reasoning + decision              │
 │         │                                             │
-│         ├── 🛠️  Tools ──► action surface             │
-│         ├── 📋  Structured Output ──► parseable form │
-│         ├── 🎯  Planning ──► step decomposition       │
-│         └── 💾  Memory ──► state across turns        │
+│         ├── Tools ──► action surface                 │
+│         ├── Structured Output ──► parseable form     │
+│         ├── Planning ──► step decomposition          │
+│         └── Memory ──► state across turns            │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -151,7 +151,7 @@ The deck lists four formats; only one of them is actually used in practice.
 
 | Format | Strengths | Weaknesses |
 |---|---|---|
-| **JSON** ✓ | Universal, native to every web stack, supported by every tool-calling API | Strict about quotes and commas |
+| **JSON** | Universal, native to every web stack, supported by every tool-calling API | Strict about quotes and commas |
 | YAML | Human-readable, optional quoting | Indentation-sensitive, parsing nuances |
 | XML | Self-describing, schema-rich | Verbose, painful by hand |
 | TOML | Good for config files | Limited type system |
@@ -336,14 +336,14 @@ The Memory Manager is what makes the agent feel coherent across both timescales 
 ## See also
 
 ### Other notes
-- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) — the framing this note expands on
-- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) — Plan-Execute as a paradigm, in detail
-- [04_frameworks.md](04_frameworks.md) — LangChain decorators that turn Python functions into tool schemas
-- [05_short_term_memory.md](05_short_term_memory.md) — trimming and summarisation in depth
-- [06_long_term_memory.md](06_long_term_memory.md) — vector stores, RAG, CAG, episodic memory
+- [01_agents_vs_workflows.md](01_agents_vs_workflows.md) - the framing this note expands on
+- [03_paradigms_react_planexecute_reflexion.md](03_paradigms_react_planexecute_reflexion.md) - Plan-Execute as a paradigm, in detail
+- [04_frameworks.md](04_frameworks.md) - LangChain decorators that turn Python functions into tool schemas
+- [05_short_term_memory.md](05_short_term_memory.md) - trimming and summarisation in depth
+- [06_long_term_memory.md](06_long_term_memory.md) - vector stores, RAG, CAG, episodic memory
 
 ### Exercises that exercise the concepts in this note
-- [`02_ex_translation_wikipedia_agent.ipynb`](../exercises/02_ex_translation_wikipedia_agent.ipynb) — tools with Pydantic schemas, `tool_choice="auto"`, JSON tool-call protocol
-- [`03_ex_fact_checker_react_reflexion.ipynb`](../exercises/03_ex_fact_checker_react_reflexion.ipynb) — structured output for a `Critique` schema, planning-via-system-prompt
-- [`04_ex_fact_checker_langchain_vs_langgraph.ipynb`](../exercises/04_ex_fact_checker_langchain_vs_langgraph.ipynb) — `@tool` decorator vs Pydantic schemas, `with_structured_output`, two framework patterns side by side
-- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) — episodic memory with extractor + memory gate, three-iteration journey on the structured-output schema
+- [`02_ex_translation_wikipedia_agent.ipynb`](../exercises/02_ex_translation_wikipedia_agent.ipynb) - tools with Pydantic schemas, `tool_choice="auto"`, JSON tool-call protocol
+- [`03_ex_fact_checker_react_reflexion.ipynb`](../exercises/03_ex_fact_checker_react_reflexion.ipynb) - structured output for a `Critique` schema, planning-via-system-prompt
+- [`04_ex_fact_checker_langchain_vs_langgraph.ipynb`](../exercises/04_ex_fact_checker_langchain_vs_langgraph.ipynb) - `@tool` decorator vs Pydantic schemas, `with_structured_output`, two framework patterns side by side
+- [`06_ex_customer_support_rag_cag_episodic.ipynb`](../exercises/06_ex_customer_support_rag_cag_episodic.ipynb) - episodic memory with extractor + memory gate, three-iteration journey on the structured-output schema
