@@ -18,7 +18,7 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 | 05 | [Cloud for AI](05_AI_cloud_services) | EnergoGrid hybrid multi-cloud infrastructure | delivered |
 | 06 | [AI Service Deployment](06_AI_services_deployment) | LogiFast delivery-time service (Flask) | delivered |
 | 07 | [Data Governance & KM](07_data_governance_knowledge_management) | NovaCura Pharma data governance platform | delivered |
-| 08 | [Solution Design & Architecture](08_solutions_architectures_design) | Scalable architecture for AI systems | in progress |
+| 08 | [Solution Design & Architecture](08_solutions_architectures_design) | RetailSight video analytics platform | in progress |
 | 09 | AI Architecture Security | Risk and vulnerability analysis of an AI system | planned |
 | 10 | Governance, Ethics & Compliance | AI governance framework for a fintech | planned |
 
@@ -44,17 +44,17 @@ Transformer architectures, prompt engineering, fine-tuning, and RAG systems for 
 ### Agentic AI
 
 Design of multi-agent systems, orchestration, and tool use for automating complex processes.
-**Project:** AI agent orchestration for a digital services company.
+**Projects:** DigitServe agent orchestration (n8n) and GreenThumb support agent (ReAct + RAG).
 
 ### Business Case & AI Product Management
 
 Feasibility analysis, product roadmaps, cost estimation, and lifecycle management of AI solutions.
-**Project:** From business vision to deployment of an AI system.
+**Project:** OmniRetail AI governance platform.
 
 ### Cloud for AI
 
 Design of cloud-native infrastructures for AI workloads on AWS, GCP, and Azure.
-**Project:** Multi-cloud AI infrastructure.
+**Project:** EnergoGrid hybrid multi-cloud AI infrastructure.
 
 ### AI Service Deployment
 
@@ -69,7 +69,7 @@ Strategies for data management, quality, and lineage in enterprise AI systems.
 ### Solution Design & Architecture
 
 Architectural patterns for scalable, resilient, and maintainable AI systems.
-**Project:** Scalable architecture for AI systems.
+**Project:** RetailSight video analytics platform (in progress).
 
 ### AI Architecture Security
 
@@ -95,9 +95,9 @@ AI_solutions_architect_course/
 │                                   #   GreenThumb = LangChain/LiteLLM ReAct + RAG + FastAPI notebook (2nd module-03 capstone)
 ├── 04_business_case_AIPM/           # Notes + exercises + PRJ (OmniRetail AI governance platform) - delivered
 ├── 05_AI_cloud_services/            # Notes + exercises + PRJ (EnergoGrid hybrid multi-cloud) - delivered
-├── 06_AI_services_deployment/       # Notes + exercises + PRJ (LogiFast delivery-time service, Flask) - delivered
+├── 06_AI_services_deployment/       # Notes + exercises + slides (local) + PRJ (LogiFast delivery-time service, Flask) - delivered
 ├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local) + PRJ (NovaCura DG&KM: PDF + 8 diagrams + SQL/BigData/KG/RAG artifacts) - delivered
-├── 08_solutions_architectures_design/        # Notes (11) + slides (local) + exercises (ETL, FastAPI+Docker, mini-RAG, draw.io) - capstone pending
+├── 08_solutions_architectures_design/        # Notes (11) + slides (local) + exercises (ETL, FastAPI+Docker, mini-RAG, draw.io) + PRJ (RetailSight video analytics: diagrams committed, report in progress)
 └── README.md
 ```
 
