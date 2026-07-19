@@ -101,4 +101,4 @@ AI_solutions_architect_course/
 └── README.md
 ```
 
-Note: slide decks (`.pptx`) and capstone Word sources (`.docx`) are kept local and gitignored, so they are not part of the published repository. The document capstones (modules 04, 05, 07, 08) are shipped as `.pdf`.
+Note: slide decks (`.pptx`) and capstone Word sources (`.docx`) are kept local and gitignored, so they are not part of the published repository. Every capstone delivered from module 04 onward ships its report as `.pdf` inside the `_PRJ_*` folder; the earlier capstones (modules 00-03) are code deliverables (`.py`, `.ipynb`, n8n `.json`).
