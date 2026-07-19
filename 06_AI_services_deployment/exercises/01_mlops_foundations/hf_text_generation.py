@@ -1,12 +1,12 @@
 from transformers import pipeline
 
-# creare un pipeline per la generazione di testo
-generator = pipeline("text-generation", 
+# build a text-generation pipeline (GePpeTto, Italian GPT-2)
+generator = pipeline("text-generation",
                     model="LorenzoDeMattei/GePpeTto")
 
-# generazione del testo
+# text generation (Italian prompt by design)
 prompt = "L'Italia è un paese"
-risultato = generator(prompt, max_length=50, num_return_sequences=1)
+result = generator(prompt, max_length=50, num_return_sequences=1)
 
 print(f"Prompt: {prompt}")
-print(f"Testo generato: {risultato[0]['generated_text']}")
+print(f"Generated text: {result[0]['generated_text']}")

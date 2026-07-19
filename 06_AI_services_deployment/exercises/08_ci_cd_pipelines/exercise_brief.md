@@ -1,7 +1,7 @@
-Nell'utilizzo delle github actions ti sarà sicuramente utile la
-possibilità di utilizzare delle passwords, api keys ecc.
+When working with GitHub Actions you will sooner or later need
+passwords, API keys and other secrets.
 
-Lo scopo dell'esercitazione è quello di creare una github action che
-altro non fa che leggere un secret e "provare" a stamparlo nei log della
-pipeline; dico provare poiché github di default impedisce di stampare
-secret e quindi stamperà al suo posto degli asterischi (redacted).
+The goal of this exercise is to create a GitHub Action that simply
+reads a secret and "tries" to print it in the pipeline logs; tries,
+because GitHub blocks secret printing by default and outputs asterisks
+in its place (redacted).

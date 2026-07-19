@@ -1,91 +1,91 @@
-# 1. Configurazioni Iniziali
+# 1. Initial configuration
 # -----------------------------
 
-# Configura il tuo nome e email
-git config --global user.name "Il Tuo Nome"
-git config --global user.email "tua.email@esempio.com"
+# Configure your name and email
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
 
-# Verifica la configurazione
+# Check the configuration
 git config --list
 
-# 2. Inizializzare un Repository
+# 2. Initialize a repository
 # -----------------------------
 
-# Crea una nuova directory
-mkdir mio-progetto
-cd mio-progetto
+# Create a new directory
+mkdir my-project
+cd my-project
 
-# Inizializza il repository
+# Initialize the repository
 git init
 
-# Verifica lo stato
+# Check the status
 git status
 
-# Aggiungi file specifici
-git add nomefile.txt
+# Add specific files
+git add filename.txt
 
-# Aggiungi tutti i file
+# Add all files
 git add .
 
-# Rimuovi file dall'area di staging
-git reset nomefile.txt
+# Remove a file from the staging area
+git reset filename.txt
 
-# 3. Commit, Pull e Push
+# 3. Commit, pull and push
 # -----------------------------
 
-# Crea un commit con messaggio
-git commit -m "Primo commit: aggiunto file principale"
+# Create a commit with a message
+git commit -m "First commit: added main file"
 
-# Modifica l'ultimo commit
-git commit --amend -m "Nuovo messaggio per l'ultimo commit"
+# Amend the last commit
+git commit --amend -m "New message for the last commit"
 
-# Visualizza la storia dei commit
+# Show the commit history
 git log
-git log --oneline  # Versione compatta
+git log --oneline  # Compact version
 
-# Aggiungi un repository remoto
+# Add a remote repository
 git remote add origin https://github.com/username/repository.git
 
-# Verifica i repository remoti
+# List the remote repositories
 git remote -v
 
-# Scarica le modifiche dal repository remoto
+# Fetch changes from the remote repository
 git pull origin main
 
-# Carica le tue modifiche sul repository remoto
+# Upload your changes to the remote repository
 git push origin main
 
-# Push del primo commit
-git push -u origin main  # -u imposta il tracking
+# Push of the first commit
+git push -u origin main  # -u sets up tracking
 
-# Scarica le modifiche dal repository remoto
+# Fetch changes from the remote repository
 git pull origin main
 
-# Carica le tue modifiche sul repository remoto
+# Upload your changes to the remote repository
 git push origin main
 
-# Push del primo commit
-git push -u origin main  # -u imposta il tracking
+# Push of the first commit
+git push -u origin main  # -u sets up tracking
 
-# 4. file .gitignore
+# 4. The .gitignore file
 # -----------------------------
 
-# Crea il file .gitignore
+# Create the .gitignore file
 touch .gitignore
 
-# Editare il file .gitignore
+# Edit the .gitignore file
 
-# 5. Lavorare su un Branch
+# 5. Working on a branch
 # -----------------------------
 
-# Visualizza tutti i branch
+# List all branches
 git branch
 
-# Crea un nuovo branch
+# Create a new branch
 git branch feature-login
 
-# Passa a un altro branch
+# Switch to another branch
 git checkout feature-login
 
-# Elimina un branch
-git branch -d nome-branch
+# Delete a branch
+git branch -d branch-name

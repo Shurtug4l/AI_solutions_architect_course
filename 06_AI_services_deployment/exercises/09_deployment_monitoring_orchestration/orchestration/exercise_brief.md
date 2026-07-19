@@ -1,8 +1,6 @@
-Lo scopo dell'esercitazione di oggi è quello di utilizzare l'operatore
-di branching (if/else) nel DAG di airflow che abbiamo realizzato assieme
-nelle lezioni pratiche.
+The goal of today's exercise is to use the branching operator (if/else)
+in the Airflow DAG built together during the practice lessons.
 
-In particolare basterà verificare che la task load_dataset ritorno
-effettivamente un percoso oppure, se dovesse ritornare un percorso
-nullo, fai fallire il dag e lancia una eccezzione in python che spiega
-quanto accaduto.
+Specifically, check that the load_dataset task actually returns a path;
+if it returns a null path, make the DAG fail and raise a Python
+exception explaining what happened.

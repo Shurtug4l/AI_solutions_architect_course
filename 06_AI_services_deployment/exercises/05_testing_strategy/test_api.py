@@ -11,4 +11,4 @@ def test_root_endpoint():
 
     assert "text/html" in response.headers["content-type"], "Expected HTML response"
 
-    assert "<h1>Questo non è un endpoint per PyTest </h1>" in response.text, "Expected HTML content"
+    assert "<h1>This is not an endpoint for PyTest </h1>" in response.text, "Expected HTML content"

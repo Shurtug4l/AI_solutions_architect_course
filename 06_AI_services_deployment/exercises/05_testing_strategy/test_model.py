@@ -11,7 +11,7 @@ def make_predictions(model, X):
     return model.predict(X)
 
 def test__model():
-    # Dati di esempio (input X e output y)
+    # Sample data (input X and output y)
     X = np.array([[1], [2], [3], [4], [5]])
     y = np.array([2, 4, 6, 8, 10])
 
@@ -19,6 +19,6 @@ def test__model():
 
     predictions = make_predictions(model, X)
 
-    # Verifica che l'errore quadratico medio sia molto basso (quasi zero)
+    # Check the mean squared error is very low (near zero)
     mse = mean_squared_error(y, predictions)
-    assert mse < 1e-6, f"Mean squared error troppo alto: {mse}"
+    assert mse < 1e-6, f"Mean squared error too high: {mse}"

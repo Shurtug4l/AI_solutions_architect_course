@@ -1,70 +1,70 @@
-# 1. CREARE UN AMBIENTE VIRTUALE
+# 1. CREATE A VIRTUAL ENVIRONMENT
 # -----------------------------
 
-# Verifica la versione di Python
+# Check the Python version
 python --version
 
-# Crea una directory per il progetto
-mkdir mio_progetto
-cd mio_progetto
+# Create a project directory
+mkdir my_project
+cd my_project
 
-# Crea l'ambiente virtuale
+# Create the virtual environment
 python -m venv env
 
-# 2. ATTIVARE E DISATTIVARE L'AMBIENTE VIRTUALE
+# 2. ACTIVATE AND DEACTIVATE THE VIRTUAL ENVIRONMENT
 # --------------------------------------------
 
-# Per Windows:
+# On Windows:
 # .\env\Scripts\activate
 
-# Per macOS e Linux:
+# On macOS and Linux:
 source env/bin/activate
 
-# Verifica l'ambiente attivo (dovrebbe mostrare il percorso dell'ambiente)
+# Check the active environment (should show the environment path)
 which python
 which pip
 
-# Per disattivare l'ambiente:
+# To deactivate the environment:
 deactivate
 
-# 3. INSTALLARE MODULI
+# 3. INSTALL PACKAGES
 # -------------------
 
-# Riattiva l'ambiente se necessario
-source env/bin/activate  # (per macOS/Linux)
-# .\env\Scripts\activate  # (per Windows)
+# Reactivate the environment if needed
+source env/bin/activate  # (macOS/Linux)
+# .\env\Scripts\activate  # (Windows)
 
-# Installa alcuni pacchetti di esempio
+# Install a few sample packages
 pip install numpy
 pip install pandas
 pip install matplotlib
 
-# Installa una versione specifica
+# Install a specific version
 pip install requests==2.25.1
 
-# 4. VERSIONE MODULI E REQUIREMENTS.TXT
+# 4. PACKAGE VERSIONS AND REQUIREMENTS.TXT
 # -----------------------------------
 
-# Visualizza tutti i pacchetti installati
+# List all installed packages
 pip list
 
-# Crea il file requirements.txt
+# Create the requirements.txt file
 pip freeze > requirements.txt
 
-# Visualizza il contenuto del file
+# Show the file content
 cat requirements.txt
 
-# Come installare da requirements.txt in un nuovo ambiente
+# How to install from requirements.txt in a fresh environment
 # pip install -r requirements.txt
 
-# 5. ELIMINARE UN AMBIENTE VIRTUALE
+# 5. DELETE A VIRTUAL ENVIRONMENT
 # -------------------------------
 
-# Prima disattiva l'ambiente
+# Deactivate the environment first
 deactivate
 
-# Per Windows:
-# cancellare la cartella
+# On Windows:
+# delete the folder
 
-# Per macOS e Linux:
+# On macOS and Linux:
 rm -rf env

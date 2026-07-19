@@ -1,13 +1,13 @@
 from transformers import pipeline
 
-# creare un pipeline per l'analisi del sentimento
-classifier = pipeline("sentiment-analysis", 
+# build a sentiment-analysis pipeline (Italian model)
+classifier = pipeline("sentiment-analysis",
                      model="neuraly/bert-base-italian-cased-sentiment")
 
-# esempio di utilizzo
-testo = "Questo ristorante è fantastico, ci tornerò sicuramente!"
-risultato = classifier(testo)
+# usage example (Italian input by design)
+text = "Questo ristorante è fantastico, ci tornerò sicuramente!"
+result = classifier(text)
 
-print(f"Testo: {testo}")
-print(f"Sentimento: {risultato[0]['label']}")
-print(f"Confidenza: {risultato[0]['score']:.2f}")
+print(f"Text: {text}")
+print(f"Sentiment: {result[0]['label']}")
+print(f"Confidence: {result[0]['score']:.2f}")

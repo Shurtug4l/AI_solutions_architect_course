@@ -6,38 +6,37 @@ from pydantic import BaseModel, Field
 app = FastAPI()
 
 
-class Studente(BaseModel):
-    nome: str = Field(..., description="Il nome dello studente", example='Mario')
-    cognome: str = Field(..., description='Il cognome dello studente', example='Rossi')
+class Student(BaseModel):
+    first_name: str = Field(..., description="The student's first name", example='Mario')
+    last_name: str = Field(..., description="The student's last name", example='Rossi')
 
 
-class Indirizzo(BaseModel):
-    via: str = Field(..., description='Via di un indirizzo')
-    cap: str = Field(..., example='00100')
+class Address(BaseModel):
+    street: str = Field(..., description='Street of an address')
+    zip_code: str = Field(..., example='00100')
 
 
 class School(BaseModel):
-    nome: str = Field(..., example='Istituto XXX')
-    indirizzo: Indirizzo = Field(..., description='Indirizzo della scuola')
+    name: str = Field(..., example='Istituto XXX')
+    address: Address = Field(..., description='Address of the school')
 
 
 @app.post("/add_student",
-          description='Un endpoint POST per aggiungere uno studente',
-          response_description='Id del record aggiunto al database')
-def add_student(item: Studente) -> Dict[str, int]:
+          description='A POST endpoint that adds a student',
+          response_description='Id of the record added to the database')
+def add_student(item: Student) -> Dict[str, int]:
     """
-    Questo endpoint accetta uno studente in input e lo aggiunge al database.
-    :param item: studente da aggiungere
+    This endpoint takes a student as input and adds it to the database.
+    :param item: student to add
     """
     return {"id": 1234}
 
 
 @app.get("/find_school")
-def find_school(student: Studente) -> School:
+def find_school(student: Student) -> School:
     """
-    Endpoint per trovare la scuola di uno studente
+    Endpoint that finds the school of a student
     :param student:
-    :return: la scuola dello studente di input
+    :return: the school of the input student
     """
-    return School(nome='istituto yyy', indirizzo=Indirizzo(via='via Roma', cap='00100'))
-
+    return School(name='istituto yyy', address=Address(street='via Roma', zip_code='00100'))
