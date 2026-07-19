@@ -87,7 +87,7 @@ Regulatory frameworks (AI Act, GDPR), bias, explainability, and algorithmic acco
 
 ```text
 AI_solutions_architect_course/
-├── 000_certs/                       # Module completion certificates (00-09, .pdf)
+├── 000_certs/                       # Module completion certificates (00-10, .pdf)
 ├── 00_python_programming/           # Notes + PRJ (warehouse monitoring, stdlib) - delivered
 ├── 01_machine_learning/             # Notes + exercises + PRJ (defective parts classification, sklearn) - delivered
 ├── 02_large_language_models/        # Notes + exercises + PRJ (hybrid RAG, ChromaDB + BM25) - delivered
