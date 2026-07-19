@@ -18,7 +18,7 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 | 05 | [Cloud for AI](05_AI_cloud_services) | EnergoGrid hybrid multi-cloud infrastructure | delivered |
 | 06 | [AI Service Deployment](06_AI_services_deployment) | LogiFast delivery-time service (Flask) | delivered |
 | 07 | [Data Governance & KM](07_data_governance_knowledge_management) | NovaCura Pharma data governance platform | delivered |
-| 08 | [Solution Design & Architecture](08_solutions_architectures_design) | RetailSight video analytics platform | in progress |
+| 08 | [Solution Design & Architecture](08_solutions_architectures_design) | RetailSight video analytics platform | delivered |
 | 09 | AI Architecture Security | Risk and vulnerability analysis of an AI system | planned |
 | 10 | Governance, Ethics & Compliance | AI governance framework for a fintech | planned |
 
@@ -69,7 +69,7 @@ Strategies for data management, quality, and lineage in enterprise AI systems.
 ### Solution Design & Architecture
 
 Architectural patterns for scalable, resilient, and maintainable AI systems.
-**Project:** RetailSight video analytics platform (in progress).
+**Project:** RetailSight video analytics platform.
 
 ### AI Architecture Security
 
@@ -87,7 +87,7 @@ Regulatory frameworks (AI Act, GDPR), bias, explainability, and algorithmic acco
 
 ```text
 AI_solutions_architect_course/
-├── 000_certs/                       # Module completion certificates (00-05, .pdf)
+├── 000_certs/                       # Module completion certificates (00-08, .pdf)
 ├── 00_python_programming/           # Notes + PRJ (warehouse monitoring, stdlib) - delivered
 ├── 01_machine_learning/             # Notes + exercises + PRJ (defective parts classification, sklearn) - delivered
 ├── 02_large_language_models/        # Notes + exercises + PRJ (hybrid RAG, ChromaDB + BM25) - delivered
@@ -97,8 +97,8 @@ AI_solutions_architect_course/
 ├── 05_AI_cloud_services/            # Notes + exercises + PRJ (EnergoGrid hybrid multi-cloud) - delivered
 ├── 06_AI_services_deployment/       # Notes + exercises + slides (local) + PRJ (LogiFast delivery-time service, Flask) - delivered
 ├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local) + PRJ (NovaCura DG&KM: PDF + 8 diagrams + SQL/BigData/KG/RAG artifacts) - delivered
-├── 08_solutions_architectures_design/        # Notes (11) + slides (local) + exercises (ETL, FastAPI+Docker, mini-RAG, draw.io) + PRJ (RetailSight video analytics: diagrams committed, report in progress)
+├── 08_solutions_architectures_design/        # Notes (11) + slides (local) + exercises (ETL, FastAPI+Docker, mini-RAG, draw.io) + PRJ (RetailSight video analytics platform) - delivered
 └── README.md
 ```
 
-Note: slide decks (`.pptx`) and capstone Word sources (`.docx`) are kept local and gitignored, so they are not part of the published repository. The document capstones (modules 04, 05, 07) are shipped as `.pdf`.
+Note: slide decks (`.pptx`) and capstone Word sources (`.docx`) are kept local and gitignored, so they are not part of the published repository. The document capstones (modules 04, 05, 07, 08) are shipped as `.pdf`.
