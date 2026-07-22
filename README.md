@@ -19,7 +19,7 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 | 06 | [AI Service Deployment](06_AI_services_deployment) | LogiFast delivery-time service (Flask) | delivered |
 | 07 | [Data Governance & KM](07_data_governance_knowledge_management) | NovaCura Pharma data governance platform | delivered |
 | 08 | [Solution Design & Architecture](08_solutions_architectures_design) | RetailSight video analytics platform | delivered |
-| 09 | [Information & Architecture Security](09_information_and_architecture_security) | Risk and vulnerability analysis of an AI system | in progress |
+| 09 | [Information & Architecture Security](09_information_and_architecture_security) | UrbanSight security risk assessment | delivered |
 | 10 | Governance, Ethics & Compliance | AI governance framework for a fintech | planned |
 
 ---
@@ -98,7 +98,7 @@ AI_solutions_architect_course/
 ├── 06_AI_services_deployment/       # Notes + exercises + slides (local) + PRJ (LogiFast delivery-time service, Flask) - delivered
 ├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local) + PRJ (NovaCura DG&KM: PDF + 8 diagrams + SQL/BigData/KG/RAG artifacts) - delivered
 ├── 08_solutions_architectures_design/        # Notes (11) + slides (local) + exercises (ETL, FastAPI+Docker, mini-RAG, draw.io) + PRJ (RetailSight video analytics platform) - delivered
-├── 09_information_and_architecture_security/ # Notes (8) + slides (local) + exercises (adversarial noise, Llama Guard paper, Zero Trust engine, NIS 2 / Belmont texts) - capstone pending
+├── 09_information_and_architecture_security/ # Notes (8) + slides (local) + exercises (adversarial noise, Llama Guard paper, Zero Trust engine, NIS 2 / Belmont texts) + PRJ (UrbanSight security risk assessment: PDF + 5 diagrams) - delivered
 └── README.md
 ```
 
