@@ -1,0 +1,102 @@
+# Bias and non-discrimination
+
+## TL;DR
+
+**Bias in AI is not a bug that slips in, it is the default outcome of learning from data produced by an unequal world; non-discrimination is the legal line that decides which of those learned patterns are unlawful to act on.** Bias enters through recognizable channels: historical bias baked into the ground truth, representation gaps in who the data describes, measurement bias in proxy labels, aggregation across heterogeneous populations, proxy features that reconstruct protected attributes, and feedback loops that let a model manufacture its own confirming evidence. In the EU, non-discrimination is a **fundamental right** (Charter, Art 21) with decades of equality law behind it; the AI-relevant concept is **indirect discrimination**, where an apparently neutral practice disadvantages a protected group. The **AI Act** layers systemic prevention on top of that complaint-driven regime: data governance duties that require examining datasets for bias (Art 10), a high-risk list populated largely by discrimination-exposed domains, and the **FRIA** (fundamental rights impact assessment, Art 27) for public-sector and selected private deployers. The harm taxonomy separates **allocative harms** (opportunities and resources withheld), **representational harms** (stereotyping, denigration, incitement), and **exclusion** (systems that simply do not work for some people). Risk analysis means naming protected groups and proxies, choosing fairness metrics knowing they cannot all hold at once, and measuring per segment. Mitigation has three intervention points in the pipeline (pre-, in-, post-processing) and the honest ones outside it: better data collection, human review that works, and redress.
+
+## Cheatsheet
+
+| Concept | One-line | Practical signal |
+|---|---|---|
+| **Historical bias** | The ground truth records an unequal world | A perfect model of biased decisions is a biased model |
+| **Representation bias** | Some groups are thin or absent in the data | Performance gaps appear exactly where the data is thin |
+| **Measurement bias** | The label is a proxy, and the proxy is skewed | Arrests are not crime; healthcare cost is not health need |
+| **Proxy features** | Neutral variables reconstruct protected attributes | Postal code, first name, purchase history do the work |
+| **Feedback loop** | Model output shapes the next training set | Predictive policing patrols where it predicted, then learns from it |
+| **Indirect discrimination** | Neutral practice, disproportionate group impact | The EU legal test most AI discrimination falls under |
+| **Charter Art 21** | Non-discrimination as an EU fundamental right | The floor the AI Act builds evidence duties on top of |
+| **Allocative harm** | Resource or opportunity withheld | Measurable per decision: credit, hiring, benefits |
+| **Representational harm** | Stereotyping, denigration, incitement | Diffuse, hard to count, corrosive at population scale |
+| **Exclusion** | The system does not work for some users at all | Error rates concentrated on accents, skin tones, edge identities |
+| **Fairness metrics** | Parity, equalized odds, calibration; mutually incompatible | Choosing one is a documented normative decision |
+| **FRIA (Art 27)** | Deployer-side fundamental rights impact assessment | Due before first use; public bodies, credit, life and health insurance |
+
+## Where bias comes from and how it shows up
+
+The useful mental model is a pipeline with entry points, not a single contamination event.
+
+- **Historical bias** sits in the ground truth itself: train on decades of lending or hiring decisions and the model learns the discrimination along with the signal, with full fidelity. No data cleaning fixes this, because the data is an accurate record of a biased process.
+- **Representation bias** is about coverage: groups that are underrepresented in training data get a model that generalizes poorly for them. The canonical demonstration is Buolamwini and Gebru's Gender Shades study (2018), where commercial face analysis systems showed error rates over 30 percentage points higher for darker-skinned women than for lighter-skinned men.
+- **Measurement bias** enters through proxy labels. The model predicts what was measured, not what was meant: arrests stand in for crime, healthcare spending stands in for medical need. Obermeyer and colleagues (2019) showed a widely deployed US care-management algorithm systematically under-referred Black patients because it used cost as the need proxy, and less money had historically been spent on their care.
+- **Aggregation bias** comes from fitting one model to heterogeneous populations for whom the feature-outcome relationship differs; the average model is wrong for everyone in a structured way.
+- **Proxy features** are the reason "we removed gender from the inputs" reassures nobody: any sufficiently expressive model reconstructs protected attributes from correlated variables. This is a property of correlation structure, not of malicious intent.
+- **Feedback loops** close the circle at deployment: the model's outputs select the next round of training data. Predictive policing is the textbook case, patrols go where predictions point, arrests happen where patrols are, and the next model learns that the predictions were right.
+
+Manifestation follows the same logic: bias shows up as **performance gaps across segments** (error rates, false positive and false negative rates, calibration) and as **outcome gaps** (approval rates, ranking positions). Which is why the first diagnostic act is always the same, disaggregate every metric you already compute.
+
+## Non-discrimination as a fundamental right, and what the AI Act adds
+
+The legal architecture predates AI by decades. The Charter of Fundamental Rights prohibits discrimination on an open-ended list of grounds (Art 21: sex, race, ethnic origin, religion, disability, age, sexual orientation, among others), and secondary legislation makes this operational in specific domains: the Racial Equality Directive (2000/43/EC), the Employment Equality Directive (2000/78/EC), and the gender equality directives covering employment and access to goods and services.
+
+The load-bearing concept for AI is **indirect discrimination**: a provision, criterion, or practice that is neutral on its face but puts persons of a protected group at a particular disadvantage, unless objectively justified by a legitimate aim pursued through appropriate and necessary means. Almost no AI system discriminates directly (the protected attribute is rarely an explicit input); almost every biased AI system fits the indirect pattern precisely, a facially neutral scoring function with disproportionate group impact. The justification test then does real work: business necessity arguments meet a proportionality analysis, and "the model said so" is not an objective justification.
+
+What equality law lacks, and the AI Act supplies, is a **systemic, ex-ante layer**. Classic anti-discrimination enforcement is complaint-driven: an individual must notice the disadvantage, attribute it to a practice, and litigate, which fails structurally against algorithmic discrimination the affected person cannot observe. The AI Act attacks the problem upstream: Art 10 obliges providers of high-risk systems to examine training, validation, and testing data for possible biases likely to affect health, safety, or fundamental rights, and to take measures against them (with a narrow, safeguarded permission in Art 10(5) to process special categories of data precisely for bias detection and correction, an exception GDPR alone would not comfortably give). The Annex III high-risk list reads as a map of discrimination exposure: employment, education, credit, insurance, essential services, law enforcement, migration. And Art 27 pushes assessment duties onto deployers through the FRIA, closing the gap where a compliant model meets a discriminatory deployment context.
+
+## A taxonomy of AI harms
+
+Grouping harms is not academic tidiness; each class needs different metrics, different owners, and different remedies.
+
+- **Allocative harms**: the system withholds resources or opportunities, credit denied, CV filtered out, benefit refused, parole scored against. These are the most tractable: harms are per-decision, measurable with fairness metrics, and attached to identifiable people who can (in principle) seek redress. Most equality law and most of the AI Act's high-risk machinery aim here.
+- **Representational harms**: the system produces or amplifies stereotyping, denigration, or **incitement to hatred**; image generators defaulting CEOs to one demographic, recommender systems amplifying hate content, translation systems injecting gender stereotypes. No individual decision is denied to anyone, which makes these harms diffuse, hard to quantify, and easy to deprioritize, while at population scale they shape the environment allocative decisions happen in. For generative systems this class dominates, and note 08 returns to it.
+- **Exclusion**: the system fails to function for some users at all, voice interfaces that cannot parse accents, face verification that fails on darker skin, forms and models with no representation for non-binary users, services that assume smartphone ownership. Exclusion is quality-of-service inequality, and its signature is error concentrated on the margins while aggregate metrics look healthy.
+
+The taxonomy also assigns organizational ownership: allocative harms belong to the model owner and the fairness KPIs from note 02; representational harms need content policy and evaluation pipelines; exclusion is a product and accessibility responsibility that fairness dashboards usually miss.
+
+## Analyzing discrimination risk
+
+A discrimination risk analysis for a decisional system runs a fixed sequence, and the discipline is in writing each step down:
+
+1. **Scope the decision**: what is decided, at what stakes, with what degree of automation, in a domain with what discrimination history. Stakes and automation degree scale everything downstream.
+2. **Name protected groups and proxies**: the legally protected grounds applicable to the domain, plus the plausible proxy features in the input space. Intersectional segments (older women, migrants with disabilities) belong on the list explicitly, because single-axis analysis misses them, and Gender Shades is the standing proof.
+3. **Choose the fairness metrics, and own the choice.** Demographic parity (equal positive rates), equal opportunity (equal true positive rates), equalized odds (equal error rates), calibration (scores mean the same thing per group). The impossibility results (Kleinberg et al., Chouldechova, 2016-2017) prove these cannot all hold simultaneously when base rates differ, so the selection is a normative act: for punitive decisions equalizing false positives may dominate; for opportunity allocation, equal opportunity is usually the defensible pick. Document the choice and the reasoning; this is exactly the value judgment note 02 said belongs to governance.
+4. **Measure, disaggregated.** Baseline on historical data, then per-segment performance on test data, then per-segment outcomes in production. A gap heuristic like the four-fifths rule (a selection rate below 80 percent of the best group's rate flags concern, borrowed from US employment practice) is a screening signal, not a verdict, but it gives thresholds a starting point.
+5. **Trace mechanisms.** For every gap found, hypothesize the channel (which of the bias sources above) because the channel determines the fix. A representation gap calls for data; a proxy effect calls for feature work and monitoring; historical label bias may mean the target itself is wrong.
+
+## Mitigation: three intervention points, plus the ones outside the model
+
+The pipeline offers three places to intervene, in decreasing order of how early they act:
+
+- **Pre-processing** operates on data: reweighing or resampling to balance groups, relabeling audited subsets, augmenting thin segments (including synthetically, with the caveat that synthetic data inherits the generator's biases), and repairing proxy structure. Strongest when the diagnosis is representation or measurement bias, and the only family that fixes the problem rather than the symptom.
+- **In-processing** operates on training: fairness constraints or regularizers added to the objective, adversarial debiasing where a second network tries to recover the protected attribute from the representation and the main model learns to defeat it. Flexible, but couples fairness to the training pipeline and needs the metric choice settled first.
+- **Post-processing** operates on outputs: group-aware thresholds, calibrated score adjustments, reject-option bands where uncertain cases route to a human. Cheapest to deploy on a frozen model, but legally delicate: explicit group-conditional treatment can itself raise direct discrimination questions in some jurisdictions, so this family needs legal review, not just an engineering sign-off.
+
+The honest list continues outside the model, and in production settings these often move the outcome more than any algorithmic step: collect better data where the gaps are (the unglamorous fix that actually works), design human review so it reviews (queue pressure and automation bias can reduce oversight to throughput, note 02's override-rate KPI is the tell), give affected people a usable appeal path, and monitor per segment continuously, because mitigation done once decays under drift like everything else.
+
+One tradeoff deserves its reputation checked: the fairness-accuracy tension is real in theory and frequently mild in practice, especially when the accuracy being defended was partly measured against biased labels. The tradeoff that is always real is fairness-fairness: pick your metric, know what you gave up, write it down.
+
+## The FRIA
+
+Article 27 introduces the **fundamental rights impact assessment**, the AI Act's instrument for the deployer side of the problem: a compliant high-risk system can still cause discrimination in a specific deployment context the provider never saw.
+
+**Who and when.** Before first use of a high-risk system, a FRIA is due from deployers that are bodies governed by public law or private entities providing public services, plus deployers of two specifically flagged Annex III systems: creditworthiness assessment and risk assessment or pricing for life and health insurance. The banking and insurance carve-in is deliberate, those are the private domains with the sharpest fundamental-rights exposure at scale.
+
+**What it contains** (Art 27(1)): a description of the deployer's processes where the system will operate; the period and frequency of intended use; the categories of natural persons and groups likely to be affected; the specific risks of harm to those categories; the human oversight measures as per the instructions for use; and the measures to be taken if risks materialize, including internal governance and complaint mechanisms. The result is notified to the market surveillance authority, and the AI Office provides a template. Where a GDPR DPIA already covers part of the ground, the FRIA complements it rather than duplicating it (Art 27(4)), the DPIA looks at personal data processing, the FRIA at the broader rights impact of the decisions.
+
+**A non-discrimination section that holds up** maps directly onto the analysis above: affected groups including intersectional ones, with sizes where estimable; the plausible discrimination mechanisms for this deployment (data provenance, proxies, feedback loops, context mismatch with the provider's training population); the fairness metrics and thresholds that will be monitored, with the reasoning for the metric choice; mitigation in place and the residual risk stated plainly; and the oversight and redress arrangements, named roles, escalation triggers, complaint path. The quality test for the whole document is falsifiability: a FRIA that could not conceivably have concluded "do not deploy" was not an assessment, it was a formality with a signature line.
+
+## Gotchas
+
+- **"We removed the protected attribute, so the model cannot discriminate."** Proxy reconstruction is default model behavior on correlated data. Fairness through blindness fails, and it simultaneously destroys your ability to measure the gaps, which requires governed access to the attribute you removed. Art 10(5) exists precisely because the naive privacy instinct and the fairness requirement collide.
+- **Auditing the aggregate.** Overall accuracy, overall approval rate, overall calibration: all can be healthy while every interesting failure hides in a segment or an intersection. Disaggregation is the analysis; the aggregate is marketing.
+- **Optimizing all fairness metrics at once.** With different base rates, the impossibility results make simultaneous satisfaction mathematically unavailable. A vendor claiming their model is fair on every definition has either equal base rates or a sales deck.
+- **Treating the label as the truth.** When the target variable is a skewed proxy (cost for need, arrests for crime), every downstream fairness intervention calibrates the model to a biased yardstick. Interrogate the label before tuning the model; sometimes the defensible fix is changing what gets predicted.
+- **Group-aware post-processing without legal review.** Explicit group-conditional thresholds can flip an indirect discrimination problem into a direct discrimination question. The engineering fix and the legal exposure move in opposite directions; this decision needs both functions in the room.
+- **FRIA as paperwork after the procurement decision.** Art 27 says before first use, and the document's content (context, affected groups, oversight design) is exactly the input a deployment decision needs. A FRIA written to justify a decision already taken inverts the instrument's purpose and reads that way to an authority.
+
+## See also
+
+- [02_ethics_and_responsible_ai.md](02_ethics_and_responsible_ai.md) - fairness as a governed value choice, and the KPI machinery that keeps measuring it after deployment
+- [04_ai_risk_management.md](04_ai_risk_management.md) - the high-risk requirements (data governance, oversight, robustness) this note's duties slot into
+- [05_privacy_and_data_protection.md](05_privacy_and_data_protection.md) - the GDPR side: special-category data, DPIA overlap with the FRIA, lawful bases for the data that bias work needs
+- [06_ai_act.md](06_ai_act.md) - the risk-class architecture and Annex III list that decide which systems carry these obligations
+- [01_ai_governance_foundations.md](01_ai_governance_foundations.md) - the roles (AI board, model owner, stewards) that own the metrics and the escalation paths named here

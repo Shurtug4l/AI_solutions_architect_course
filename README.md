@@ -20,7 +20,7 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 | 07 | [Data Governance & KM](07_data_governance_knowledge_management) | NovaCura Pharma data governance platform | delivered |
 | 08 | [Solution Design & Architecture](08_solutions_architectures_design) | RetailSight video analytics platform | delivered |
 | 09 | [Information & Architecture Security](09_information_and_architecture_security) | UrbanSight security risk assessment | delivered |
-| 10 | Governance, Ethics & Compliance | AI governance framework for a fintech | planned |
+| 10 | [Governance, Ethics & Compliance](10_governance_ethics_compliance) | AI governance framework for a fintech | planned |
 
 ---
 
@@ -99,6 +99,7 @@ AI_solutions_architect_course/
 ├── 07_data_governance_knowledge_management/  # Notes (9) + slides (local) + PRJ (NovaCura DG&KM: PDF + 8 diagrams + SQL/BigData/KG/RAG artifacts) - delivered
 ├── 08_solutions_architectures_design/        # Notes (11) + slides (local) + exercises (ETL, FastAPI+Docker, mini-RAG, draw.io) + PRJ (RetailSight video analytics platform) - delivered
 ├── 09_information_and_architecture_security/ # Notes (8) + slides (local) + exercises (adversarial noise, Llama Guard paper, Zero Trust engine, NIS 2 / Belmont texts) + PRJ (UrbanSight security risk assessment: PDF + 5 diagrams) - delivered
+├── 10_governance_ethics_compliance/          # Notes (10: AI governance, ethics, bias, risk, privacy, AI Act, GPAI, conformity, policies) - capstone planned
 └── README.md
 ```
 
