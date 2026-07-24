@@ -57,6 +57,8 @@ The fine is also not the cost model. Market surveillance powers include forced w
 
 Across corporate AI governance builds, the same patterns recur often enough to state as findings.
 
+The module's sectoral cases sit underneath these patterns as the concrete material a governance program exists to handle: **credit scoring** (Annex III, discrimination through postal-code and demographic proxies, the FRIA and data-governance duties as the answer, note 03), **healthcare diagnosis** (error asymmetry and representation bias on under-sampled groups, mitigated with balanced datasets and oversight that actually overrides, note 02), and **HR recruiting** (Amazon's scrapped screener, historical bias amplified into a hiring filter, note 03). Each is a domain where the generic program below meets a specific harm, and the lesson repeats across all three: the controls are horizontal, the calibration is always local.
+
 **What works:**
 
 - **Inventory first.** Every effective program starts by discovering what AI is actually running, and the discovery reliably surprises: shadow AI (unapproved tools, embedded vendor models, spreadsheet-adjacent scripts nobody classified) outnumbers the official portfolio. Governance without an inventory is jurisdiction without territory.
@@ -93,7 +95,7 @@ One structural warning: a single event can be simultaneously an AI Act serious i
 The closing exercise assembles every note in the module into one artifact. A blueprint that holds together:
 
 - **AI policy** at the top: scope, principles (note 02), risk appetite, and the non-negotiables, one page the board signed.
-- **Intake and triage**: every proposed use case enters through one funnel and receives a risk classification aligned to the AI Act procedure (note 06), plus the org's own dimensions (data sensitivity, autonomy, audience). The Art 6(3) documentation duty lives here.
+- **Intake and triage**: every proposed use case enters through one funnel and receives a risk classification aligned to the AI Act procedure (note 06), plus the org's own dimensions (data sensitivity, autonomy, audience). The Art 6(3) documentation duty lives here, and so does the trigger for the deployer-side FRIA (Art 27, note 03): the intake is where a high-risk deployment in the public-service, credit, or insurance perimeter gets flagged for its fundamental-rights assessment before, not after, the go-live decision.
 - **Lifecycle gates**: design review, pre-deployment review, periodic re-review, run by the AI board with recorded decisions and real veto (note 01), consuming the artifacts the QMS produces (this note) and producing the evidence conformity needs (note 09).
 - **The inventory as backbone**: every system, its risk class, owner, review dates, and monitoring status, the single source the KPIs (note 02), the audits, and the incident process all key on.
 - **Three lines of defense** staffing the whole thing: model owners and stewards first, risk and compliance second, internal audit third (note 01).

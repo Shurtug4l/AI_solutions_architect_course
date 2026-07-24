@@ -29,7 +29,7 @@ The legislator's answer, added late in the negotiation after generative models m
 
 The value-chain reading explains most of the design: a downstream provider building a high-risk system on a third-party model cannot satisfy Arts 8-15 with a black box under NDA. Art 53's documentation duties exist so that compliance evidence flows down the chain with the model, which is why the exemptions are calibrated to transparency: where openness already delivers the evidence, the paperwork duty relaxes.
 
-The tier applies from 2025-08-02, with models already on the market before that date given a grace period to 2027; as of this module, the regime is live and the first compliance cycle is running.
+The tier applies from 2025-08-02, with models already on the market before that date given a grace period to 2 August 2027 under Art 111(3); as of this module, the regime is live and the first compliance cycle is running.
 
 ## The base tier: Art 53 obligations
 
@@ -40,7 +40,7 @@ Four duties, two of them paired documentation flows:
 - **A copyright policy**: state-of-the-art measures to comply with EU copyright law, specifically to identify and respect rights reservations under the TDM regime (next section).
 - **A sufficiently detailed summary of training content**, published on the AI Office's template (issued 2025). Not the dataset itself: a structured account of sources and collections precise enough that rights holders and regulators can act on it.
 
-**Open-source relief**: models released under a free and open-source license, with weights, architecture, and usage information publicly available, skip the two documentation duties, the logic being that openness substitutes for them. The relief never touches the copyright policy or the training summary, and it evaporates entirely at the systemic-risk tier. Non-EU providers appoint an authorized representative (Art 54), the same enforcement hook note 07 flagged.
+**Open-source relief**: models released under a free and open-source license, with weights, architecture, and usage information publicly available, skip the two documentation duties, the logic being that openness substitutes for them. The relief never touches the copyright policy or the training summary, and it evaporates entirely at the systemic-risk tier. Non-EU providers appoint an authorized representative (Art 54), the same enforcement hook note 07 flagged. Underneath all four duties runs a standing obligation of cooperation with the AI Office and national authorities: the technical file is framed as available on request rather than filed once, because the documentation is the instrument of a supervisory relationship, not an archive deposited and forgotten.
 
 Compliance mechanics run through the **Code of Practice** (Art 56): drafted through an AI Office process with providers and stakeholders, published in 2025, covering transparency, copyright, and (for the systemic tier) safety and security. Adhering to it earns a presumption-flavored simplification of demonstrating compliance until harmonized standards arrive; declining it means proving equivalence line by line. Most major providers signed, which was the point: the Code is soft law doing hard law's job during the standards gap.
 
