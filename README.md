@@ -8,6 +8,8 @@ The course builds the ability to design and orchestrate end-to-end AI solutions:
 
 ## Progress
 
+Program completed: 400 hours, 11 capstone projects, professional certification in **AI Solutions Architecture** issued 2026-07-28 ([certificate](000_certs/master_AI_solutions_architecture.pdf)).
+
 | # | Module | Capstone | Status |
 | --- | ------ | -------- | ------ |
 | 00 | [Python Programming](00_python_programming) | Warehouse order monitoring system | delivered |
@@ -87,7 +89,7 @@ Regulatory frameworks (AI Act, GDPR), bias, explainability, and algorithmic acco
 
 ```text
 AI_solutions_architect_course/
-├── 000_certs/                       # Module completion certificates (00-10, .pdf)
+├── 000_certs/                       # Module certificates (00-10) + final master certificate (.pdf)
 ├── 00_python_programming/           # Notes + PRJ (warehouse monitoring, stdlib) - delivered
 ├── 01_machine_learning/             # Notes + exercises + PRJ (defective parts classification, sklearn) - delivered
 ├── 02_large_language_models/        # Notes + exercises + PRJ (hybrid RAG, ChromaDB + BM25) - delivered
